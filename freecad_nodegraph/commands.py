@@ -7,60 +7,38 @@ try:
 except ImportError:
     HAS_FREECAD = False
 
-try:
-    from PySide6.QtWidgets import QDockWidget
-    from PySide6.QtCore import Qt
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QDockWidget
-        from PySide2.QtCore import Qt
-    except ImportError:
-        from PyQt5.QtWidgets import QDockWidget
-        from PyQt5.QtCore import Qt
-
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 
 global_graph = Graph()
-_dock_widget = None
+_editor_window = None
 
 
 class CommandOpenNodeGraphEditor:
-    """FreeCAD Command to open Node Graph Editor embedded view dock."""
+    """FreeCAD Command to open Node Graph Editor Window."""
 
     def GetResources(self):
         return {
             "Pixmap": "NodeGraph_Editor",
-            "MenuText": "Open Node Graph View",
-            "ToolTip": "Opens the Node Graph visual editor view embedded in FreeCAD",
+            "MenuText": "Open Node Graph Editor",
+            "ToolTip": "Opens the Node Graph visual editor window",
         }
 
     def Activated(self):
-        global _dock_widget, global_graph
+        global _editor_window, global_graph
         try:
-            from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
-
-            if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
-                main_win = FreeCADGui.getMainWindow()
-                if _dock_widget is None or _dock_widget.parent() is None:
-                    _dock_widget = QDockWidget("Node Graph Editor", main_win)
-                    _dock_widget.setObjectName("NodeGraphDockWidget")
-                    editor_widget = NodeGraphEditorWidget(graph=global_graph, parent=_dock_widget)
-                    _dock_widget.setWidget(editor_widget)
-                    main_win.addDockWidget(Qt.BottomDockWidgetArea, _dock_widget)
-
-                _dock_widget.show()
-                _dock_widget.raise_()
+            from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+            if _editor_window is None or not _editor_window.isVisible():
+                _editor_window = NodeGraphEditorWindow(graph=global_graph)
+                _editor_window.show()
             else:
-                # Standalone fallback mode
-                if _dock_widget is None:
-                    _dock_widget = NodeGraphEditorWidget(graph=global_graph)
-                _dock_widget.show()
+                _editor_window.raise_()
+                _editor_window.activateWindow()
         except Exception as e:
             if HAS_FREECAD and hasattr(FreeCAD, "Console"):
-                FreeCAD.Console.PrintError(f"Error opening Node Graph View: {e}\n")
+                FreeCAD.Console.PrintError(f"Error opening Node Graph Editor: {e}\n")
             else:
-                print(f"Error opening Node Graph View: {e}")
+                print(f"Error opening Node Graph Editor: {e}")
 
     def IsActive(self):
         return True

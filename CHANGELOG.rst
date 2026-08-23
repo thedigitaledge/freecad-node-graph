@@ -4,14 +4,6 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
-Version 0.5.0 (2025-02-28)
---------------------------
-
-Changed
-~~~~~~~
-- Embedded the Node Graph visual editor directly into FreeCAD's main window as a dock panel view (``QDockWidget``) instead of opening in a separate floating window.
-- Updated ``NodeGraphEditorWidget`` architecture for seamless dock integration within FreeCAD.
-
 Version 0.4.0 (2025-02-28)
 --------------------------
 

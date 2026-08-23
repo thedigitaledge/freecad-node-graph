@@ -10,7 +10,6 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
-- **Embedded FreeCAD Dock View**: Embedded directly within FreeCAD's main window as a dock panel rather than a separate popup window.
 - **Automatic Workbench Function Discovery**: Automatically scans FreeCAD workbenches (``Part``, ``Draft``, ``Arch``, ``Mesh``, ``Sketcher``, ``PartDesign``) and dynamically generates scriptable function nodes and toolbars.
 - **Node Context Menu**: Secondary click (right-click) on any node to perform **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
 - **Color-Coded Sockets & Labels**: Visual nodes display clear text labels for input/output sockets and distinct data-type color coding (Float, Vector, Shape, String, Boolean, etc.).
@@ -46,13 +45,12 @@ How to Use
 ~~~~~~~~~~
 
 1. Open or create a FreeCAD document.
-2. Click the **Open Node Graph View** button on the NodeGraph toolbar.
-3. The Node Graph Editor opens as an embedded view panel docked at the bottom of FreeCAD.
-4. Use the top **Workbench Toolbars** (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``) or double-click items in the **Node Library** palette to spawn nodes onto the canvas.
-5. Drag connections between color-coded output sockets and input sockets.
-6. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
-7. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
-8. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.
+2. Click the **Open Node Graph Editor** button on the NodeGraph toolbar.
+3. Use the top **Workbench Toolbars** (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``) or double-click items in the **Node Library** palette to spawn nodes onto the canvas.
+4. Drag connections between color-coded output sockets and input sockets.
+5. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
+6. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
+7. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.
 
 Documentation
 -------------

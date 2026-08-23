@@ -19,7 +19,7 @@ def test_gui_creation(qapp):
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.scene import NodeGraphicsScene
     from freecad_nodegraph.gui.view import NodeGraphicsView
-    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
 
     graph = Graph()
     f1 = FloatNode(graph=graph)
@@ -33,9 +33,9 @@ def test_gui_creation(qapp):
     view = NodeGraphicsView(scene)
     assert view is not None
 
-    editor_widget = NodeGraphEditorWidget(graph=graph)
-    assert editor_widget is not None
-    assert editor_widget.objectName() == "NodeGraphEditorWidget"
+    window = NodeGraphEditorWindow(graph=graph)
+    assert window is not None
+    assert window.windowTitle() == "FreeCAD NodeGraph Editor"
 
 
 def test_socket_colors_and_labels(qapp):

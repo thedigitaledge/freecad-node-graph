@@ -1,14 +1,14 @@
 """Unit tests for FreeCAD workbench discovery and dynamic scriptable node generation."""
 
 import pytest
-from PySide6.QtWidgets import QApplication, QToolBar
+from PySide6.QtWidgets import QApplication
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.registry import NodeRegistry
 from freecad_nodegraph.workbench_generator import (
     discover_workbench_functions,
     generate_node_class_for_function,
 )
-from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
 
 
 @pytest.fixture(scope="session")
@@ -61,9 +61,8 @@ def test_generated_node_creation_and_execution():
 
 def test_workbench_editor_toolbars(qapp):
     graph = Graph()
-    widget = NodeGraphEditorWidget(graph=graph)
-    assert widget is not None
+    window = NodeGraphEditorWindow(graph=graph)
+    assert window is not None
 
-    toolbars = widget.findChildren(QToolBar)
-    tb_names = [tb.windowTitle() for tb in toolbars]
+    tb_names = [tb.windowTitle() for tb in window.children() if hasattr(tb, "windowTitle") and "Workbench" in tb.windowTitle()]
     assert any("Part Workbench" in name for name in tb_names)

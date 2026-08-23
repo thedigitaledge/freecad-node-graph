@@ -1,12 +1,12 @@
 Usage Guide
 ===========
 
-Opening the Embedded View
--------------------------
+Opening the Editor
+------------------
 
 1. Switch to the **NodeGraph** workbench in FreeCAD.
-2. Click **Open Node Graph View** in the toolbar or menu.
-3. The Node Graph Editor opens as an embedded view panel docked directly in FreeCAD's main window.
+2. Click **Open Node Graph Editor** in the toolbar or menu.
+3. A separate window will appear containing the Node Library, Workbench Toolbars, Node Canvas, and Properties Inspector.
 
 Building a Node Graph
 ---------------------
