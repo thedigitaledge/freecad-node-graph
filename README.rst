@@ -10,6 +10,7 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
+- **Automatic Workbench Function Discovery**: Automatically scans FreeCAD workbenches (``Part``, ``Draft``, ``Arch``, ``Mesh``, ``Sketcher``, ``PartDesign``) and dynamically generates scriptable function nodes and toolbars.
 - **Visual Programming**: Connect CAD inputs, primitives, features, and boolean operations with a drag-and-drop node graph interface.
 - **Parametric CAD Integration**: Instantly generate and update 3D Part features directly in the active FreeCAD document.
 - **Extensible Architecture**: Easily create custom node types using standard Python classes.
@@ -43,7 +44,7 @@ How to Use
 
 1. Open or create a FreeCAD document.
 2. Click the **Open Node Graph Editor** button on the NodeGraph toolbar.
-3. Double-click nodes from the **Node Library** palette to add them to the graph canvas.
+3. Use the top **Workbench Toolbars** (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``) or double-click items in the **Node Library** palette to spawn nodes onto the canvas.
 4. Drag connections between output sockets and input sockets.
 5. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
 6. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.

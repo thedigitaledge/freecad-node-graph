@@ -43,8 +43,7 @@ except ImportError:
             QGroupBox,
             QPushButton,
         )
-        from PySide2.QtCore import Qt
-        from PySide2.QtGui import QAction, QIcon
+        from PySide2.QtCore import Qt, QAction, QIcon
     except ImportError:
         from PyQt5.QtWidgets import (
             QMainWindow,
@@ -63,14 +62,15 @@ except ImportError:
             QFormLayout,
             QGroupBox,
             QPushButton,
+            QAction,
         )
         from PyQt5.QtCore import Qt
-        from PyQt5.QtGui import QAction, QIcon
 
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.registry import NodeRegistry
 from freecad_nodegraph.core.evaluator import GraphEvaluator, EvaluationError
 from freecad_nodegraph.core.serializer import GraphSerializer
+from freecad_nodegraph.workbench_generator import discover_workbench_functions
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
 
@@ -81,7 +81,10 @@ class NodeGraphEditorWindow(QMainWindow):
     def __init__(self, graph: Graph = None, parent=None):
         super().__init__(parent)
         self.setWindowTitle("FreeCAD NodeGraph Editor")
-        self.resize(1100, 700)
+        self.resize(1200, 750)
+
+        # Discover FreeCAD workbenches and generate function nodes
+        self.discovered_workbenches = discover_workbench_functions()
 
         self.graph = graph or Graph()
         self.scene = NodeGraphicsScene(self.graph)
@@ -136,10 +139,11 @@ class NodeGraphEditorWindow(QMainWindow):
         right_layout.addStretch()
         splitter.addWidget(right_panel)
 
-        splitter.setSizes([200, 680, 220])
+        splitter.setSizes([220, 740, 240])
 
-        # Setup toolbar
-        self.create_toolbar()
+        # Setup toolbars
+        self.create_main_toolbar()
+        self.create_workbench_toolbars()
 
     def populate_node_library(self):
         self.node_tree.clear()
@@ -153,9 +157,9 @@ class NodeGraphEditorWindow(QMainWindow):
                 node_item = QTreeWidgetItem(cat_item, [node_cls.title])
                 node_item.setData(0, Qt.UserRole, node_cls.node_type)
 
-    def create_toolbar(self):
+    def create_main_toolbar(self):
         toolbar = QToolBar("NodeGraph Controls", self)
-        self.addToolBar(toolbar)
+        self.addToolBar(Qt.TopToolBarArea, toolbar)
 
         run_action = QAction("Run Graph", self)
         run_action.setToolTip("Evaluate and update active document")
@@ -176,18 +180,46 @@ class NodeGraphEditorWindow(QMainWindow):
         load_action.triggered.connect(self.load_graph)
         toolbar.addAction(load_action)
 
+    def create_workbench_toolbars(self):
+        """Create toolbars with buttons for each workbench's scriptable functions."""
+        for wb_name, funcs in sorted(self.discovered_workbenches.items()):
+            wb_toolbar = QToolBar(f"{wb_name} Workbench", self)
+            self.addToolBar(Qt.TopToolBarArea, wb_toolbar)
+
+            lbl_action = QAction(f"[{wb_name}]", self)
+            lbl_action.setEnabled(False)
+            wb_toolbar.addAction(lbl_action)
+
+            for func_name, node_cls in sorted(funcs.items()):
+                clean_name = func_name.replace("make_", "").replace("make", "").strip("_")
+                btn_title = clean_name[0].upper() + clean_name[1:] if clean_name else func_name
+
+                action = QAction(btn_title, self)
+                action.setToolTip(f"Spawn {wb_name}.{func_name} node")
+
+                def make_spawn_handler(ntype):
+                    def handler():
+                        self.spawn_node_by_type(ntype)
+                    return handler
+
+                action.triggered.connect(make_spawn_handler(node_cls.node_type))
+                wb_toolbar.addAction(action)
+
+    def spawn_node_by_type(self, node_type: str):
+        """Instantiate and add a node to the canvas near the view center."""
+        node = NodeRegistry.create_node(node_type, graph=self.graph)
+        if node:
+            view_center = self.view.mapToScene(self.view.viewport().rect().center())
+            node.pos_x = view_center.x() - 80
+            node.pos_y = view_center.y() - 50
+
+            self.graph.add_node(node)
+            self.scene.add_node_item(node)
+
     def on_node_library_double_clicked(self, item: QTreeWidgetItem, column: int):
         node_type = item.data(0, Qt.UserRole)
         if node_type:
-            node = NodeRegistry.create_node(node_type, graph=self.graph)
-            if node:
-                # Place near view center
-                view_center = self.view.mapToScene(self.view.viewport().rect().center())
-                node.pos_x = view_center.x() - 80
-                node.pos_y = view_center.y() - 50
-
-                self.graph.add_node(node)
-                self.scene.add_node_item(node)
+            self.spawn_node_by_type(node_type)
 
     def on_selection_changed(self):
         # Clear existing form layout

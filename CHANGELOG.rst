@@ -4,6 +4,16 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.2.0 (2025-02-28)
+--------------------------
+
+Added
+~~~~~
+- FreeCAD Workbench scriptable function scanner and automatic dynamic node generator.
+- Dynamic toolbars and action buttons for discovered workbenches (e.g. ``Part``, ``Draft``, ``Arch``, ``Mesh``).
+- Parameter signature inspection to generate typed input sockets and output sockets for workbench functions.
+- Unit tests for dynamic node generation and toolbar creation.
+
 Version 0.1.0 (2025-02-28)
 --------------------------
 
