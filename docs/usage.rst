@@ -15,6 +15,16 @@ Workbench Toolbars & Action Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The editor header automatically displays toolbars for each discovered FreeCAD workbench (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``, ``[Mesh]``). Each toolbar contains action buttons corresponding to scriptable functions (e.g. *Box*, *Cylinder*, *Sphere*, *Wall*, *Polygon*). Click any button to instantly spawn that node onto the canvas.
 
+Node Context Menu (Secondary Click)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Right-click (secondary click) on any node to open its context menu offering:
+
+- **Cut**: Copy selected node(s) to clipboard and remove from canvas.
+- **Copy**: Copy selected node(s) to clipboard.
+- **Paste**: Insert copied node(s) onto canvas at an offset position.
+- **Duplicate**: Quickly duplicate selected node(s).
+- **Detach Links**: Remove all connected edges attached to the node's input and output sockets.
+
 Node Sockets & Color-Coding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Nodes display text labels next to each input and output socket. Sockets and connection wires are color-coded by value data type:

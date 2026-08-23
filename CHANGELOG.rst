@@ -4,6 +4,15 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.4.0 (2025-02-28)
+--------------------------
+
+Added
+~~~~~
+- Secondary click (right-click) context menu on graph nodes providing **Cut**, **Copy**, **Paste**, **Duplicate**, and **Detach Links** actions.
+- Internal scene clipboard logic for copying and pasting subgraphs.
+- Detach links function removing all input and output connection edges from a node.
+
 Version 0.3.0 (2025-02-28)
 --------------------------
 

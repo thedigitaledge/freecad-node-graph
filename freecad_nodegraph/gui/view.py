@@ -15,7 +15,7 @@ except ImportError:
         from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
 
 from typing import Optional
-from freecad_nodegraph.gui.items import GraphicsSocketItem
+from freecad_nodegraph.gui.items import GraphicsSocketItem, GraphicsNodeItem
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 
 
@@ -56,7 +56,14 @@ class NodeGraphicsView(QGraphicsView):
         item = self.itemAt(event.pos())
 
         if event.button() == Qt.RightButton:
-            # Right click drag for panning
+            # If right click is on a node item, let QGraphicsView deliver contextMenuEvent
+            if isinstance(item, (GraphicsNodeItem, GraphicsSocketItem)) or (
+                item and item.parentItem() and isinstance(item.parentItem(), GraphicsNodeItem)
+            ):
+                super().mousePressEvent(event)
+                return
+
+            # Otherwise, right click drag on empty canvas background for view panning
             self.is_panning = True
             self.pan_start = event.pos()
             self.setCursor(Qt.ClosedHandCursor)

@@ -9,8 +9,9 @@ try:
         QGraphicsDropShadowEffect,
         QStyleOptionGraphicsItem,
         QWidget,
+        QMenu,
     )
-    from PySide6.QtCore import Qt, QPointF, QRectF
+    from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
     from PySide6.QtGui import (
         QPen,
         QBrush,
@@ -19,6 +20,8 @@ try:
         QPainterPath,
         QFont,
         QLinearGradient,
+        QAction,
+        QCursor,
     )
 except ImportError:
     try:
@@ -29,8 +32,9 @@ except ImportError:
             QGraphicsDropShadowEffect,
             QStyleOptionGraphicsItem,
             QWidget,
+            QMenu,
         )
-        from PySide2.QtCore import Qt, QPointF, QRectF
+        from PySide2.QtCore import Qt, QPointF, QRectF, QPoint
         from PySide2.QtGui import (
             QPen,
             QBrush,
@@ -39,6 +43,8 @@ except ImportError:
             QPainterPath,
             QFont,
             QLinearGradient,
+            QAction,
+            QCursor,
         )
     except ImportError:
         from PyQt5.QtWidgets import (
@@ -48,8 +54,10 @@ except ImportError:
             QGraphicsDropShadowEffect,
             QStyleOptionGraphicsItem,
             QWidget,
+            QMenu,
+            QAction,
         )
-        from PyQt5.QtCore import Qt, QPointF, QRectF
+        from PyQt5.QtCore import Qt, QPointF, QRectF, QPoint
         from PyQt5.QtGui import (
             QPen,
             QBrush,
@@ -58,6 +66,7 @@ except ImportError:
             QPainterPath,
             QFont,
             QLinearGradient,
+            QCursor,
         )
 
 from typing import TYPE_CHECKING, Optional
@@ -251,6 +260,50 @@ class GraphicsNodeItem(QGraphicsItem):
             txt.setFont(label_font)
             txt.setPos(self.width - txt.boundingRect().width() - 12, y_pos - 10)
             self.label_items.append(txt)
+
+    def contextMenuEvent(self, event):
+        """Handle secondary (right-click) context menu on node."""
+        menu = QMenu()
+
+        cut_act = menu.addAction("Cut")
+        copy_act = menu.addAction("Copy")
+        paste_act = menu.addAction("Paste")
+        duplicate_act = menu.addAction("Duplicate")
+        menu.addSeparator()
+        detach_act = menu.addAction("Detach Links")
+
+        scene = self.scene()
+        if not scene or not hasattr(scene, "clipboard_data"):
+            paste_act.setEnabled(False)
+        elif not scene.clipboard_data:
+            paste_act.setEnabled(False)
+
+        pos = event.screenPos().toPoint() if hasattr(event.screenPos(), "toPoint") else QCursor.pos()
+        selected_action = menu.exec_(pos)
+
+        if selected_action == cut_act:
+            if scene and hasattr(scene, "cut_selected_nodes"):
+                if not self.isSelected():
+                    self.setSelected(True)
+                scene.cut_selected_nodes()
+        elif selected_action == copy_act:
+            if scene and hasattr(scene, "copy_selected_nodes"):
+                if not self.isSelected():
+                    self.setSelected(True)
+                scene.copy_selected_nodes()
+        elif selected_action == paste_act:
+            if scene and hasattr(scene, "paste_nodes"):
+                scene.paste_nodes()
+        elif selected_action == duplicate_act:
+            if scene and hasattr(scene, "duplicate_selected_nodes"):
+                if not self.isSelected():
+                    self.setSelected(True)
+                scene.duplicate_selected_nodes()
+        elif selected_action == detach_act:
+            if scene and hasattr(scene, "detach_node_links"):
+                scene.detach_node_links(self.node)
+
+        event.accept()
 
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self.width, self.height)
