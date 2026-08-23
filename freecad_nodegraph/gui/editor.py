@@ -1,10 +1,9 @@
-"""Main Node Graph Editor Widget window."""
+"""Main Node Graph Editor Widget embedded in FreeCAD."""
 
 import os
 import json
 try:
     from PySide6.QtWidgets import (
-        QMainWindow,
         QWidget,
         QVBoxLayout,
         QHBoxLayout,
@@ -26,7 +25,6 @@ try:
 except ImportError:
     try:
         from PySide2.QtWidgets import (
-            QMainWindow,
             QWidget,
             QVBoxLayout,
             QHBoxLayout,
@@ -46,7 +44,6 @@ except ImportError:
         from PySide2.QtCore import Qt, QAction, QIcon
     except ImportError:
         from PyQt5.QtWidgets import (
-            QMainWindow,
             QWidget,
             QVBoxLayout,
             QHBoxLayout,
@@ -75,13 +72,12 @@ from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
 
 
-class NodeGraphEditorWindow(QMainWindow):
-    """Main application window for the FreeCAD NodeGraph editor."""
+class NodeGraphEditorWidget(QWidget):
+    """Main application widget for the FreeCAD NodeGraph editor."""
 
     def __init__(self, graph: Graph = None, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("FreeCAD NodeGraph Editor")
-        self.resize(1200, 750)
+        self.setObjectName("NodeGraphEditorWidget")
 
         # Discover FreeCAD workbenches and generate function nodes
         self.discovered_workbenches = discover_workbench_functions()
@@ -93,14 +89,25 @@ class NodeGraphEditorWindow(QMainWindow):
         self.init_ui()
 
     def init_ui(self):
-        # Setup central widget and main layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(4, 4, 4, 4)
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(2, 2, 2, 2)
+        root_layout.setSpacing(2)
 
+        # Setup embedded toolbars container
+        toolbar_container = QWidget()
+        self.toolbar_layout = QHBoxLayout(toolbar_container)
+        self.toolbar_layout.setContentsMargins(0, 0, 0, 0)
+        self.toolbar_layout.setSpacing(4)
+
+        self.create_main_toolbar()
+        self.create_workbench_toolbars()
+        self.toolbar_layout.addStretch()
+
+        root_layout.addWidget(toolbar_container)
+
+        # Splitter layout
         splitter = QSplitter(Qt.Horizontal)
-        main_layout.addWidget(splitter)
+        root_layout.addWidget(splitter)
 
         # Left panel: Node palette library
         left_panel = QWidget()
@@ -139,11 +146,7 @@ class NodeGraphEditorWindow(QMainWindow):
         right_layout.addStretch()
         splitter.addWidget(right_panel)
 
-        splitter.setSizes([220, 740, 240])
-
-        # Setup toolbars
-        self.create_main_toolbar()
-        self.create_workbench_toolbars()
+        splitter.setSizes([200, 760, 240])
 
     def populate_node_library(self):
         self.node_tree.clear()
@@ -159,7 +162,6 @@ class NodeGraphEditorWindow(QMainWindow):
 
     def create_main_toolbar(self):
         toolbar = QToolBar("NodeGraph Controls", self)
-        self.addToolBar(Qt.TopToolBarArea, toolbar)
 
         run_action = QAction("Run Graph", self)
         run_action.setToolTip("Evaluate and update active document")
@@ -180,11 +182,12 @@ class NodeGraphEditorWindow(QMainWindow):
         load_action.triggered.connect(self.load_graph)
         toolbar.addAction(load_action)
 
+        self.toolbar_layout.addWidget(toolbar)
+
     def create_workbench_toolbars(self):
         """Create toolbars with buttons for each workbench's scriptable functions."""
         for wb_name, funcs in sorted(self.discovered_workbenches.items()):
             wb_toolbar = QToolBar(f"{wb_name} Workbench", self)
-            self.addToolBar(Qt.TopToolBarArea, wb_toolbar)
 
             lbl_action = QAction(f"[{wb_name}]", self)
             lbl_action.setEnabled(False)
@@ -204,6 +207,8 @@ class NodeGraphEditorWindow(QMainWindow):
 
                 action.triggered.connect(make_spawn_handler(node_cls.node_type))
                 wb_toolbar.addAction(action)
+
+            self.toolbar_layout.addWidget(wb_toolbar)
 
     def spawn_node_by_type(self, node_type: str):
         """Instantiate and add a node to the canvas near the view center."""
@@ -303,3 +308,7 @@ class NodeGraphEditorWindow(QMainWindow):
             GraphSerializer.load_from_file(filepath, self.graph)
             self.scene.sync_from_graph()
             QMessageBox.information(self, "Loaded", f"Graph loaded from {filepath}")
+
+
+# Alias for backward compatibility
+NodeGraphEditorWindow = NodeGraphEditorWidget
