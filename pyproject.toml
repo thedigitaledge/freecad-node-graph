@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freecad-nodegraph"
+version = "0.1.0"
+description = "A visual programming workbench for FreeCAD features using a node graph."
+readme = "README.rst"
+authors = [{ name = "Jules" }]
+license = { text = "LGPL-2.1-or-later" }
+requires-python = ">=3.8"
+dependencies = [
+    "PySide6>=6.0.0; python_version >= '3.10'",
+]
+
+[project.urls]
+Homepage = "https://github.com/freecad/freecad-nodegraph"
+Documentation = "https://freecad-nodegraph.readthedocs.io/"
