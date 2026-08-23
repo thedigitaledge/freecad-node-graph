@@ -4,6 +4,15 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.3.0 (2025-02-28)
+--------------------------
+
+Added
+~~~~~
+- Clear text labels displaying input and output socket names directly on canvas node items.
+- Distinct data-type color coding for input and output sockets (Float, Int, String, Boolean, Vector, Placement, Shape, Object, Any).
+- Dynamic edge colors matching the output socket data type.
+
 Version 0.2.0 (2025-02-28)
 --------------------------
 

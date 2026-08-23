@@ -15,9 +15,19 @@ Workbench Toolbars & Action Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The editor header automatically displays toolbars for each discovered FreeCAD workbench (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``, ``[Mesh]``). Each toolbar contains action buttons corresponding to scriptable functions (e.g. *Box*, *Cylinder*, *Sphere*, *Wall*, *Polygon*). Click any button to instantly spawn that node onto the canvas.
 
-Node Library Palette
-~~~~~~~~~~~~~~~~~~~~
-In the **Node Library** panel on the left side, double-click any node category to expand it, then double-click a node type to place it on the canvas.
+Node Sockets & Color-Coding
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nodes display text labels next to each input and output socket. Sockets and connection wires are color-coded by value data type:
+
+- **Lime Green**: Float numbers
+- **Cyan**: Integers
+- **Yellow**: Strings
+- **Purple**: Booleans
+- **Orange**: 3D Vectors
+- **Pink**: Placements
+- **Blue**: 3D Part Shapes
+- **Teal**: Generic Document Objects
+- **Light Gray**: Any / Generic data
 
 Connecting Sockets
 ~~~~~~~~~~~~~~~~~~

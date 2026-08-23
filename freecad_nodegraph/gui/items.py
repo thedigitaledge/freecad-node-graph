@@ -61,11 +61,25 @@ except ImportError:
         )
 
 from typing import TYPE_CHECKING, Optional
+from freecad_nodegraph.core.socket import DataType
 
 if TYPE_CHECKING:
     from freecad_nodegraph.core.socket import Socket
     from freecad_nodegraph.core.node import BaseNode
     from freecad_nodegraph.core.edge import Edge
+
+# Color palette mapping for DataType
+SOCKET_TYPE_COLORS = {
+    DataType.FLOAT: QColor("#A6E22E"),      # Lime Green
+    DataType.INT: QColor("#66D9EF"),        # Cyan
+    DataType.STRING: QColor("#E6DB74"),     # Yellow
+    DataType.BOOLEAN: QColor("#AE81FF"),    # Purple
+    DataType.VECTOR: QColor("#FD971F"),     # Orange
+    DataType.PLACEMENT: QColor("#F92672"),  # Pink / Magenta
+    DataType.SHAPE: QColor("#2196F3"),      # Blue
+    DataType.OBJECT: QColor("#00ACC1"),     # Teal
+    DataType.ANY: QColor("#B0BEC5"),        # Light Gray
+}
 
 
 class GraphicsSocketItem(QGraphicsItem):
@@ -75,13 +89,17 @@ class GraphicsSocketItem(QGraphicsItem):
         super().__init__(parent)
         self.socket = socket
         self.node_item = parent
-        self.radius = 6.0
+        self.radius = 6.5
 
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
+        self.setToolTip(f"{self.socket.name} ({self.socket.data_type.value})")
+
+    def get_color(self) -> QColor:
+        return SOCKET_TYPE_COLORS.get(self.socket.data_type, QColor("#B0BEC5"))
 
     def boundingRect(self) -> QRectF:
-        r = self.radius + 3
+        r = self.radius + 4
         return QRectF(-r, -r, 2 * r, 2 * r)
 
     def paint(
@@ -92,12 +110,12 @@ class GraphicsSocketItem(QGraphicsItem):
     ) -> None:
         painter.setRenderHint(QPainter.Antialiasing)
 
-        color = QColor("#4CAF50") if self.socket.is_input else QColor("#2196F3")
+        color = self.get_color()
         if self.socket.is_connected:
             painter.setBrush(QBrush(color))
             painter.setPen(QPen(QColor("#FFFFFF"), 1.5))
         else:
-            painter.setBrush(QBrush(QColor("#2C2C2C")))
+            painter.setBrush(QBrush(QColor("#222222")))
             painter.setPen(QPen(color, 2.0))
 
         painter.drawEllipse(
@@ -138,9 +156,13 @@ class GraphicsEdgeItem(QGraphicsPathItem):
             start_pos = start_item.get_scene_pos()
             end_pos = end_item.get_scene_pos()
 
+            # Dynamic edge color matching start socket type
+            color = start_item.get_color()
+            self.pen.setColor(color)
+            self.setPen(self.pen)
+
         path = QPainterPath(start_pos)
         dx = end_pos.x() - start_pos.x()
-        dy = end_pos.y() - start_pos.y()
 
         ctrl_offset = max(abs(dx) * 0.5, 40)
 
@@ -157,10 +179,11 @@ class GraphicsNodeItem(QGraphicsItem):
     def __init__(self, node: "BaseNode"):
         super().__init__()
         self.node = node
-        self.width = 160.0
+        self.width = 180.0
         self.height = 100.0
 
         self.socket_items = {}
+        self.label_items = []
 
         self.setFlags(
             QGraphicsItem.ItemIsMovable
@@ -189,32 +212,45 @@ class GraphicsNodeItem(QGraphicsItem):
         max_socks = max(num_inputs, num_outputs, 1)
 
         self.height = 35 + max_socks * 24 + 10
-        self.width = max(160.0, len(self.node.title) * 9.0)
+
+        # Calculate width needed for longest socket labels
+        max_in_len = max([len(s.name) for s in self.node.inputs] or [0])
+        max_out_len = max([len(s.name) for s in self.node.outputs] or [0])
+        title_len = len(self.node.title)
+
+        calculated_width = max(180.0, (max_in_len + max_out_len + 4) * 8.0, title_len * 9.0)
+        self.width = calculated_width
 
     def create_sockets(self):
+        label_font = QFont("Arial", 8, QFont.Bold)
+
+        # Input Sockets and Labels
         for i, sock in enumerate(self.node.inputs):
             item = GraphicsSocketItem(sock, self)
             y_pos = 40 + i * 24
             item.setPos(0, y_pos)
             self.socket_items[sock] = item
 
-            # Label text
+            # Input socket text label
             txt = QGraphicsTextItem(sock.name, self)
-            txt.setDefaultTextColor(QColor("#CCCCCC"))
-            txt.setFont(QFont("Arial", 8))
+            txt.setDefaultTextColor(QColor("#E0E0E0"))
+            txt.setFont(label_font)
             txt.setPos(12, y_pos - 10)
+            self.label_items.append(txt)
 
+        # Output Sockets and Labels
         for i, sock in enumerate(self.node.outputs):
             item = GraphicsSocketItem(sock, self)
             y_pos = 40 + i * 24
             item.setPos(self.width, y_pos)
             self.socket_items[sock] = item
 
-            # Label text
+            # Output socket text label
             txt = QGraphicsTextItem(sock.name, self)
-            txt.setDefaultTextColor(QColor("#CCCCCC"))
-            txt.setFont(QFont("Arial", 8))
+            txt.setDefaultTextColor(QColor("#E0E0E0"))
+            txt.setFont(label_font)
             txt.setPos(self.width - txt.boundingRect().width() - 12, y_pos - 10)
+            self.label_items.append(txt)
 
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self.width, self.height)
