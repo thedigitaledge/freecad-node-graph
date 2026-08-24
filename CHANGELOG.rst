@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.16.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Aligned icon storage, path registration, and resource linking with FreeCAD's CAM workbench pattern using ``FreeCADGui.addIconPath`` and registered icon identifiers across commands, workbench definitions, and ViewProviders.
+
 Version 0.15.0 (2025-02-28)
 ---------------------------
 
