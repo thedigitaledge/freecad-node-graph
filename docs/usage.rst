@@ -5,15 +5,20 @@ Opening the Editor
 ------------------
 
 1. Switch to the **NodeGraph** workbench in FreeCAD.
-2. Click **Open Node Graph Editor** in the toolbar or menu.
-3. A separate window will appear containing the Node Library, Workbench Toolbars, Node Canvas, and Properties Inspector.
+2. Click **Open Node Graph** in the toolbar or menu.
+3. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style).
+4. The **Node Library** palette and Properties Inspector appear as a new tab inside FreeCAD's ComboView / Task dock panel (alongside "Model" and "Tasks").
 
 Building a Node Graph
 ---------------------
 
-Workbench Toolbars & Action Buttons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The editor header automatically displays toolbars for each discovered FreeCAD workbench (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``, ``[Mesh]``). Each toolbar contains action buttons corresponding to scriptable functions (e.g. *Box*, *Cylinder*, *Sphere*, *Wall*, *Polygon*). Click any button to instantly spawn that node onto the canvas.
+Real-Time Node Search
+~~~~~~~~~~~~~~~~~~~~~
+At the top of the **Node Library** tab, type keywords in the **Search** input box to dynamically filter nodes by name in real-time.
+
+Node Library Palette
+~~~~~~~~~~~~~~~~~~~~
+In the Node Library tree, double-click any category to expand it, then double-click a node type to add it to the graph canvas.
 
 Node Context Menu (Secondary Click)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,14 +50,14 @@ Click and drag from an output socket (right side of a node) to an input socket (
 
 Inspecting Properties
 ~~~~~~~~~~~~~~~~~~~~~
-Click on a node to view and edit its parameters in the **Properties Inspector** on the right panel.
+Click on a node to view and edit its parameters in the **Properties Inspector** section of the side panel.
 
 Executing the Graph
 -------------------
 
-Click the **Run Graph** button on the editor toolbar or run the command from FreeCAD. The graph evaluator will topologically sort the DAG and compute all nodes, updating or creating 3D Part objects in the active FreeCAD document.
+Click the **Run Graph** button on the FreeCAD toolbar. The graph evaluator will topologically sort the DAG and compute all nodes, updating or creating 3D Part objects in the active FreeCAD document.
 
 Saving & Loading Graphs
 -----------------------
 
-Use **Save Graph...** and **Load Graph...** in the toolbar to save your node setup as a JSON file.
+Use **Save Graph...** and **Load Graph...** in the FreeCAD toolbar to save your node setup as a JSON file.

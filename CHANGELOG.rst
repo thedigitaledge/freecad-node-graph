@@ -4,6 +4,23 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.6.0 (2025-02-28)
+--------------------------
+
+Changed
+~~~~~~~
+- Refactored Node Graph view window into a main workspace MDI subwindow view (matching FreeCAD Spreadsheet view style) and removed top toolbars per design request.
+- Moved the side panel containing the Node Library palette and Properties Inspector into a dedicated tab in FreeCAD's ComboView / Task panel (alongside "Model" and "Tasks").
+- Added a real-time search filter input field to the Node Library panel for instantly filtering nodes by name.
+
+Version 0.5.0 (2025-02-28)
+--------------------------
+
+Changed
+~~~~~~~
+- Embedded the Node Graph visual editor directly into FreeCAD's main window as a dock panel view (``QDockWidget``) instead of opening in a separate floating window.
+- Updated ``NodeGraphEditorWidget`` architecture for seamless dock integration within FreeCAD.
+
 Version 0.4.0 (2025-02-28)
 --------------------------
 

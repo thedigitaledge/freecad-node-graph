@@ -8,7 +8,7 @@ from freecad_nodegraph.workbench_generator import (
     discover_workbench_functions,
     generate_node_class_for_function,
 )
-from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
 
 @pytest.fixture(scope="session")
@@ -59,10 +59,7 @@ def test_generated_node_creation_and_execution():
     assert node.get_output_value("Result") == "BoxResult_50.0_20.0_30.0"
 
 
-def test_workbench_editor_toolbars(qapp):
+def test_side_panel_creation(qapp):
     graph = Graph()
-    window = NodeGraphEditorWindow(graph=graph)
-    assert window is not None
-
-    tb_names = [tb.windowTitle() for tb in window.children() if hasattr(tb, "windowTitle") and "Workbench" in tb.windowTitle()]
-    assert any("Part Workbench" in name for name in tb_names)
+    panel = NodeGraphSidePanelWidget(graph=graph)
+    assert panel is not None
