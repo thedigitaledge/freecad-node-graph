@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.10.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- FreeCAD selection observer (``NodeGraphSelectionObserver``) listening for NodeGraph object selections in the Model tree view to automatically open and display the NodeGraph editor window and Tasks panel.
+
 Version 0.9.0 (2025-02-28)
 --------------------------
 

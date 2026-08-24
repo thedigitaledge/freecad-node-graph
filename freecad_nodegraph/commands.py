@@ -1,4 +1,4 @@
-"""FreeCAD GUI Commands for NodeGraph Workbench."""
+"""FreeCAD GUI Commands and Selection Observer for NodeGraph Workbench."""
 
 try:
     import FreeCAD
@@ -25,6 +25,7 @@ from freecad_nodegraph.document_object import make_nodegraph_object
 global_graph = Graph()
 _mdi_subwindow = None
 _task_panel = None
+_selection_observer = None
 
 
 def focus_node_library_task_panel():
@@ -51,6 +52,31 @@ def focus_node_library_task_panel():
                         tab_widget.setCurrentIndex(idx)
                         return True
     return False
+
+
+class NodeGraphSelectionObserver:
+    """Selection observer listening for NodeGraph object selection in FreeCAD Model tree view."""
+
+    def addSelection(self, doc_name, obj_name, sub_name, pos):
+        self.check_selection(doc_name, obj_name)
+
+    def setSelection(self, doc_name):
+        pass
+
+    def clearSelection(self, doc_name):
+        pass
+
+    def check_selection(self, doc_name, obj_name):
+        if HAS_FREECAD and FreeCAD.getDocument(doc_name):
+            doc = FreeCAD.getDocument(doc_name)
+            obj = doc.getObject(obj_name)
+            if obj and (
+                getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject"
+                or "NodeGraph" in getattr(obj, "Name", "")
+            ):
+                # Automatically open and focus NodeGraph editor window and tasks view
+                cmd = CommandOpenNodeGraphEditor()
+                cmd.Activated()
 
 
 class CommandCreateNodeGraphObject:
@@ -165,7 +191,12 @@ class CommandRunNodeGraph:
 
 
 def register_commands():
+    global _selection_observer
     if HAS_FREECAD:
         FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
         FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
         FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
+
+        if _selection_observer is None and hasattr(FreeCADGui, "Selection"):
+            _selection_observer = NodeGraphSelectionObserver()
+            FreeCADGui.Selection.addObserver(_selection_observer)

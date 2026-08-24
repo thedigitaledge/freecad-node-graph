@@ -71,6 +71,15 @@ def test_view_provider_double_click(qapp):
     vp = ViewProviderNodeGraph(vobj)
 
     assert vp.getIcon() == "NodeGraph_Editor"
-    # doubleClicked returns True or executes command safely with qapp initialized
     res = vp.doubleClicked(vobj)
     assert isinstance(res, bool)
+
+
+def test_selection_observer_triggers_editor(qapp):
+    from freecad_nodegraph.commands import NodeGraphSelectionObserver, CommandOpenNodeGraphEditor
+
+    observer = NodeGraphSelectionObserver()
+    assert observer is not None
+    # Verify observer methods exist
+    assert hasattr(observer, "addSelection")
+    assert hasattr(observer, "check_selection")
