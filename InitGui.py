@@ -4,19 +4,26 @@
 import os
 import sys
 
-# Ensure workbench directory is in sys.path
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
-ICONS_DIR = os.path.join(BASE_DIR, "freecad_nodegraph", "resources", "icons")
-
 try:
     import FreeCAD
     import FreeCADGui
     HAS_FREECAD = True
 except ImportError:
     HAS_FREECAD = False
+
+# Safely compute BASE_DIR without requiring __file__ to be defined in global scope
+if "__file__" in globals() and __file__:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+elif HAS_FREECAD and hasattr(FreeCAD, "getUserAppDataDir"):
+    BASE_DIR = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "NodeGraph")
+else:
+    BASE_DIR = os.getcwd()
+
+# Ensure workbench directory is in sys.path
+if BASE_DIR and BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+ICONS_DIR = os.path.join(BASE_DIR, "freecad_nodegraph", "resources", "icons")
 
 
 class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
