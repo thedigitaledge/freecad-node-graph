@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.17.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- FreeCAD integration unit test suite (``tests/test_freecad_integration.py``) verifying module loading, workbench initialization, command registration, and asserting zero FreeCAD log errors.
+
 Version 0.16.0 (2025-02-28)
 ---------------------------
 
