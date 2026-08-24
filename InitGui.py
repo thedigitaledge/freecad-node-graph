@@ -23,28 +23,18 @@ else:
 if BASE_DIR and BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-ICONS_DIR = os.path.join(BASE_DIR, "freecad_nodegraph", "resources", "icons")
-
-# Register icon path at GUI startup (matching CAM workbench pattern)
-if has_freecad and hasattr(FreeCADGui, "addIconPath"):
-    FreeCADGui.addIconPath(ICONS_DIR)
-
 
 class NodeGraphWorkbench(FreeCADGui.Workbench if has_freecad else object):
     """FreeCAD NodeGraph Workbench definition."""
 
     MenuText = "NodeGraph"
     ToolTip = "Programming FreeCAD features using a node-graph"
-    Icon = "NodeGraph_Workbench"  # References NodeGraph_Workbench.svg registered in addIconPath
 
     def __init__(self):
         super().__init__()
 
     def Initialize(self):
         """Initialize workbench commands, toolbars and menus."""
-        if has_freecad and hasattr(FreeCADGui, "addIconPath"):
-            FreeCADGui.addIconPath(ICONS_DIR)
-
         import freecad_nodegraph.commands as commands
         commands.register_commands()
 
@@ -65,5 +55,4 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if has_freecad else object):
 
 
 if has_freecad:
-    FreeCADGui.addIconPath(ICONS_DIR)
     FreeCADGui.addWorkbench(NodeGraphWorkbench())

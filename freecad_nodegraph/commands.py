@@ -84,7 +84,6 @@ class CommandCreateNodeGraphObject:
 
     def GetResources(self):
         return {
-            "Pixmap": "NodeGraph_Create",
             "MenuText": "Create NodeGraph Object",
             "ToolTip": "Creates a new NodeGraph object (nested as a child if a parent object is selected in Model view)",
         }
@@ -110,7 +109,6 @@ class CommandOpenNodeGraphEditor:
 
     def GetResources(self):
         return {
-            "Pixmap": "NodeGraph_Editor",
             "MenuText": "Open Node Graph",
             "ToolTip": "Opens the Node Graph editor view for the selected or active document object data storage",
         }
@@ -200,7 +198,6 @@ class CommandRunNodeGraph:
 
     def GetResources(self):
         return {
-            "Pixmap": "NodeGraph_Run",
             "MenuText": "Run Node Graph",
             "ToolTip": "Executes the current node graph and updates the active document",
         }

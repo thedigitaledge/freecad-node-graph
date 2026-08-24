@@ -10,7 +10,6 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
-- **CAM Workbench Style Icon Management**: Icons are stored as SVG vector graphics and registered via ``FreeCADGui.addIconPath()`` for seamless integration with FreeCAD's icon bitmap manager across toolbars, menus, and model tree view objects.
 - **Node Library in FreeCAD Tasks View**: Displays the Node Library palette and Properties Inspector inside FreeCAD's **Tasks** view overlay panel using FreeCAD's TaskPanel system.
 - **Parent-Child Object Nesting**: Creating a new NodeGraph object while another object is selected in the Model tree view automatically adds the NodeGraph object as a child of the selected parent object.
 - **NodeGraph:X Auto-Naming**: Automatically names new document objects ``NodeGraph:1``, ``NodeGraph:2``, etc., and displays ``NodeGraph:X`` directly as the window title.

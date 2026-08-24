@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.18.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Removed software icon references in commands, ViewProviders, and workbench initialization scripts per design update.
+
 Version 0.17.0 (2025-02-28)
 ---------------------------
 
