@@ -4,17 +4,17 @@
 import os
 import sys
 
+# Compute BASE_DIR safely without requiring __file__ in global scope
 try:
     import FreeCAD
     import FreeCADGui
-    HAS_FREECAD = True
+    has_freecad = True
 except ImportError:
-    HAS_FREECAD = False
+    has_freecad = False
 
-# Safely compute BASE_DIR without requiring __file__ to be defined in global scope
 if "__file__" in globals() and __file__:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-elif HAS_FREECAD and hasattr(FreeCAD, "getUserAppDataDir"):
+elif has_freecad and hasattr(FreeCAD, "getUserAppDataDir"):
     BASE_DIR = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "NodeGraph")
 else:
     BASE_DIR = os.getcwd()
@@ -25,24 +25,29 @@ if BASE_DIR and BASE_DIR not in sys.path:
 
 ICONS_DIR = os.path.join(BASE_DIR, "freecad_nodegraph", "resources", "icons")
 
-if HAS_FREECAD and hasattr(FreeCADGui, "addIconPath"):
+if has_freecad and hasattr(FreeCADGui, "addIconPath"):
     FreeCADGui.addIconPath(ICONS_DIR)
 
 
-class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
+class NodeGraphWorkbench(FreeCADGui.Workbench if has_freecad else object):
     """FreeCAD NodeGraph Workbench definition."""
 
     MenuText = "NodeGraph"
     ToolTip = "Programming FreeCAD features using a node-graph"
-    Icon = "NodeGraph_Workbench"  # References NodeGraph_Workbench.svg registered in addIconPath
+    Icon = os.path.join(ICONS_DIR, "NodeGraph_Workbench.svg")
+    _icons_dir = ICONS_DIR
 
     def __init__(self):
         super().__init__()
 
     def Initialize(self):
         """Initialize workbench commands, toolbars and menus."""
-        if HAS_FREECAD and hasattr(FreeCADGui, "addIconPath"):
-            FreeCADGui.addIconPath(ICONS_DIR)
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "addIconPath"):
+                FreeCADGui.addIconPath(self._icons_dir)
+        except Exception:
+            pass
 
         import freecad_nodegraph.commands as commands
         commands.register_commands()
@@ -63,6 +68,6 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
         pass
 
 
-if HAS_FREECAD:
+if has_freecad:
     FreeCADGui.addIconPath(ICONS_DIR)
     FreeCADGui.addWorkbench(NodeGraphWorkbench())
