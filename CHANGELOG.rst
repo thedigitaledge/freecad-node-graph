@@ -4,6 +4,14 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.13.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Moved Node Library palette and Properties Inspector to FreeCAD's Tasks overlay panel using FreeCAD's TaskPanel system (``NodeGraphTaskPanel``).
+- Updated ``CommandCreateNodeGraphObject`` and ``make_nodegraph_object`` to nest newly created NodeGraph objects as children under selected parent objects in the Model tree view.
+
 Version 0.12.0 (2025-02-28)
 ---------------------------
 

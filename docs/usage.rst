@@ -1,14 +1,14 @@
 Usage Guide
 ===========
 
-Creating NodeGraph Objects & Data Storage in FreeCAD Model View
----------------------------------------------------------------
+Creating NodeGraph Objects & Child Nesting in FreeCAD Model View
+----------------------------------------------------------------
 
 1. Switch to the **NodeGraph** workbench in FreeCAD.
 2. Select a parent group/body/subobject in the Model tree view (or leave nothing selected for top-level creation).
 3. Click **Create NodeGraph Object** on the toolbar or menu.
-4. A new ``NodeGraph:X`` FeaturePython object is created in the Model view with its own isolated graph data storage saved in its ``GraphData`` property.
-5. Selecting any ``NodeGraph:X`` object in the Model view automatically opens its editor canvas tab titled ``NodeGraph:X``.
+4. A new ``NodeGraph:X`` FeaturePython object is created in the Model view (nested as a child of the selected parent object if a selection was active) with its own isolated graph data storage saved in its ``GraphData`` property.
+5. Selecting any ``NodeGraph:X`` object in the Model view automatically opens its editor canvas tab titled ``NodeGraph:X`` and displays the Node Library in the Tasks view panel.
 
 Opening the Editor
 ------------------
@@ -19,9 +19,9 @@ Opening the Editor
 Building a Node Graph
 ---------------------
 
-Right-Side Overlay Panel & Real-Time Search
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The editor contains a right-side overlay side panel housing the **Node Library** palette and **Properties Inspector**. Use the **Search** input box at the top of the panel to dynamically filter nodes by name in real-time. Double-click any node to add it to the canvas.
+Tasks Overlay Panel & Real-Time Search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Node Library palette and **Properties Inspector** are presented inside FreeCAD's **Tasks** view overlay panel via FreeCAD's TaskPanel system. Use the **Search** input box at the top of the panel to dynamically filter nodes by name in real-time. Double-click any node to add it to the canvas.
 
 Node Context Menu (Secondary Click)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +49,7 @@ Nodes display text labels next to each input and output socket. Sockets and conn
 
 Connecting Sockets & Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Drag connections between output sockets and input sockets. Select a node to modify its input default values in the **Properties Inspector** on the right overlay panel.
+Drag connections between output sockets and input sockets. Select a node to modify its input default values in the **Properties Inspector** on the Tasks view panel.
 
 Document Storage Persistence & Recomputation
 --------------------------------------------

@@ -24,7 +24,34 @@ from freecad_nodegraph.document_object import make_nodegraph_object
 
 # Active document object editor registry mapping doc_object -> (subwindow, editor_widget)
 _active_editors = {}
+_task_panel = None
 _selection_observer = None
+
+
+def focus_node_library_task_panel(graph=None):
+    """Focus and select the Tasks overlay panel displaying the Node Library TaskPanel in FreeCAD."""
+    global _task_panel
+    if HAS_FREECAD and hasattr(FreeCADGui, "Control"):
+        try:
+            from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+            if _task_panel is None or (graph and _task_panel.widget.graph != graph):
+                _task_panel = NodeGraphTaskPanel(graph=graph)
+            FreeCADGui.Control.showDialog(_task_panel)
+            return True
+        except Exception:
+            pass
+
+    if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
+        main_win = FreeCADGui.getMainWindow()
+        combo_view = main_win.findChild(QDockWidget, "Combo View") or main_win.findChild(QDockWidget, "ComboView")
+        if combo_view:
+            tab_widget = combo_view.findChild(QTabWidget)
+            if tab_widget:
+                for idx in range(tab_widget.count()):
+                    if tab_widget.tabText(idx) in ("Tasks", "Task"):
+                        tab_widget.setCurrentIndex(idx)
+                        return True
+    return False
 
 
 class NodeGraphSelectionObserver:
@@ -53,13 +80,13 @@ class NodeGraphSelectionObserver:
 
 
 class CommandCreateNodeGraphObject:
-    """FreeCAD Command to create a NodeGraph document object at top level or under selected subobject."""
+    """FreeCAD Command to create a NodeGraph document object as a top level or nested child object."""
 
     def GetResources(self):
         return {
             "Pixmap": "NodeGraph_Create",
             "MenuText": "Create NodeGraph Object",
-            "ToolTip": "Creates a new NodeGraph object named NodeGraph:X with its own data storage in the document",
+            "ToolTip": "Creates a new NodeGraph object (nested as a child if a parent object is selected in Model view)",
         }
 
     def Activated(self):
@@ -71,7 +98,7 @@ class CommandCreateNodeGraphObject:
             obj = make_nodegraph_object(doc=doc, parent_obj=parent_obj)
             doc.recompute()
 
-            # Instantly open and display the new NodeGraph object's editor window
+            # Instantly open and display the new NodeGraph object's editor window and tasks overlay panel
             cmd = CommandOpenNodeGraphEditor()
             cmd.Activated(doc_object=obj)
 
@@ -123,7 +150,9 @@ class CommandOpenNodeGraphEditor:
 
             # If no document object exists yet, create one
             if doc_object is None and HAS_FREECAD and FreeCAD.ActiveDocument:
-                doc_object = make_nodegraph_object(doc=FreeCAD.ActiveDocument)
+                sel = FreeCADGui.Selection.getSelection()
+                parent_obj = sel[0] if sel else None
+                doc_object = make_nodegraph_object(doc=FreeCAD.ActiveDocument, parent_obj=parent_obj)
 
             obj_title = getattr(doc_object, "Label", getattr(doc_object, "Name", "NodeGraph:1"))
 
@@ -147,6 +176,9 @@ class CommandOpenNodeGraphEditor:
                     subwin, editor_widget = subwin_info
                     subwin.show()
                     subwin.raise_()
+
+                # Display Node Library overlay panel in Tasks view
+                focus_node_library_task_panel(graph=editor_widget.graph)
 
             else:
                 # Standalone fallback mode

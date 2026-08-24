@@ -43,7 +43,6 @@ def test_gui_creation(qapp):
 
     editor = NodeGraphEditorWidget(graph=graph)
     assert editor is not None
-    assert editor.side_panel is not None
 
     panel = NodeGraphSidePanelWidget(graph=graph)
     assert panel is not None
