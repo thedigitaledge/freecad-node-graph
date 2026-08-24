@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.14.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Removed forced TaskPanel focus upon NodeGraph object creation so creating objects in the Model tree view remains clean.
+
 Version 0.13.0 (2025-02-28)
 ---------------------------
 

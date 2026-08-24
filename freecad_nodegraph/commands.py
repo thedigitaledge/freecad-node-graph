@@ -98,10 +98,6 @@ class CommandCreateNodeGraphObject:
             obj = make_nodegraph_object(doc=doc, parent_obj=parent_obj)
             doc.recompute()
 
-            # Instantly open and display the new NodeGraph object's editor window and tasks overlay panel
-            cmd = CommandOpenNodeGraphEditor()
-            cmd.Activated(doc_object=obj)
-
             if HAS_FREECAD and hasattr(FreeCAD, "Console"):
                 FreeCAD.Console.PrintMessage(f"Created NodeGraph object: {obj.Label}\n")
 
@@ -176,9 +172,6 @@ class CommandOpenNodeGraphEditor:
                     subwin, editor_widget = subwin_info
                     subwin.show()
                     subwin.raise_()
-
-                # Display Node Library overlay panel in Tasks view
-                focus_node_library_task_panel(graph=editor_widget.graph)
 
             else:
                 # Standalone fallback mode

@@ -53,8 +53,8 @@ How to Use
 
 1. Open or create a FreeCAD document.
 2. Select a parent object in the Model view if you want to nest the NodeGraph object as a child, or leave unselected for top-level creation.
-3. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu.
-4. Selecting any NodeGraph object in the Model view automatically opens and displays its specific node graph canvas tab (titled ``NodeGraph:X``) and the **Node Library** in Tasks view overlay panel.
+3. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu to create a NodeGraph object in the Model view tree without forcing focus onto the Tasks view.
+4. Selecting any NodeGraph object in the Model view automatically opens and displays its specific node graph canvas tab (titled ``NodeGraph:X``).
 5. Use the **Tasks** view panel to search and double-click nodes into the canvas.
 6. Connect sockets and modify node parameters in the **Properties Inspector**.
 7. Modifications made on the canvas automatically persist directly to the document object's ``GraphData`` property.

@@ -8,7 +8,7 @@ Creating NodeGraph Objects & Child Nesting in FreeCAD Model View
 2. Select a parent group/body/subobject in the Model tree view (or leave nothing selected for top-level creation).
 3. Click **Create NodeGraph Object** on the toolbar or menu.
 4. A new ``NodeGraph:X`` FeaturePython object is created in the Model view (nested as a child of the selected parent object if a selection was active) with its own isolated graph data storage saved in its ``GraphData`` property.
-5. Selecting any ``NodeGraph:X`` object in the Model view automatically opens its editor canvas tab titled ``NodeGraph:X`` and displays the Node Library in the Tasks view panel.
+5. Selecting any ``NodeGraph:X`` object in the Model view opens its editor canvas tab titled ``NodeGraph:X``.
 
 Opening the Editor
 ------------------
