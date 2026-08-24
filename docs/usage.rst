@@ -7,15 +7,18 @@ Opening the Editor
 1. Switch to the **NodeGraph** workbench in FreeCAD.
 2. Click **Open Node Graph** in the toolbar or menu.
 3. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style).
-4. The **Node Library** palette and Properties Inspector appear as a new tab inside FreeCAD's ComboView / Task dock panel (alongside "Model" and "Tasks").
-5. Selecting or focusing the NodeGraph editor workspace tab automatically focuses and shows the **Node Library** tab.
+4. The **Node Library** palette and Properties Inspector appear inside FreeCAD's **Tasks** view panel.
 
 Building a Node Graph
 ---------------------
 
+Tasks View Node Library
+~~~~~~~~~~~~~~~~~~~~~~~
+The Node Library operates inside FreeCAD's **Tasks** view panel using FreeCAD's TaskPanel interface.
+
 Real-Time Node Search
 ~~~~~~~~~~~~~~~~~~~~~
-At the top of the **Node Library** tab, type keywords in the **Search** input box to dynamically filter nodes by name in real-time.
+At the top of the **Node Library** panel in Tasks view, type keywords in the **Search** input box to dynamically filter nodes by name in real-time.
 
 Node Library Palette
 ~~~~~~~~~~~~~~~~~~~~
@@ -51,7 +54,7 @@ Click and drag from an output socket (right side of a node) to an input socket (
 
 Inspecting Properties
 ~~~~~~~~~~~~~~~~~~~~~
-Click on a node to view and edit its parameters in the **Properties Inspector** section of the side panel.
+Click on a node to view and edit its parameters in the **Properties Inspector** section of the Tasks view panel.
 
 Executing the Graph
 -------------------

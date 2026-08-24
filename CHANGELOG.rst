@@ -4,6 +4,14 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.8.0 (2025-02-28)
+--------------------------
+
+Changed
+~~~~~~~
+- Moved the Node Library palette and Properties Inspector into FreeCAD's **Tasks** view using FreeCAD's TaskPanel system (``NodeGraphTaskPanel``).
+- Integrated automatic dialog display so opening or focusing the NodeGraph editor view displays the Node Library directly in the Tasks view.
+
 Version 0.7.0 (2025-02-28)
 --------------------------
 

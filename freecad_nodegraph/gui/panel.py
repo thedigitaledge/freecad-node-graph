@@ -1,4 +1,4 @@
-"""Side Panel widget containing Node Library with Search feature and Properties Inspector."""
+"""Side Panel widget and FreeCAD TaskPanel for Node Library and Properties Inspector."""
 
 import os
 try:
@@ -145,3 +145,23 @@ class NodeGraphSidePanelWidget(QWidget):
             node = NodeRegistry.create_node(node_type, graph=self.graph)
             if node:
                 self.graph.add_node(node)
+
+
+class NodeGraphTaskPanel:
+    """FreeCAD TaskPanel displaying Node Library inside FreeCAD's Tasks view."""
+
+    def __init__(self, graph: Graph = None):
+        self.widget = NodeGraphSidePanelWidget(graph=graph)
+        self.form = [self.widget]
+
+    def getStandardButtons(self):
+        return 0
+
+    def isAllowedAlterDocument(self):
+        return True
+
+    def accept(self):
+        return True
+
+    def reject(self):
+        return True

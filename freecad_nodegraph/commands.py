@@ -23,12 +23,22 @@ from freecad_nodegraph.core.evaluator import GraphEvaluator
 
 global_graph = Graph()
 _mdi_subwindow = None
-_side_panel_widget = None
+_task_panel = None
 
 
-def focus_node_library_tab():
-    """Focus and select the Node Library tab in FreeCAD ComboView / Task dock panel."""
-    global _side_panel_widget
+def focus_node_library_task_panel():
+    """Focus and select the Tasks tab displaying the Node Library TaskPanel in FreeCAD."""
+    global _task_panel, global_graph
+    if HAS_FREECAD and hasattr(FreeCADGui, "Control"):
+        try:
+            from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+            if _task_panel is None:
+                _task_panel = NodeGraphTaskPanel(graph=global_graph)
+            FreeCADGui.Control.showDialog(_task_panel)
+            return True
+        except Exception:
+            pass
+
     if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
         main_win = FreeCADGui.getMainWindow()
         combo_view = main_win.findChild(QDockWidget, "Combo View") or main_win.findChild(QDockWidget, "ComboView")
@@ -36,33 +46,32 @@ def focus_node_library_tab():
             tab_widget = combo_view.findChild(QTabWidget)
             if tab_widget:
                 for idx in range(tab_widget.count()):
-                    if tab_widget.tabText(idx) == "Node Library":
+                    if tab_widget.tabText(idx) in ("Tasks", "Task"):
                         tab_widget.setCurrentIndex(idx)
                         return True
     return False
 
 
 class CommandOpenNodeGraphEditor:
-    """FreeCAD Command to open Node Graph Editor inside FreeCAD MDI area and side panel tab."""
+    """FreeCAD Command to open Node Graph Editor inside FreeCAD MDI area and Node Library in Tasks view."""
 
     def GetResources(self):
         return {
             "Pixmap": "NodeGraph_Editor",
             "MenuText": "Open Node Graph",
-            "ToolTip": "Opens the Node Graph editor view in FreeCAD main window area",
+            "ToolTip": "Opens the Node Graph editor view in FreeCAD main window area and Node Library in Tasks view",
         }
 
     def Activated(self):
-        global _mdi_subwindow, _side_panel_widget, global_graph
+        global _mdi_subwindow, _task_panel, global_graph
         try:
             from freecad_nodegraph.gui.editor import (
                 NodeGraphEditorWidget,
                 set_editor_activated_callback,
             )
-            from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
-            # Set global callback so selecting/activating the NodeGraph editor focuses Node Library tab
-            set_editor_activated_callback(lambda editor: focus_node_library_tab())
+            # Set global callback so selecting/activating the NodeGraph editor shows Node Library in Tasks view
+            set_editor_activated_callback(lambda editor: focus_node_library_task_panel())
 
             if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()
@@ -82,23 +91,8 @@ class CommandOpenNodeGraphEditor:
                     _mdi_subwindow.show()
                     _mdi_subwindow.raise_()
 
-                # 2. Add Side Panel tab to FreeCAD ComboView / Task dock panel (avoid duplicates)
-                combo_view = main_win.findChild(QDockWidget, "Combo View") or main_win.findChild(QDockWidget, "ComboView")
-                if combo_view:
-                    tab_widget = combo_view.findChild(QTabWidget)
-                    if tab_widget:
-                        existing_idx = -1
-                        for idx in range(tab_widget.count()):
-                            if tab_widget.tabText(idx) == "Node Library":
-                                existing_idx = idx
-                                break
-
-                        if existing_idx >= 0:
-                            tab_widget.setCurrentIndex(existing_idx)
-                        else:
-                            _side_panel_widget = NodeGraphSidePanelWidget(graph=global_graph)
-                            tab_widget.addTab(_side_panel_widget, "Node Library")
-                            tab_widget.setCurrentWidget(_side_panel_widget)
+                # 2. Display Node Library in Tasks view panel
+                focus_node_library_task_panel()
 
             else:
                 # Standalone fallback mode

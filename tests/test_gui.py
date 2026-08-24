@@ -20,7 +20,7 @@ def test_gui_creation(qapp):
     from freecad_nodegraph.gui.scene import NodeGraphicsScene
     from freecad_nodegraph.gui.view import NodeGraphicsView
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
-    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget, NodeGraphTaskPanel
 
     graph = Graph()
     f1 = FloatNode(graph=graph)
@@ -39,6 +39,10 @@ def test_gui_creation(qapp):
 
     panel = NodeGraphSidePanelWidget(graph=graph)
     assert panel is not None
+
+    task_panel = NodeGraphTaskPanel(graph=graph)
+    assert task_panel.widget is not None
+    assert len(task_panel.form) == 1
 
 
 def test_socket_colors_and_labels(qapp):
@@ -104,16 +108,16 @@ def test_select_nodegraph_editor_shows_node_library(qapp):
 
     graph = Graph()
     side_panel = NodeGraphSidePanelWidget(graph=graph)
-    tab_widget.addTab(side_panel, "Node Library")
+    tab_widget.addTab(side_panel, "Tasks")
 
     # Initially "Model" tab is active
     tab_widget.setCurrentWidget(dummy_tab)
     assert tab_widget.currentWidget() == dummy_tab
 
-    # Register activation callback that switches tab widget to Node Library
+    # Register activation callback that switches tab widget to Tasks view
     def on_editor_activated(editor):
         for idx in range(tab_widget.count()):
-            if tab_widget.tabText(idx) == "Node Library":
+            if tab_widget.tabText(idx) == "Tasks":
                 tab_widget.setCurrentIndex(idx)
 
     set_editor_activated_callback(on_editor_activated)
@@ -121,7 +125,7 @@ def test_select_nodegraph_editor_shows_node_library(qapp):
     editor_widget = NodeGraphEditorWidget(graph=graph)
     editor_widget.on_activated()
 
-    # Verify tab switched automatically to "Node Library"
+    # Verify tab switched automatically to "Tasks"
     assert tab_widget.currentWidget() == side_panel
 
 
