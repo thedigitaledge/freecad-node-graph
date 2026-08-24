@@ -4,7 +4,6 @@
 import os
 import sys
 
-# Compute BASE_DIR safely without requiring __file__ in global scope
 try:
     import FreeCAD
     import FreeCADGui
@@ -12,6 +11,7 @@ try:
 except ImportError:
     has_freecad = False
 
+# Compute BASE_DIR safely without requiring __file__ in global scope
 if "__file__" in globals() and __file__:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 elif has_freecad and hasattr(FreeCAD, "getUserAppDataDir"):
@@ -25,6 +25,7 @@ if BASE_DIR and BASE_DIR not in sys.path:
 
 ICONS_DIR = os.path.join(BASE_DIR, "freecad_nodegraph", "resources", "icons")
 
+# Register icon path at GUI startup (matching CAM workbench pattern)
 if has_freecad and hasattr(FreeCADGui, "addIconPath"):
     FreeCADGui.addIconPath(ICONS_DIR)
 
@@ -34,20 +35,15 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if has_freecad else object):
 
     MenuText = "NodeGraph"
     ToolTip = "Programming FreeCAD features using a node-graph"
-    Icon = os.path.join(ICONS_DIR, "NodeGraph_Workbench.svg")
-    _icons_dir = ICONS_DIR
+    Icon = "NodeGraph_Workbench"  # References NodeGraph_Workbench.svg registered in addIconPath
 
     def __init__(self):
         super().__init__()
 
     def Initialize(self):
         """Initialize workbench commands, toolbars and menus."""
-        try:
-            import FreeCADGui
-            if hasattr(FreeCADGui, "addIconPath"):
-                FreeCADGui.addIconPath(self._icons_dir)
-        except Exception:
-            pass
+        if has_freecad and hasattr(FreeCADGui, "addIconPath"):
+            FreeCADGui.addIconPath(ICONS_DIR)
 
         import freecad_nodegraph.commands as commands
         commands.register_commands()
