@@ -88,7 +88,7 @@ class ViewProviderNodeGraph:
         self.Object = vobj.Object
 
     def getIcon(self):
-        return ""
+        return "NodeGraph_Editor"
 
     def doubleClicked(self, vobj: Any):
         """Open NodeGraph Editor for this object when double-clicked in Model tree view."""

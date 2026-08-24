@@ -117,7 +117,7 @@ def test_view_provider_double_click(qapp):
     vobj = MockViewObject(obj)
     vp = ViewProviderNodeGraph(vobj)
 
-    assert vp.getIcon() == ""
+    assert vp.getIcon() == "NodeGraph_Editor"
     res = vp.doubleClicked(vobj)
     assert isinstance(res, bool)
 

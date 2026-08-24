@@ -11,6 +11,7 @@ except ImportError:
         from PyQt5.QtWidgets import QApplication
 
 from freecad_nodegraph.core.socket import DataType
+from freecad_nodegraph.resources import ICONS_DIR
 
 # Ensure QApplication instance exists for GUI tests
 @pytest.fixture(scope="session")
@@ -19,6 +20,25 @@ def qapp():
     if app is None:
         app = QApplication([])
     yield app
+
+
+def test_icon_resources():
+    assert os.path.isdir(ICONS_DIR)
+    expected_icons = [
+        "NodeGraph_Workbench.svg",
+        "NodeGraph_Create.svg",
+        "NodeGraph_Editor.svg",
+        "NodeGraph_Run.svg",
+        "NodeGraph_Node.svg",
+        "NodeGraph_Link.svg",
+    ]
+    for icon_file in expected_icons:
+        icon_path = os.path.join(ICONS_DIR, icon_file)
+        assert os.path.isfile(icon_path)
+        with open(icon_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            assert "<svg" in content
+            assert "</svg>" in content
 
 
 def test_gui_creation(qapp):

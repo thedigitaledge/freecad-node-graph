@@ -4,6 +4,13 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.19.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Restored SVG icon registrations and resource linking in ``InitGui.py``, ``freecad_nodegraph/commands.py``, ``freecad_nodegraph/document_object.py``, and unit tests matching commit 44122ce5ef405abdce7bb1ddaf97a23caf2217e6.
+
 Version 0.18.0 (2025-02-28)
 ---------------------------
 
