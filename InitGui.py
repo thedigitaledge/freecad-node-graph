@@ -23,8 +23,9 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
         import freecad_nodegraph.commands as commands
         commands.register_commands()
 
-        self.appendToolbar("NodeGraph", ["NodeGraph_OpenEditor", "NodeGraph_RunGraph"])
-        self.appendMenu("NodeGraph", ["NodeGraph_OpenEditor", "NodeGraph_RunGraph"])
+        cmd_list = ["NodeGraph_CreateObject", "NodeGraph_OpenEditor", "NodeGraph_RunGraph"]
+        self.appendToolbar("NodeGraph", cmd_list)
+        self.appendMenu("NodeGraph", cmd_list)
 
     def GetClassName(self):
         return "Gui::PythonWorkbench"

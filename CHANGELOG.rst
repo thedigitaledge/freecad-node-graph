@@ -4,6 +4,16 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.9.0 (2025-02-28)
+--------------------------
+
+Added
+~~~~~
+- FeaturePython ``NodeGraphObject`` (and ``ViewProviderNodeGraph``) allowing creation of parametric NodeGraph objects directly in FreeCAD's Model tree view.
+- Support for adding NodeGraph objects both at the top level of a document or nested inside subobjects, bodies, and groups.
+- Automatic recomputation of ``NodeGraphObject.Shape`` when FreeCAD document recomputes.
+- Command ``NodeGraph_CreateObject`` in workbench toolbar and menu.
+
 Version 0.8.0 (2025-02-28)
 --------------------------
 

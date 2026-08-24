@@ -20,6 +20,7 @@ except ImportError:
 
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
+from freecad_nodegraph.document_object import make_nodegraph_object
 
 global_graph = Graph()
 _mdi_subwindow = None
@@ -52,6 +53,31 @@ def focus_node_library_task_panel():
     return False
 
 
+class CommandCreateNodeGraphObject:
+    """FreeCAD Command to create a NodeGraph document object at top level or under selected subobject."""
+
+    def GetResources(self):
+        return {
+            "Pixmap": "NodeGraph_Create",
+            "MenuText": "Create NodeGraph Object",
+            "ToolTip": "Creates a new NodeGraph object in the model tree view (top-level or under selected group/subobject)",
+        }
+
+    def Activated(self):
+        if HAS_FREECAD and FreeCAD.ActiveDocument:
+            doc = FreeCAD.ActiveDocument
+            sel = FreeCADGui.Selection.getSelection()
+            parent_obj = sel[0] if sel else None
+
+            obj = make_nodegraph_object(doc=doc, name="NodeGraph", parent_obj=parent_obj)
+            doc.recompute()
+            if HAS_FREECAD and hasattr(FreeCAD, "Console"):
+                FreeCAD.Console.PrintMessage(f"Created NodeGraph object: {obj.Name}\n")
+
+    def IsActive(self):
+        return True if (HAS_FREECAD and FreeCAD.ActiveDocument) else False
+
+
 class CommandOpenNodeGraphEditor:
     """FreeCAD Command to open Node Graph Editor inside FreeCAD MDI area and Node Library in Tasks view."""
 
@@ -69,6 +95,7 @@ class CommandOpenNodeGraphEditor:
                 NodeGraphEditorWidget,
                 set_editor_activated_callback,
             )
+            from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
             # Set global callback so selecting/activating the NodeGraph editor shows Node Library in Tasks view
             set_editor_activated_callback(lambda editor: focus_node_library_task_panel())
@@ -139,5 +166,6 @@ class CommandRunNodeGraph:
 
 def register_commands():
     if HAS_FREECAD:
+        FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
         FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
         FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())

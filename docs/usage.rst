@@ -1,28 +1,28 @@
 Usage Guide
 ===========
 
-Opening the Editor
-------------------
+Creating NodeGraph Objects in FreeCAD Model View
+------------------------------------------------
 
 1. Switch to the **NodeGraph** workbench in FreeCAD.
-2. Click **Open Node Graph** in the toolbar or menu.
-3. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style).
-4. The **Node Library** palette and Properties Inspector appear inside FreeCAD's **Tasks** view panel.
+2. Select a parent group/body/subobject in the Model tree view (or leave nothing selected for top-level creation).
+3. Click **Create NodeGraph Object** on the toolbar or menu.
+4. A new ``NodeGraph`` FeaturePython object will be created in the Model view.
+5. Double-click the ``NodeGraph`` object in the Model view to open its visual editor.
+
+Opening the Editor & Tasks View
+-------------------------------
+
+1. Click **Open Node Graph** in the toolbar or double-click a NodeGraph object in the Model view.
+2. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style).
+3. The **Node Library** palette and Properties Inspector appear inside FreeCAD's **Tasks** view panel.
 
 Building a Node Graph
 ---------------------
 
-Tasks View Node Library
-~~~~~~~~~~~~~~~~~~~~~~~
-The Node Library operates inside FreeCAD's **Tasks** view panel using FreeCAD's TaskPanel interface.
-
-Real-Time Node Search
-~~~~~~~~~~~~~~~~~~~~~
-At the top of the **Node Library** panel in Tasks view, type keywords in the **Search** input box to dynamically filter nodes by name in real-time.
-
-Node Library Palette
-~~~~~~~~~~~~~~~~~~~~
-In the Node Library tree, double-click any category to expand it, then double-click a node type to add it to the graph canvas.
+Tasks View Node Library & Search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use the **Search** input box at the top of the **Tasks** view panel to dynamically filter nodes by name in real-time. Double-click any node to add it to the canvas.
 
 Node Context Menu (Secondary Click)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,20 +48,11 @@ Nodes display text labels next to each input and output socket. Sockets and conn
 - **Teal**: Generic Document Objects
 - **Light Gray**: Any / Generic data
 
-Connecting Sockets
-~~~~~~~~~~~~~~~~~~
-Click and drag from an output socket (right side of a node) to an input socket (left side of another node). A connecting line will appear.
+Connecting Sockets & Properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Drag connections between output sockets and input sockets. Select a node to modify its input default values in the **Properties Inspector**.
 
-Inspecting Properties
-~~~~~~~~~~~~~~~~~~~~~
-Click on a node to view and edit its parameters in the **Properties Inspector** section of the Tasks view panel.
+Recomputation & Document Updating
+---------------------------------
 
-Executing the Graph
--------------------
-
-Click the **Run Graph** button on the FreeCAD toolbar. The graph evaluator will topologically sort the DAG and compute all nodes, updating or creating 3D Part objects in the active FreeCAD document.
-
-Saving & Loading Graphs
------------------------
-
-Use **Save Graph...** and **Load Graph...** in the FreeCAD toolbar to save your node setup as a JSON file.
+Recomputing the FreeCAD document (or clicking **Run Graph**) automatically evaluates the node graph and assigns the computed 3D geometry to the NodeGraph object's ``Shape`` property.

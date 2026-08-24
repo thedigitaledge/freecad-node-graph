@@ -10,6 +10,7 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
+- **NodeGraph Document Objects in Model Tree**: Create parametric ``NodeGraph`` document objects at the top level or nested inside subobjects/groups/bodies in FreeCAD's Model tree view.
 - **FreeCAD MDI Main View (Spreadsheet Style)**: Opens the node graph editor directly as a main document tab view in FreeCAD's central workspace (matching the Spreadsheet view window style) with clean canvas and no cluttering toolbars.
 - **Node Library in FreeCAD Tasks View**: Displays the Node Library palette and Properties Inspector inside FreeCAD's **Tasks** view panel using FreeCAD's TaskPanel system.
 - **Real-Time Node Search**: Filter nodes dynamically by typing in the search bar at the top of the Node Library panel in Tasks view.
@@ -48,14 +49,11 @@ How to Use
 ~~~~~~~~~~
 
 1. Open or create a FreeCAD document.
-2. Click **Open Node Graph** in the NodeGraph workbench toolbar or menu.
-3. The NodeGraph canvas view opens as a tab in FreeCAD's main document view area (matching the Spreadsheet view style), while the **Node Library** appears inside FreeCAD's **Tasks** view panel.
-4. Type keywords in the **Search** field at the top of the Node Library panel to quickly filter nodes in real-time.
-5. Double-click any node in the palette to add it to the canvas.
-6. Drag connections between color-coded output sockets and input sockets.
-7. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
-8. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
-9. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.
+2. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu to create a NodeGraph object at top-level or under a selected group/subobject in the Model tree view.
+3. Double-click the NodeGraph object in the Model view or click **Open Node Graph** to view and edit its graph canvas.
+4. Use the **Tasks** view panel to search and double-click nodes into the canvas.
+5. Connect sockets and modify node parameters in the **Properties Inspector**.
+6. Recomputing the FreeCAD document automatically evaluates the NodeGraph object and updates its 3D Shape.
 
 Documentation
 -------------
