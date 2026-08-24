@@ -1,4 +1,4 @@
-"""Unit tests for NodeGraph document objects (top-level, nested subobjects, and isolated graph data storage)."""
+"""Unit tests for NodeGraph document objects (top-level, nested subobjects, naming, and isolated graph data storage)."""
 
 import json
 import pytest
@@ -19,6 +19,7 @@ from freecad_nodegraph.document_object import (
     NodeGraphObject,
     MockDocumentObject,
     make_nodegraph_object,
+    get_next_nodegraph_name,
 )
 from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
 
@@ -31,10 +32,16 @@ def qapp():
     yield app
 
 
+def test_nodegraph_object_naming():
+    name1 = get_next_nodegraph_name(doc=None)
+    assert name1 == "NodeGraph:1"
+
+    obj1 = make_nodegraph_object(doc=None)
+    assert obj1.Name == "NodeGraph:1" or obj1.Label == "NodeGraph:1"
+
+
 def test_top_level_nodegraph_object():
-    obj = make_nodegraph_object(doc=None, name="MyNodeGraph")
-    assert obj is not None
-    assert obj.Name == "MyNodeGraph"
+    obj = make_nodegraph_object(doc=None)
     assert hasattr(obj, "GraphData")
 
     # Construct test graph
@@ -59,7 +66,7 @@ def test_top_level_nodegraph_object():
 def test_nested_subobject_nodegraph_object():
     parent_group = MockDocumentObject(name="ParentGroup")
     child_nodegraph = make_nodegraph_object(
-        doc=None, name="ChildNodeGraph", parent_obj=parent_group
+        doc=None, parent_obj=parent_group
     )
 
     assert child_nodegraph in parent_group.Group
@@ -68,11 +75,14 @@ def test_nested_subobject_nodegraph_object():
 
 def test_isolated_document_object_graph_data_storage(qapp):
     """Verify that multiple NodeGraph objects maintain independent isolated graph storages."""
-    obj1 = make_nodegraph_object(doc=None, name="NodeGraph1")
-    obj2 = make_nodegraph_object(doc=None, name="NodeGraph2")
+    obj1 = make_nodegraph_object(doc=None)
+    obj2 = make_nodegraph_object(doc=None)
 
     editor1 = NodeGraphEditorWidget(doc_object=obj1)
     editor2 = NodeGraphEditorWidget(doc_object=obj2)
+
+    assert editor1.windowTitle() == obj1.Name
+    assert editor2.windowTitle() == obj2.Name
 
     # Add Box to obj1 graph
     box1 = BoxNode(graph=editor1.graph)
@@ -103,7 +113,7 @@ def test_view_provider_double_click(qapp):
             self.Object = obj
             self.Proxy = None
 
-    obj = MockDocumentObject(name="TestVG")
+    obj = MockDocumentObject(name="NodeGraph:1")
     vobj = MockViewObject(obj)
     vp = ViewProviderNodeGraph(vobj)
 
@@ -113,7 +123,7 @@ def test_view_provider_double_click(qapp):
 
 
 def test_selection_observer_triggers_editor(qapp):
-    from freecad_nodegraph.commands import NodeGraphSelectionObserver, CommandOpenNodeGraphEditor
+    from freecad_nodegraph.commands import NodeGraphSelectionObserver
 
     observer = NodeGraphSelectionObserver()
     assert observer is not None

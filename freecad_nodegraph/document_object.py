@@ -95,7 +95,7 @@ class ViewProviderNodeGraph:
         try:
             from freecad_nodegraph.commands import CommandOpenNodeGraphEditor
             cmd = CommandOpenNodeGraphEditor()
-            cmd.Activated()
+            cmd.Activated(doc_object=getattr(vobj, "Object", None))
             return True
         except Exception:
             return False
@@ -110,7 +110,7 @@ class ViewProviderNodeGraph:
 class MockDocumentObject:
     """Mock FreeCAD document object for standalone testing outside FreeCAD."""
 
-    def __init__(self, name: str = "NodeGraph"):
+    def __init__(self, name: str = "NodeGraph:1"):
         self.Name = name
         self.Label = name
         self.GraphData = ""
@@ -130,14 +130,34 @@ class MockDocumentObject:
             child_obj.InList.append(self)
 
 
+def get_next_nodegraph_name(doc: Any = None) -> str:
+    """Count existing NodeGraph objects in active document and return 'NodeGraph:X'."""
+    count = 1
+    if HAS_FREECAD and doc is not None:
+        for obj in getattr(doc, "Objects", []):
+            if (
+                getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject"
+                or getattr(obj, "Name", "").startswith("NodeGraph")
+                or getattr(obj, "Label", "").startswith("NodeGraph")
+            ):
+                count += 1
+    return f"NodeGraph:{count}"
+
+
 def make_nodegraph_object(
     doc: Any = None,
-    name: str = "NodeGraph",
+    name: Optional[str] = None,
     parent_obj: Optional[Any] = None,
 ) -> Any:
-    """Create a NodeGraph document object at top level or nested under subobjects/groups."""
+    """Create a NodeGraph document object named 'NodeGraph:X' at top level or nested under subobjects/groups."""
+    if name is None:
+        name = get_next_nodegraph_name(doc)
+
     if HAS_FREECAD and doc is not None:
-        obj = doc.addObject("Part::FeaturePython", name)
+        # FreeCAD object name cannot contain colons, so use valid internal name and set Label to 'NodeGraph:X'
+        valid_internal_name = name.replace(":", "_")
+        obj = doc.addObject("Part::FeaturePython", valid_internal_name)
+        obj.Label = name
         NodeGraphObject(obj)
         if hasattr(FreeCAD, "GuiUp") and FreeCAD.GuiUp:
             ViewProviderNodeGraph(obj.ViewObject)

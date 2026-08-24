@@ -1,7 +1,14 @@
 """Unit tests for NodeGraph GUI components in offscreen/qapp context."""
 
 import pytest
-from PySide6.QtWidgets import QApplication, QTabWidget, QWidget
+try:
+    from PySide6.QtWidgets import QApplication
+except ImportError:
+    try:
+        from PySide2.QtWidgets import QApplication
+    except ImportError:
+        from PyQt5.QtWidgets import QApplication
+
 from freecad_nodegraph.core.socket import DataType
 
 # Ensure QApplication instance exists for GUI tests
@@ -36,6 +43,7 @@ def test_gui_creation(qapp):
 
     editor = NodeGraphEditorWidget(graph=graph)
     assert editor is not None
+    assert editor.side_panel is not None
 
     panel = NodeGraphSidePanelWidget(graph=graph)
     assert panel is not None
@@ -95,38 +103,6 @@ def test_side_panel_node_search(qapp):
                     found_box = True
 
     assert found_box is True
-
-
-def test_select_nodegraph_editor_shows_node_library(qapp):
-    from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget, set_editor_activated_callback
-    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
-
-    tab_widget = QTabWidget()
-    dummy_tab = QWidget()
-    tab_widget.addTab(dummy_tab, "Model")
-
-    graph = Graph()
-    side_panel = NodeGraphSidePanelWidget(graph=graph)
-    tab_widget.addTab(side_panel, "Tasks")
-
-    # Initially "Model" tab is active
-    tab_widget.setCurrentWidget(dummy_tab)
-    assert tab_widget.currentWidget() == dummy_tab
-
-    # Register activation callback that switches tab widget to Tasks view
-    def on_editor_activated(editor):
-        for idx in range(tab_widget.count()):
-            if tab_widget.tabText(idx) == "Tasks":
-                tab_widget.setCurrentIndex(idx)
-
-    set_editor_activated_callback(on_editor_activated)
-
-    editor_widget = NodeGraphEditorWidget(graph=graph)
-    editor_widget.on_activated()
-
-    # Verify tab switched automatically to "Tasks"
-    assert tab_widget.currentWidget() == side_panel
 
 
 def test_detach_links(qapp):

@@ -4,6 +4,15 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.12.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Moved the Node Library palette and Properties Inspector into a right-side overlay panel on the NodeGraph editor window.
+- Updated auto-generated object names and window titles to format as ``NodeGraph:X`` (e.g. ``NodeGraph:1``, ``NodeGraph:2``), removing the ``NodeGraph Editor -`` title prefix.
+- Removed auto-focusing on the Tasks view tab when selecting the editor.
+
 Version 0.11.0 (2025-02-28)
 ---------------------------
 

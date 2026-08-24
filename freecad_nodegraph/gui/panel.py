@@ -1,4 +1,4 @@
-"""Side Panel widget and FreeCAD TaskPanel for Node Library and Properties Inspector."""
+"""Side Panel widget containing Node Library with Search feature and Properties Inspector."""
 
 import os
 try:
@@ -54,7 +54,7 @@ from freecad_nodegraph.workbench_generator import discover_workbench_functions
 
 
 class NodeGraphSidePanelWidget(QWidget):
-    """Side panel widget containing Node Library with Real-time Search and Properties Inspector."""
+    """Overlay side panel widget containing Node Library with Real-time Search and Properties Inspector."""
 
     def __init__(self, graph: Graph = None, parent=None):
         super().__init__(parent)
@@ -68,7 +68,7 @@ class NodeGraphSidePanelWidget(QWidget):
 
     def init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(6, 6, 6, 6)
         layout.setSpacing(6)
 
         # 1. Search Bar Input
@@ -145,6 +145,54 @@ class NodeGraphSidePanelWidget(QWidget):
             node = NodeRegistry.create_node(node_type, graph=self.graph)
             if node:
                 self.graph.add_node(node)
+
+    def update_properties_inspector(self, selected_items):
+        """Update property inspector form fields for selected scene items."""
+        while self.prop_form_layout.count():
+            child = self.prop_form_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        if not selected_items:
+            self.prop_group.setTitle("Selected Node Inputs")
+            return
+
+        item = selected_items[0]
+        if hasattr(item, "node"):
+            node = item.node
+            self.prop_group.setTitle(f"Node: {node.title}")
+
+            for sock in node.inputs:
+                if sock.is_connected:
+                    lbl = QLabel("(Connected)")
+                    lbl.setStyleSheet("color: gray;")
+                    self.prop_form_layout.addRow(f"{sock.name}:", lbl)
+                else:
+                    if isinstance(sock.default_value, (int, float)):
+                        spin = QDoubleSpinBox()
+                        spin.setRange(-999999.0, 999999.0)
+                        spin.setDecimals(3)
+                        spin.setValue(float(sock.default_value or 0.0))
+
+                        def make_change_handler(s, sp):
+                            def handler(val):
+                                s.default_value = val
+                                s.node.mark_dirty()
+                            return handler
+
+                        spin.valueChanged.connect(make_change_handler(sock, spin))
+                        self.prop_form_layout.addRow(f"{sock.name}:", spin)
+                    else:
+                        line_edit = QLineEdit(str(sock.default_value or ""))
+
+                        def make_text_handler(s, le):
+                            def handler(txt):
+                                s.default_value = txt
+                                s.node.mark_dirty()
+                            return handler
+
+                        line_edit.textChanged.connect(make_text_handler(sock, line_edit))
+                        self.prop_form_layout.addRow(f"{sock.name}:", line_edit)
 
 
 class NodeGraphTaskPanel:

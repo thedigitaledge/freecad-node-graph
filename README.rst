@@ -10,12 +10,12 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
+- **Right-Side Overlay Side Panel**: The Node Library palette (with real-time search) and Properties Inspector are integrated directly on the right side overlay of the NodeGraph editor workspace window.
+- **NodeGraph:X Auto-Naming**: Automatically names new document objects ``NodeGraph:1``, ``NodeGraph:2``, etc., and displays ``NodeGraph:X`` directly as the window title.
 - **Per-Object Document Data Storage**: Creating a NodeGraph object creates an independent graph data storage saved directly inside the FreeCAD document. Opening the editor loads and edits exclusively that object's graph data.
-- **Automatic Selection Display**: Selecting any NodeGraph object in FreeCAD's Model tree view automatically opens and displays its NodeGraph editor workspace view and Node Library Tasks panel.
+- **Automatic Selection Display**: Selecting any NodeGraph object in FreeCAD's Model tree view automatically opens and displays its NodeGraph editor workspace view.
 - **NodeGraph Document Objects in Model Tree**: Create parametric ``NodeGraph`` document objects at the top level or nested inside subobjects/groups/bodies in FreeCAD's Model tree view.
-- **FreeCAD MDI Main View (Spreadsheet Style)**: Opens the node graph editor directly as a main document tab view in FreeCAD's central workspace (matching the Spreadsheet view window style) with clean canvas and no cluttering toolbars.
-- **Node Library in FreeCAD Tasks View**: Displays the Node Library palette and Properties Inspector inside FreeCAD's **Tasks** view panel using FreeCAD's TaskPanel system.
-- **Real-Time Node Search**: Filter nodes dynamically by typing in the search bar at the top of the Node Library panel in Tasks view.
+- **FreeCAD MDI Main View (Spreadsheet Style)**: Opens the node graph editor directly as a main document tab view in FreeCAD's central workspace (matching the Spreadsheet view window style) with clean canvas.
 - **Automatic Workbench Function Discovery**: Automatically scans FreeCAD workbenches (``Part``, ``Draft``, ``Arch``, ``Mesh``, ``Sketcher``, ``PartDesign``) and dynamically generates scriptable function nodes in the Node Library.
 - **Node Context Menu**: Secondary click (right-click) on any node to perform **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
 - **Color-Coded Sockets & Labels**: Visual nodes display clear text labels for input/output sockets and distinct data-type color coding (Float, Vector, Shape, String, Boolean, etc.).
@@ -51,9 +51,9 @@ How to Use
 ~~~~~~~~~~
 
 1. Open or create a FreeCAD document.
-2. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu to create a NodeGraph object with its own isolated data storage in the document.
-3. Selecting any NodeGraph object in the Model view automatically opens and displays its specific node graph canvas tab and the **Node Library** in Tasks view.
-4. Use the **Tasks** view panel to search and double-click nodes into the canvas.
+2. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu to create a NodeGraph object (named ``NodeGraph:1``, ``NodeGraph:2``, etc.) with its own isolated data storage.
+3. Selecting any NodeGraph object in the Model view automatically opens and displays its specific node graph canvas tab (titled ``NodeGraph:X``).
+4. Use the right-side overlay panel to search, inspect properties, and double-click nodes into the canvas.
 5. Connect sockets and modify node parameters in the **Properties Inspector**.
 6. Modifications made on the canvas automatically persist directly to the document object's ``GraphData`` property.
 7. Recomputing the FreeCAD document automatically evaluates the NodeGraph object and updates its 3D Shape.

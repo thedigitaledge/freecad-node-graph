@@ -24,34 +24,7 @@ from freecad_nodegraph.document_object import make_nodegraph_object
 
 # Active document object editor registry mapping doc_object -> (subwindow, editor_widget)
 _active_editors = {}
-_task_panel = None
 _selection_observer = None
-
-
-def focus_node_library_task_panel(graph=None):
-    """Focus and select the Tasks tab displaying the Node Library TaskPanel in FreeCAD."""
-    global _task_panel
-    if HAS_FREECAD and hasattr(FreeCADGui, "Control"):
-        try:
-            from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget, NodeGraphTaskPanel
-            if _task_panel is None or (graph and _task_panel.widget.graph != graph):
-                _task_panel = NodeGraphTaskPanel(graph=graph)
-            FreeCADGui.Control.showDialog(_task_panel)
-            return True
-        except Exception:
-            pass
-
-    if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
-        main_win = FreeCADGui.getMainWindow()
-        combo_view = main_win.findChild(QDockWidget, "Combo View") or main_win.findChild(QDockWidget, "ComboView")
-        if combo_view:
-            tab_widget = combo_view.findChild(QTabWidget)
-            if tab_widget:
-                for idx in range(tab_widget.count()):
-                    if tab_widget.tabText(idx) in ("Tasks", "Task"):
-                        tab_widget.setCurrentIndex(idx)
-                        return True
-    return False
 
 
 class NodeGraphSelectionObserver:
@@ -72,7 +45,8 @@ class NodeGraphSelectionObserver:
             obj = doc.getObject(obj_name)
             if obj and (
                 getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject"
-                or "NodeGraph" in getattr(obj, "Name", "")
+                or getattr(obj, "Name", "").startswith("NodeGraph")
+                or getattr(obj, "Label", "").startswith("NodeGraph")
             ):
                 cmd = CommandOpenNodeGraphEditor()
                 cmd.Activated(doc_object=obj)
@@ -85,7 +59,7 @@ class CommandCreateNodeGraphObject:
         return {
             "Pixmap": "NodeGraph_Create",
             "MenuText": "Create NodeGraph Object",
-            "ToolTip": "Creates a new NodeGraph object with its own data storage in the document (top-level or under selected group/subobject)",
+            "ToolTip": "Creates a new NodeGraph object named NodeGraph:X with its own data storage in the document",
         }
 
     def Activated(self):
@@ -94,7 +68,7 @@ class CommandCreateNodeGraphObject:
             sel = FreeCADGui.Selection.getSelection()
             parent_obj = sel[0] if sel else None
 
-            obj = make_nodegraph_object(doc=doc, name="NodeGraph", parent_obj=parent_obj)
+            obj = make_nodegraph_object(doc=doc, parent_obj=parent_obj)
             doc.recompute()
 
             # Instantly open and display the new NodeGraph object's editor window
@@ -102,7 +76,7 @@ class CommandCreateNodeGraphObject:
             cmd.Activated(doc_object=obj)
 
             if HAS_FREECAD and hasattr(FreeCAD, "Console"):
-                FreeCAD.Console.PrintMessage(f"Created NodeGraph object: {obj.Name}\n")
+                FreeCAD.Console.PrintMessage(f"Created NodeGraph object: {obj.Label}\n")
 
     def IsActive(self):
         return True if (HAS_FREECAD and FreeCAD.ActiveDocument) else False
@@ -121,35 +95,37 @@ class CommandOpenNodeGraphEditor:
     def Activated(self, doc_object=None):
         global _active_editors
         try:
-            from freecad_nodegraph.gui.editor import (
-                NodeGraphEditorWidget,
-                set_editor_activated_callback,
-            )
+            from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
 
             # Determine target document object
             if doc_object is None and HAS_FREECAD and hasattr(FreeCADGui, "Selection"):
                 sel = FreeCADGui.Selection.getSelection()
                 if sel:
                     for item in sel:
-                        if getattr(item, "Proxy", None).__class__.__name__ == "NodeGraphObject" or "NodeGraph" in item.Name:
+                        if (
+                            getattr(item, "Proxy", None).__class__.__name__ == "NodeGraphObject"
+                            or getattr(item, "Name", "").startswith("NodeGraph")
+                            or getattr(item, "Label", "").startswith("NodeGraph")
+                        ):
                             doc_object = item
                             break
 
             if doc_object is None and HAS_FREECAD and FreeCAD.ActiveDocument:
                 # Find first NodeGraph object in active document
                 for obj in FreeCAD.ActiveDocument.Objects:
-                    if getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject" or "NodeGraph" in obj.Name:
+                    if (
+                        getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject"
+                        or getattr(obj, "Name", "").startswith("NodeGraph")
+                        or getattr(obj, "Label", "").startswith("NodeGraph")
+                    ):
                         doc_object = obj
                         break
 
             # If no document object exists yet, create one
             if doc_object is None and HAS_FREECAD and FreeCAD.ActiveDocument:
-                doc_object = make_nodegraph_object(doc=FreeCAD.ActiveDocument, name="NodeGraph")
+                doc_object = make_nodegraph_object(doc=FreeCAD.ActiveDocument)
 
-            # Set global callback so selecting/activating the NodeGraph editor shows Node Library in Tasks view
-            set_editor_activated_callback(
-                lambda editor: focus_node_library_task_panel(graph=editor.graph)
-            )
+            obj_title = getattr(doc_object, "Label", getattr(doc_object, "Name", "NodeGraph:1"))
 
             if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()
@@ -160,11 +136,11 @@ class CommandOpenNodeGraphEditor:
                     editor_widget = NodeGraphEditorWidget(doc_object=doc_object)
                     if mdi_area:
                         subwin = mdi_area.addSubWindow(editor_widget)
-                        obj_title = getattr(doc_object, "Label", getattr(doc_object, "Name", "NodeGraph"))
-                        subwin.setWindowTitle(f"NodeGraph Editor - {obj_title}")
+                        subwin.setWindowTitle(f"{obj_title}")
                         subwin.showMaximized()
                         _active_editors[doc_object] = (subwin, editor_widget)
                     else:
+                        editor_widget.setWindowTitle(f"{obj_title}")
                         editor_widget.show()
                         _active_editors[doc_object] = (editor_widget, editor_widget)
                 else:
@@ -172,13 +148,12 @@ class CommandOpenNodeGraphEditor:
                     subwin.show()
                     subwin.raise_()
 
-                focus_node_library_task_panel(graph=editor_widget.graph)
-
             else:
                 # Standalone fallback mode
                 subwin_info = _active_editors.get(doc_object)
                 if subwin_info is None:
                     editor_widget = NodeGraphEditorWidget(doc_object=doc_object)
+                    editor_widget.setWindowTitle(f"{obj_title}")
                     _active_editors[doc_object] = (editor_widget, editor_widget)
                     editor_widget.show()
                 else:
