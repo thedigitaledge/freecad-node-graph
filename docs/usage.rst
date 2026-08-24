@@ -8,6 +8,7 @@ Opening the Editor
 2. Click **Open Node Graph** in the toolbar or menu.
 3. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style).
 4. The **Node Library** palette and Properties Inspector appear as a new tab inside FreeCAD's ComboView / Task dock panel (alongside "Model" and "Tasks").
+5. Selecting or focusing the NodeGraph editor workspace tab automatically focuses and shows the **Node Library** tab.
 
 Building a Node Graph
 ---------------------

@@ -26,6 +26,22 @@ _mdi_subwindow = None
 _side_panel_widget = None
 
 
+def focus_node_library_tab():
+    """Focus and select the Node Library tab in FreeCAD ComboView / Task dock panel."""
+    global _side_panel_widget
+    if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
+        main_win = FreeCADGui.getMainWindow()
+        combo_view = main_win.findChild(QDockWidget, "Combo View") or main_win.findChild(QDockWidget, "ComboView")
+        if combo_view:
+            tab_widget = combo_view.findChild(QTabWidget)
+            if tab_widget:
+                for idx in range(tab_widget.count()):
+                    if tab_widget.tabText(idx) == "Node Library":
+                        tab_widget.setCurrentIndex(idx)
+                        return True
+    return False
+
+
 class CommandOpenNodeGraphEditor:
     """FreeCAD Command to open Node Graph Editor inside FreeCAD MDI area and side panel tab."""
 
@@ -39,8 +55,14 @@ class CommandOpenNodeGraphEditor:
     def Activated(self):
         global _mdi_subwindow, _side_panel_widget, global_graph
         try:
-            from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+            from freecad_nodegraph.gui.editor import (
+                NodeGraphEditorWidget,
+                set_editor_activated_callback,
+            )
             from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+            # Set global callback so selecting/activating the NodeGraph editor focuses Node Library tab
+            set_editor_activated_callback(lambda editor: focus_node_library_tab())
 
             if HAS_FREECAD and hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()

@@ -4,6 +4,14 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.7.0 (2025-02-28)
+--------------------------
+
+Added
+~~~~~
+- Automatic Node Library tab focus: selecting or activating the NodeGraph editor view automatically switches the active ComboView tab to "Node Library".
+- Unit test suite verifying automatic Node Library tab switching on editor activation.
+
 Version 0.6.0 (2025-02-28)
 --------------------------
 

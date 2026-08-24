@@ -12,6 +12,7 @@ Features
 
 - **FreeCAD MDI Main View (Spreadsheet Style)**: Opens the node graph editor directly as a main document tab view in FreeCAD's central workspace (matching the Spreadsheet view window style) with clean canvas and no cluttering toolbars.
 - **Node Library Tab in ComboView**: Places the Node Library palette and Properties Inspector into a dedicated tab in FreeCAD's ComboView / Task dock panel (alongside "Model" and "Tasks").
+- **Automatic Tab Focus**: Selecting or clicking the NodeGraph editor view automatically switches the active side panel tab to "Node Library".
 - **Real-Time Node Search**: Filter nodes dynamically by typing in the search bar at the top of the Node Library panel.
 - **Automatic Workbench Function Discovery**: Automatically scans FreeCAD workbenches (``Part``, ``Draft``, ``Arch``, ``Mesh``, ``Sketcher``, ``PartDesign``) and dynamically generates scriptable function nodes in the Node Library.
 - **Node Context Menu**: Secondary click (right-click) on any node to perform **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
@@ -50,12 +51,13 @@ How to Use
 1. Open or create a FreeCAD document.
 2. Click **Open Node Graph** in the NodeGraph workbench toolbar or menu.
 3. The NodeGraph canvas view opens as a tab in FreeCAD's main document view area (matching the Spreadsheet view style), while the **Node Library** tab appears in FreeCAD's ComboView / Task panel.
-4. Type keywords in the **Search** field at the top of the Node Library tab to quickly filter nodes in real-time.
-5. Double-click any node in the palette to add it to the canvas.
-6. Drag connections between color-coded output sockets and input sockets.
-7. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
-8. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
-9. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.
+4. Selecting or focusing the NodeGraph view automatically brings the **Node Library** tab into view.
+5. Type keywords in the **Search** field at the top of the Node Library tab to quickly filter nodes in real-time.
+6. Double-click any node in the palette to add it to the canvas.
+7. Drag connections between color-coded output sockets and input sockets.
+8. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
+9. Select nodes to inspect and modify input parameters in the **Properties Inspector**.
+10. Click **Run Graph** to evaluate the DAG and update the FreeCAD document model.
 
 Documentation
 -------------
