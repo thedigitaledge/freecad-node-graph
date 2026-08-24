@@ -4,6 +4,15 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.11.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- Per-object document graph data storage: creating a NodeGraph document object initializes an independent graph storage saved in the document's ``GraphData`` property.
+- Bound editor windows: opening a NodeGraph object loads and edits exclusively that object's graph data, automatically auto-saving edits to the document object.
+- Unit tests verifying isolated graph data storage across multiple document objects.
+
 Version 0.10.0 (2025-02-28)
 ---------------------------
 

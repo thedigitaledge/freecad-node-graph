@@ -1,8 +1,15 @@
-"""Unit tests for NodeGraph document objects (top-level and nested subobjects)."""
+"""Unit tests for NodeGraph document objects (top-level, nested subobjects, and isolated graph data storage)."""
 
 import json
 import pytest
-from PySide6.QtWidgets import QApplication
+try:
+    from PySide6.QtWidgets import QApplication
+except ImportError:
+    try:
+        from PySide2.QtWidgets import QApplication
+    except ImportError:
+        from PyQt5.QtWidgets import QApplication
+
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.nodes.inputs import FloatNode
 from freecad_nodegraph.nodes.primitives import BoxNode
@@ -13,6 +20,7 @@ from freecad_nodegraph.document_object import (
     MockDocumentObject,
     make_nodegraph_object,
 )
+from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
 
 
 @pytest.fixture(scope="session")
@@ -58,6 +66,35 @@ def test_nested_subobject_nodegraph_object():
     assert parent_group in child_nodegraph.InList
 
 
+def test_isolated_document_object_graph_data_storage(qapp):
+    """Verify that multiple NodeGraph objects maintain independent isolated graph storages."""
+    obj1 = make_nodegraph_object(doc=None, name="NodeGraph1")
+    obj2 = make_nodegraph_object(doc=None, name="NodeGraph2")
+
+    editor1 = NodeGraphEditorWidget(doc_object=obj1)
+    editor2 = NodeGraphEditorWidget(doc_object=obj2)
+
+    # Add Box to obj1 graph
+    box1 = BoxNode(graph=editor1.graph)
+    editor1.graph.add_node(box1)
+    editor1.save_to_document_object()
+
+    # Add Float to obj2 graph
+    f2 = FloatNode(graph=editor2.graph)
+    editor2.graph.add_node(f2)
+    editor2.save_to_document_object()
+
+    # Confirm storage isolation
+    data1 = json.loads(obj1.GraphData)
+    data2 = json.loads(obj2.GraphData)
+
+    assert len(data1["nodes"]) == 1
+    assert data1["nodes"][0]["node_type"] == "BoxNode"
+
+    assert len(data2["nodes"]) == 1
+    assert data2["nodes"][0]["node_type"] == "FloatNode"
+
+
 def test_view_provider_double_click(qapp):
     from freecad_nodegraph.document_object import ViewProviderNodeGraph
 
@@ -80,6 +117,5 @@ def test_selection_observer_triggers_editor(qapp):
 
     observer = NodeGraphSelectionObserver()
     assert observer is not None
-    # Verify observer methods exist
     assert hasattr(observer, "addSelection")
     assert hasattr(observer, "check_selection")
