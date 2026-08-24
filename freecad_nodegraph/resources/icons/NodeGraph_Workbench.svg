@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="8" fill="#1E1E1E"/>
+  <!-- Connection Lines -->
+  <path d="M 22 22 C 34 22, 30 42, 42 42" stroke="#A6E22E" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 22 42 C 34 42, 30 22, 42 22" stroke="#2196F3" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Node 1 -->
+  <rect x="8" y="14" width="16" height="16" rx="3" fill="#353535" stroke="#FFA726" stroke-width="2"/>
+  <circle cx="22" cy="22" r="3" fill="#A6E22E"/>
+  <!-- Node 2 -->
+  <rect x="8" y="34" width="16" height="16" rx="3" fill="#353535" stroke="#FFA726" stroke-width="2"/>
+  <circle cx="22" cy="42" r="3" fill="#2196F3"/>
+  <!-- Node 3 -->
+  <rect x="40" y="14" width="16" height="16" rx="3" fill="#353535" stroke="#FFA726" stroke-width="2"/>
+  <circle cx="42" cy="22" r="3" fill="#2196F3"/>
+  <!-- Node 4 -->
+  <rect x="40" y="34" width="16" height="16" rx="3" fill="#353535" stroke="#FFA726" stroke-width="2"/>
+  <circle cx="42" cy="42" r="3" fill="#A6E22E"/>
+</svg>

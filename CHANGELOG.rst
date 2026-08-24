@@ -4,6 +4,14 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.15.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- Vector SVG icons for NodeGraph Workbench: ``NodeGraph_Workbench.svg``, ``NodeGraph_Create.svg``, ``NodeGraph_Editor.svg``, ``NodeGraph_Run.svg``, ``NodeGraph_Node.svg``, and ``NodeGraph_Link.svg``.
+- Integrated icon path registration in ``InitGui.py`` via ``FreeCADGui.addIconPath``.
+
 Version 0.14.0 (2025-02-28)
 ---------------------------
 

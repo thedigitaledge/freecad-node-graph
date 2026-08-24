@@ -1,6 +1,9 @@
 # FreeCAD Gui init script for NodeGraph Workbench
 # Executed when FreeCAD GUI initializes
 
+import os
+from freecad_nodegraph.resources import ICONS_DIR
+
 try:
     import FreeCAD
     import FreeCADGui
@@ -14,6 +17,7 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
 
     MenuText = "NodeGraph"
     ToolTip = "Programming FreeCAD features using a node-graph"
+    Icon = os.path.join(ICONS_DIR, "NodeGraph_Workbench.svg")
 
     def __init__(self):
         super().__init__()
@@ -22,6 +26,9 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
         """Initialize workbench commands, toolbars and menus."""
         import freecad_nodegraph.commands as commands
         commands.register_commands()
+
+        if HAS_FREECAD and hasattr(FreeCADGui, "addIconPath"):
+            FreeCADGui.addIconPath(ICONS_DIR)
 
         cmd_list = ["NodeGraph_CreateObject", "NodeGraph_OpenEditor", "NodeGraph_RunGraph"]
         self.appendToolbar("NodeGraph", cmd_list)
@@ -40,4 +47,5 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
 
 
 if HAS_FREECAD:
+    FreeCADGui.addIconPath(ICONS_DIR)
     FreeCADGui.addWorkbench(NodeGraphWorkbench())
