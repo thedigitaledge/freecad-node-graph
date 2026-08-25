@@ -60,10 +60,17 @@ class NodeGraphSelectionObserver:
         pass
 
     def clearSelection(self, doc_name):
-        pass
+        self.close_task_panel()
+
+    def close_task_panel(self):
+        if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "closeDialog"):
+            try:
+                FreeCADGui.Control.closeDialog()
+            except Exception:
+                pass
 
     def check_selection(self, doc_name, obj_name):
-        if FreeCAD.getDocument(doc_name):
+        if FreeCAD and hasattr(FreeCAD, "getDocument") and FreeCAD.getDocument(doc_name):
             doc = FreeCAD.getDocument(doc_name)
             obj = doc.getObject(obj_name)
             if obj and (
@@ -73,6 +80,8 @@ class NodeGraphSelectionObserver:
             ):
                 cmd = CommandOpenNodeGraphEditor()
                 cmd.Activated(doc_object=obj)
+            else:
+                self.close_task_panel()
 
 
 class CommandCreateNodeGraphObject:

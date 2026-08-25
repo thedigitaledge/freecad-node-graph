@@ -153,3 +153,26 @@ def test_command_open_editor_shows_task_panel(qapp, monkeypatch):
 
     assert len(shown_dialogs) == 1
     assert isinstance(shown_dialogs[0], NodeGraphTaskPanel)
+
+
+def test_selection_observer_closes_task_panel(qapp, monkeypatch):
+    import freecad_nodegraph.commands as commands
+
+    closed_dialogs = []
+
+    class MockControl:
+        @staticmethod
+        def closeDialog():
+            closed_dialogs.append(True)
+
+    class MockFreeCADGui:
+        Control = MockControl
+
+    monkeypatch.setattr(commands, "FreeCADGui", MockFreeCADGui)
+
+    observer = commands.NodeGraphSelectionObserver()
+    observer.clearSelection("Doc")
+    assert len(closed_dialogs) == 1
+
+    observer.close_task_panel()
+    assert len(closed_dialogs) == 2
