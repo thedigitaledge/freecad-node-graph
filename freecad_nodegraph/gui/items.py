@@ -8,6 +8,14 @@ try:
         QGraphicsPathItem,
         QGraphicsDropShadowEffect,
         QStyleOptionGraphicsItem,
+        QGraphicsProxyWidget,
+        QDoubleSpinBox,
+        QSpinBox,
+        QLineEdit,
+        QCheckBox,
+        QLabel,
+        QHBoxLayout,
+        QVBoxLayout,
         QWidget,
         QMenu,
     )
@@ -53,6 +61,14 @@ except ImportError:
             QGraphicsPathItem,
             QGraphicsDropShadowEffect,
             QStyleOptionGraphicsItem,
+            QGraphicsProxyWidget,
+            QDoubleSpinBox,
+            QSpinBox,
+            QLineEdit,
+            QCheckBox,
+            QLabel,
+            QHBoxLayout,
+            QVBoxLayout,
             QWidget,
             QMenu,
             QAction,
@@ -214,6 +230,7 @@ class GraphicsNodeItem(QGraphicsItem):
 
         self.recalculate_size()
         self.create_sockets()
+        self.create_input_widgets()
 
     def recalculate_size(self):
         num_inputs = len(self.node.inputs)
@@ -229,6 +246,157 @@ class GraphicsNodeItem(QGraphicsItem):
 
         calculated_width = max(180.0, (max_in_len + max_out_len + 4) * 8.0, title_len * 9.0)
         self.width = calculated_width
+
+        cat = getattr(self.node, "category", "")
+        node_type = getattr(self.node, "node_type", self.node.__class__.__name__)
+        if cat == "Input":
+            if node_type in ("VectorNode", "PlacementNode"):
+                self.height = max(self.height, 135.0)
+                self.width = max(self.width, 200.0)
+            else:
+                self.height = max(self.height, 80.0)
+                self.width = max(self.width, 180.0)
+
+    def create_input_widgets(self):
+        cat = getattr(self.node, "category", "")
+        node_type = getattr(self.node, "node_type", self.node.__class__.__name__)
+
+        if cat != "Input":
+            return
+
+        proxy = QGraphicsProxyWidget(self)
+        container = QWidget()
+        container.setStyleSheet("background: transparent;")
+
+        if node_type == "FloatNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            spin = QDoubleSpinBox()
+            spin.setRange(-999999.0, 999999.0)
+            spin.setDecimals(3)
+            spin.setValue(float(getattr(self.node, "value", 0.0)))
+
+            def on_float_changed(val):
+                try:
+                    self.node.set_value(val)
+                    spin.setStyleSheet("")
+                except ValueError:
+                    spin.setStyleSheet("border: 1px solid red;")
+
+            spin.valueChanged.connect(on_float_changed)
+            layout.addWidget(spin)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "IntegerNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            spin = QSpinBox()
+            spin.setRange(-999999, 999999)
+            spin.setValue(int(getattr(self.node, "value", 0)))
+
+            def on_int_changed(val):
+                try:
+                    self.node.set_value(val)
+                    spin.setStyleSheet("")
+                except ValueError:
+                    spin.setStyleSheet("border: 1px solid red;")
+
+            spin.valueChanged.connect(on_int_changed)
+            layout.addWidget(spin)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "StringNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            edit = QLineEdit(str(getattr(self.node, "value", "")))
+
+            def on_string_changed(txt):
+                self.node.set_value(txt)
+
+            edit.textChanged.connect(on_string_changed)
+            layout.addWidget(edit)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "BooleanNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            chk = QCheckBox("True")
+            chk.setChecked(bool(getattr(self.node, "value", False)))
+            chk.setStyleSheet("color: white;")
+
+            def on_bool_changed(state):
+                self.node.set_value(bool(state))
+
+            chk.stateChanged.connect(on_bool_changed)
+            layout.addWidget(chk)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "VectorNode":
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            layout.setSpacing(2)
+
+            for comp, label_text in [("x", "X:"), ("y", "Y:"), ("z", "Z:")]:
+                h_layout = QHBoxLayout()
+                lbl = QLabel(label_text)
+                lbl.setStyleSheet("color: white; font-weight: bold;")
+                spin = QDoubleSpinBox()
+                spin.setRange(-999999.0, 999999.0)
+                spin.setDecimals(3)
+                spin.setValue(float(getattr(self.node, comp, 0.0)))
+
+                def make_vec_handler(c_name, sp):
+                    def handler(val):
+                        try:
+                            self.node.set_components(**{c_name: val})
+                            sp.setStyleSheet("")
+                        except ValueError:
+                            sp.setStyleSheet("border: 1px solid red;")
+                    return handler
+
+                spin.valueChanged.connect(make_vec_handler(comp, spin))
+                h_layout.addWidget(lbl)
+                h_layout.addWidget(spin)
+                layout.addLayout(h_layout)
+
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "PlacementNode":
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            layout.setSpacing(2)
+
+            for comp, label_text in [("x", "X:"), ("y", "Y:"), ("z", "Z:")]:
+                h_layout = QHBoxLayout()
+                lbl = QLabel(label_text)
+                lbl.setStyleSheet("color: white; font-weight: bold;")
+                spin = QDoubleSpinBox()
+                spin.setRange(-999999.0, 999999.0)
+                spin.setDecimals(3)
+                pos_val = getattr(self.node, f"pos_{comp}", 0.0)
+                spin.setValue(float(pos_val))
+
+                def make_pos_handler(c_name, sp):
+                    def handler(val):
+                        try:
+                            self.node.set_position(**{c_name: val})
+                            sp.setStyleSheet("")
+                        except ValueError:
+                            sp.setStyleSheet("border: 1px solid red;")
+                    return handler
+
+                spin.valueChanged.connect(make_pos_handler(comp, spin))
+                h_layout.addWidget(lbl)
+                h_layout.addWidget(spin)
+                layout.addLayout(h_layout)
+
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
 
     def create_sockets(self):
         label_font = QFont("Arial", 8, QFont.Bold)

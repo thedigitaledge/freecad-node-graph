@@ -167,6 +167,50 @@ def test_add_node_from_library_to_active_editor(qapp):
     _active_editors.clear()
 
 
+def test_input_node_value_entry_and_validation(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.inputs import FloatNode, IntegerNode, StringNode, VectorNode
+    from freecad_nodegraph.gui.items import GraphicsNodeItem
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    graph = Graph()
+
+    # 1. FloatNode
+    f_node = FloatNode(graph=graph)
+    graph.add_node(f_node)
+    f_item = GraphicsNodeItem(f_node)
+    f_node.set_value(42.5)
+    assert f_node.value == 42.5
+
+    with pytest.raises(ValueError):
+        f_node.set_value("invalid_float")
+
+    # 2. IntegerNode
+    i_node = IntegerNode(graph=graph)
+    graph.add_node(i_node)
+    i_node.set_value(10)
+    assert i_node.value == 10
+
+    with pytest.raises(ValueError):
+        i_node.set_value("invalid_int")
+
+    # 3. VectorNode
+    v_node = VectorNode(graph=graph)
+    graph.add_node(v_node)
+    v_node.set_components(x=1.0, y=2.0, z=3.0)
+    assert v_node.x == 1.0
+    assert v_node.y == 2.0
+    assert v_node.z == 3.0
+
+    with pytest.raises(ValueError):
+        v_node.set_components(x="not_a_number")
+
+    # 4. Property Inspector update for Input Node
+    panel = NodeGraphSidePanelWidget(graph=graph)
+    panel.update_properties_inspector([f_item])
+    assert panel.prop_form_layout.count() > 0
+
+
 def test_copy_cut_paste_duplicate(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode

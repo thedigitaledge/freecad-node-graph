@@ -13,6 +13,7 @@ try:
         QFormLayout,
         QLabel,
         QDoubleSpinBox,
+        QCheckBox,
         QPushButton,
     )
     from PySide6.QtCore import Qt
@@ -29,6 +30,7 @@ except ImportError:
             QFormLayout,
             QLabel,
             QDoubleSpinBox,
+            QCheckBox,
             QPushButton,
         )
         from PySide2.QtCore import Qt
@@ -44,6 +46,7 @@ except ImportError:
             QFormLayout,
             QLabel,
             QDoubleSpinBox,
+            QCheckBox,
             QPushButton,
         )
         from PyQt5.QtCore import Qt
@@ -192,6 +195,99 @@ class NodeGraphSidePanelWidget(QWidget):
         if hasattr(item, "node"):
             node = item.node
             self.prop_group.setTitle(f"Node: {node.title}")
+
+            cat = getattr(node, "category", "")
+            node_type = getattr(node, "node_type", node.__class__.__name__)
+
+            if cat == "Input":
+                if node_type == "FloatNode":
+                    spin = QDoubleSpinBox()
+                    spin.setRange(-999999.0, 999999.0)
+                    spin.setDecimals(3)
+                    spin.setValue(float(getattr(node, "value", 0.0)))
+
+                    def on_val_changed(val):
+                        try:
+                            node.set_value(val)
+                            spin.setStyleSheet("")
+                        except ValueError:
+                            spin.setStyleSheet("border: 1px solid red;")
+
+                    spin.valueChanged.connect(on_val_changed)
+                    self.prop_form_layout.addRow("Value:", spin)
+
+                elif node_type == "IntegerNode":
+                    spin = QDoubleSpinBox()
+                    spin.setRange(-999999.0, 999999.0)
+                    spin.setDecimals(0)
+                    spin.setValue(float(getattr(node, "value", 0)))
+
+                    def on_int_changed(val):
+                        try:
+                            node.set_value(int(val))
+                            spin.setStyleSheet("")
+                        except ValueError:
+                            spin.setStyleSheet("border: 1px solid red;")
+
+                    spin.valueChanged.connect(on_int_changed)
+                    self.prop_form_layout.addRow("Value:", spin)
+
+                elif node_type == "StringNode":
+                    edit = QLineEdit(str(getattr(node, "value", "")))
+
+                    def on_str_changed(txt):
+                        node.set_value(txt)
+
+                    edit.textChanged.connect(on_str_changed)
+                    self.prop_form_layout.addRow("Value:", edit)
+
+                elif node_type == "BooleanNode":
+                    chk = QCheckBox("True")
+                    chk.setChecked(bool(getattr(node, "value", False)))
+
+                    def on_chk_changed(state):
+                        node.set_value(bool(state))
+
+                    chk.stateChanged.connect(on_chk_changed)
+                    self.prop_form_layout.addRow("Value:", chk)
+
+                elif node_type == "VectorNode":
+                    for comp in ("x", "y", "z"):
+                        spin = QDoubleSpinBox()
+                        spin.setRange(-999999.0, 999999.0)
+                        spin.setDecimals(3)
+                        spin.setValue(float(getattr(node, comp, 0.0)))
+
+                        def make_vec_handler(c_name, sp):
+                            def handler(val):
+                                try:
+                                    node.set_components(**{c_name: val})
+                                    sp.setStyleSheet("")
+                                except ValueError:
+                                    sp.setStyleSheet("border: 1px solid red;")
+                            return handler
+
+                        spin.valueChanged.connect(make_vec_handler(comp, spin))
+                        self.prop_form_layout.addRow(f"Component {comp.upper()}:", spin)
+
+                elif node_type == "PlacementNode":
+                    for comp in ("x", "y", "z"):
+                        spin = QDoubleSpinBox()
+                        spin.setRange(-999999.0, 999999.0)
+                        spin.setDecimals(3)
+                        spin.setValue(float(getattr(node, f"pos_{comp}", 0.0)))
+
+                        def make_pos_handler(c_name, sp):
+                            def handler(val):
+                                try:
+                                    node.set_position(**{c_name: val})
+                                    sp.setStyleSheet("")
+                                except ValueError:
+                                    sp.setStyleSheet("border: 1px solid red;")
+                            return handler
+
+                        spin.valueChanged.connect(make_pos_handler(comp, spin))
+                        self.prop_form_layout.addRow(f"Position {comp.upper()}:", spin)
 
             for sock in node.inputs:
                 if sock.is_connected:
