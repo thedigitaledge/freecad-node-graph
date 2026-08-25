@@ -92,7 +92,12 @@ class NodeGraphSidePanelWidget(QWidget):
         self.node_tree = QTreeWidget()
         self.node_tree.setHeaderHidden(True)
         self.node_tree.itemDoubleClicked.connect(self.on_node_library_double_clicked)
+        self.node_tree.itemActivated.connect(self.on_node_library_double_clicked)
         layout.addWidget(self.node_tree)
+
+        self.add_node_btn = QPushButton("Add Node to Active Graph")
+        self.add_node_btn.clicked.connect(self.on_add_node_button_clicked)
+        layout.addWidget(self.add_node_btn)
 
         self.populate_node_library()
 
@@ -139,12 +144,38 @@ class NodeGraphSidePanelWidget(QWidget):
             if search_text and category_has_match:
                 category_item.setExpanded(True)
 
-    def on_node_library_double_clicked(self, item: QTreeWidgetItem, column: int):
+    def add_node_from_item(self, item: QTreeWidgetItem):
+        if not item:
+            return
         node_type = item.data(0, Qt.UserRole)
-        if node_type:
-            node = NodeRegistry.create_node(node_type, graph=self.graph)
-            if node:
-                self.graph.add_node(node)
+        if not node_type:
+            return
+
+        from freecad_nodegraph.commands import get_active_editor
+
+        editor = get_active_editor()
+        if editor is not None and hasattr(editor, "graph") and hasattr(editor, "scene"):
+            target_graph = editor.graph
+            target_scene = editor.scene
+        else:
+            target_graph = self.graph
+            target_scene = getattr(self, "scene", None)
+
+        node = NodeRegistry.create_node(node_type, graph=target_graph)
+        if node:
+            target_graph.add_node(node)
+            if target_scene is not None and hasattr(target_scene, "add_node_item"):
+                target_scene.add_node_item(node)
+            if editor is not None and hasattr(editor, "save_to_document_object"):
+                editor.save_to_document_object()
+
+    def on_node_library_double_clicked(self, item: QTreeWidgetItem, column: int = 0):
+        self.add_node_from_item(item)
+
+    def on_add_node_button_clicked(self):
+        curr_item = self.node_tree.currentItem()
+        if curr_item:
+            self.add_node_from_item(curr_item)
 
     def update_properties_inspector(self, selected_items):
         """Update property inspector form fields for selected scene items."""

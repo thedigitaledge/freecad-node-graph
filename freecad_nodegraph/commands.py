@@ -30,6 +30,26 @@ _active_editors = {}
 _selection_observer = None
 
 
+def get_active_editor():
+    """Retrieve currently active or focused NodeGraphEditorWidget."""
+    if hasattr(FreeCADGui, "getMainWindow") and FreeCADGui.getMainWindow():
+        main_win = FreeCADGui.getMainWindow()
+        if main_win:
+            mdi_area = main_win.findChild(QMdiArea)
+            if mdi_area and mdi_area.activeSubWindow():
+                subwin = mdi_area.activeSubWindow()
+                widget = subwin.widget()
+                if widget is not None and widget.__class__.__name__ == "NodeGraphEditorWidget":
+                    return widget
+
+    if _active_editors:
+        for doc_obj, (subwin, editor) in reversed(list(_active_editors.items())):
+            if hasattr(subwin, "isVisible") and subwin.isVisible():
+                return editor
+
+    return None
+
+
 class NodeGraphSelectionObserver:
     """Selection observer listening for NodeGraph object selection in FreeCAD Model tree view."""
 
@@ -149,16 +169,22 @@ class CommandOpenNodeGraphEditor:
                     if mdi_area:
                         subwin = mdi_area.addSubWindow(editor_widget)
                         subwin.setWindowTitle(f"{obj_title}")
+                        subwin.show()
                         subwin.showMaximized()
+                        editor_widget.showMaximized()
+                        mdi_area.setActiveSubWindow(subwin)
                         _active_editors[doc_object] = (subwin, editor_widget)
                     else:
                         editor_widget.setWindowTitle(f"{obj_title}")
-                        editor_widget.show()
+                        editor_widget.showMaximized()
                         _active_editors[doc_object] = (editor_widget, editor_widget)
                 else:
                     subwin, editor_widget = subwin_info
                     subwin.show()
+                    subwin.showMaximized()
                     subwin.raise_()
+                    if mdi_area:
+                        mdi_area.setActiveSubWindow(subwin)
 
             else:
                 # Standalone fallback mode
@@ -167,10 +193,10 @@ class CommandOpenNodeGraphEditor:
                     editor_widget = NodeGraphEditorWidget(doc_object=doc_object)
                     editor_widget.setWindowTitle(f"{obj_title}")
                     _active_editors[doc_object] = (editor_widget, editor_widget)
-                    editor_widget.show()
+                    editor_widget.showMaximized()
                 else:
                     editor_widget = subwin_info[1]
-                    editor_widget.show()
+                    editor_widget.showMaximized()
 
             # Integrate Node Library into FreeCAD's task view combo box
             if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):

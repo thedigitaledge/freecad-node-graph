@@ -75,32 +75,6 @@ def test_socket_colors_and_labels(qapp):
     shape_item = node_item.socket_items[shape_sock]
     assert shape_item.get_color() == SOCKET_TYPE_COLORS[DataType.SHAPE]
 
-def test_side_panel_node_search(qapp):
-    from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
-
-    graph = Graph()
-    panel = NodeGraphSidePanelWidget(graph=graph)
-
-    # Initial state: no search filter
-    root = panel.node_tree.invisibleRootItem()
-    assert root.childCount() > 0
-
-    # Filter for 'box'
-    panel.search_input.setText("box")
-    panel.filter_node_library("box")
-
-    # Find Box node item
-    found_box = False
-    for i in range(root.childCount()):
-        cat_item = root.child(i)
-        if not cat_item.isHidden():
-            for j in range(cat_item.childCount()):
-                child = cat_item.child(j)
-                if not child.isHidden() and "box" in child.text(0).lower():
-                    found_box = True
-
-    assert found_box is True
 
 
 def test_side_panel_node_search(qapp):
@@ -150,6 +124,47 @@ def test_detach_links(qapp):
     scene.detach_node_links(box)
     assert len(graph.edges) == 0
     assert len(scene.edge_items) == 0
+
+
+def test_add_node_from_library_to_active_editor(qapp):
+    from freecad_nodegraph.commands import _active_editors, get_active_editor
+    from freecad_nodegraph.document_object import MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    _active_editors.clear()
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+    editor.show()
+
+    # Register in active editors
+    _active_editors[obj] = (editor, editor)
+
+    assert get_active_editor() == editor
+
+    panel = NodeGraphSidePanelWidget(graph=editor.graph)
+
+    # Find BoxNode item in library tree
+    root = panel.node_tree.invisibleRootItem()
+    box_tree_item = None
+    for i in range(root.childCount()):
+        cat = root.child(i)
+        for j in range(cat.childCount()):
+            child = cat.child(j)
+            if child.data(0, 0x0100) == "BoxNode":  # Qt.UserRole
+                box_tree_item = child
+                break
+
+    assert box_tree_item is not None
+
+    panel.add_node_from_item(box_tree_item)
+
+    assert len(editor.graph.nodes) == 1
+    assert len(editor.scene.node_items) == 1
+
+    # Cleanup
+    _active_editors.clear()
 
 
 def test_copy_cut_paste_duplicate(qapp):
