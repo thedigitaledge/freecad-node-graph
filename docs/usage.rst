@@ -1,28 +1,26 @@
 Usage Guide
 ===========
 
+Creating NodeGraph Objects & Child Nesting in FreeCAD Model View
+----------------------------------------------------------------
+
+1. Switch to the **NodeGraph** workbench in FreeCAD.
+2. Select a parent group/body/subobject in the Model tree view (or leave nothing selected for top-level creation).
+3. Click **Create NodeGraph Object** on the toolbar or menu.
+4. A new ``NodeGraph:X`` FeaturePython object is created in the Model view (nested as a child of the selected parent object if a selection was active) with its own isolated graph data storage saved in its ``GraphData`` property.
+5. Selecting any ``NodeGraph:X`` object in the Model view automatically opens its editor canvas tab titled ``NodeGraph:X`` and displays the Node Library in the Tasks view panel.
 Opening the Editor
 ------------------
 
-1. Switch to the **NodeGraph** workbench in FreeCAD.
-2. Click **Open Node Graph Editor** in the toolbar or menu.
-3. A window will appear containing the Node Library, Workbench Toolbars, Node Canvas, Properties Inspector, and AI Assistant.
+1. Selecting a NodeGraph object in the Model view, clicking **Open Node Graph** in the toolbar, or double-clicking a NodeGraph object opens the editor bound to that object.
+2. The Node Graph canvas view opens as a tab in FreeCAD's main document workspace (matching the Spreadsheet view style), displaying ``NodeGraph:X`` as its title.
 
 Building a Node Graph
 ---------------------
 
-AI Assistant & Prompt-to-Graph
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The editor includes an **AI Assistant** panel (accessible on the right tab panel or via the **AI Assistant** toolbar button).
-
-- Type natural language descriptions (e.g. *"Create a box of 20x20x30 and cut a cylinder of radius 5"*).
-- Select preset examples from the dropdown menu.
-- Click **Generate Graph** to automatically synthesize nodes, set parameters, and wire connections on the canvas.
-- Add an **AI Generator** or **AI Prompt Assistant** node directly from the Node Library under category **AI**.
-
-Workbench Toolbars & Action Buttons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The editor header automatically displays toolbars for each discovered FreeCAD workbench (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``, ``[Mesh]``). Each toolbar contains action buttons corresponding to scriptable functions (e.g. *Box*, *Cylinder*, *Sphere*, *Wall*, *Polygon*). Click any button to instantly spawn that node onto the canvas.
+Tasks Overlay Panel & Real-Time Search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Node Library palette and **Properties Inspector** are presented inside FreeCAD's **Tasks** view overlay panel via FreeCAD's TaskPanel system. Use the **Search** input box at the top of the panel to dynamically filter nodes by name in real-time. Double-click any node to add it to the canvas.
 
 Node Context Menu (Secondary Click)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,20 +46,11 @@ Nodes display text labels next to each input and output socket. Sockets and conn
 - **Teal**: Generic Document Objects
 - **Light Gray**: Any / Generic data
 
-Connecting Sockets
-~~~~~~~~~~~~~~~~~~
-Click and drag from an output socket (right side of a node) to an input socket (left side of another node). A connecting line will appear.
+Connecting Sockets & Properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Drag connections between output sockets and input sockets. Select a node to modify its input default values in the **Properties Inspector** on the Tasks view panel.
 
-Inspecting Properties
-~~~~~~~~~~~~~~~~~~~~~
-Click on a node to view and edit its parameters in the **Properties Inspector** on the right panel.
+Document Storage Persistence & Recomputation
+--------------------------------------------
 
-Executing the Graph
--------------------
-
-Click the **Run Graph** button on the editor toolbar or run the command from FreeCAD. The graph evaluator will topologically sort the DAG and compute all nodes, updating or creating 3D Part objects in the active FreeCAD document.
-
-Saving & Loading Graphs
------------------------
-
-Use **Save Graph...** and **Load Graph...** in the toolbar to save your node setup as a JSON file.
+All node additions, removals, and connections made in the editor automatically persist into the active FreeCAD document object's ``GraphData`` property. Recomputing the FreeCAD document (or clicking **Run Graph**) evaluates the node graph and assigns the computed 3D geometry to the NodeGraph object's ``Shape`` property.

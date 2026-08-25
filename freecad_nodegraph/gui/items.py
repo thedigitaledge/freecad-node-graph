@@ -6,15 +6,9 @@ try:
         QGraphicsItem,
         QGraphicsTextItem,
         QGraphicsPathItem,
-        QGraphicsProxyWidget,
         QGraphicsDropShadowEffect,
         QStyleOptionGraphicsItem,
         QWidget,
-        QLineEdit,
-        QCheckBox,
-        QLabel,
-        QHBoxLayout,
-        QVBoxLayout,
         QMenu,
     )
     from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
@@ -35,15 +29,9 @@ except ImportError:
             QGraphicsItem,
             QGraphicsTextItem,
             QGraphicsPathItem,
-            QGraphicsProxyWidget,
             QGraphicsDropShadowEffect,
             QStyleOptionGraphicsItem,
             QWidget,
-            QLineEdit,
-            QCheckBox,
-            QLabel,
-            QHBoxLayout,
-            QVBoxLayout,
             QMenu,
         )
         from PySide2.QtCore import Qt, QPointF, QRectF, QPoint
@@ -63,15 +51,9 @@ except ImportError:
             QGraphicsItem,
             QGraphicsTextItem,
             QGraphicsPathItem,
-            QGraphicsProxyWidget,
             QGraphicsDropShadowEffect,
             QStyleOptionGraphicsItem,
             QWidget,
-            QLineEdit,
-            QCheckBox,
-            QLabel,
-            QHBoxLayout,
-            QVBoxLayout,
             QMenu,
             QAction,
         )
@@ -232,21 +214,10 @@ class GraphicsNodeItem(QGraphicsItem):
 
         self.recalculate_size()
         self.create_sockets()
-        self.create_inline_input_widgets()
 
     def recalculate_size(self):
         num_inputs = len(self.node.inputs)
         num_outputs = len(self.node.outputs)
-
-        if getattr(self.node, "category", "") == "Input":
-            if hasattr(self.node, "set_components") or hasattr(self.node, "set_position"):
-                self.height = 135.0
-                self.width = 200.0
-            else:
-                self.height = 75.0
-                self.width = 180.0
-            return
-
         max_socks = max(num_inputs, num_outputs, 1)
 
         self.height = 35 + max_socks * 24 + 10
@@ -269,6 +240,7 @@ class GraphicsNodeItem(QGraphicsItem):
             item.setPos(0, y_pos)
             self.socket_items[sock] = item
 
+            # Input socket text label
             txt = QGraphicsTextItem(sock.name, self)
             txt.setDefaultTextColor(QColor("#E0E0E0"))
             txt.setFont(label_font)
@@ -282,106 +254,12 @@ class GraphicsNodeItem(QGraphicsItem):
             item.setPos(self.width, y_pos)
             self.socket_items[sock] = item
 
+            # Output socket text label
             txt = QGraphicsTextItem(sock.name, self)
             txt.setDefaultTextColor(QColor("#E0E0E0"))
             txt.setFont(label_font)
             txt.setPos(self.width - txt.boundingRect().width() - 12, y_pos - 10)
             self.label_items.append(txt)
-
-    def create_inline_input_widgets(self):
-        """Create embedded PySide inline widgets with real-time error checking for Input nodes."""
-        if getattr(self.node, "category", "") != "Input":
-            return
-
-        node = self.node
-        valid_style = "border: 1px solid #555555; background-color: #222222; color: #E0E0E0; border-radius: 3px; padding: 2px;"
-        error_style = "border: 2px solid #FF5252; background-color: #381A1A; color: #FFD2D2; border-radius: 3px; padding: 2px;"
-
-        # FloatNode, IntegerNode, StringNode
-        if hasattr(node, "set_value") and not hasattr(node, "set_components"):
-            if node.node_type == "BooleanNode":
-                cb = QCheckBox("True")
-                cb.setChecked(getattr(node, "value", False))
-                cb.setStyleSheet("color: #E0E0E0; font-size: 11px; font-weight: bold; background: transparent;")
-
-                def on_toggle(checked):
-                    node.set_value(checked)
-
-                cb.toggled.connect(on_toggle)
-
-                proxy = QGraphicsProxyWidget(self)
-                proxy.setWidget(cb)
-                proxy.setPos(12, 38)
-            else:
-                line_edit = QLineEdit(str(getattr(node, "value", "")))
-                line_edit.setFixedWidth(110)
-                line_edit.setStyleSheet(valid_style)
-
-                def on_text_changed(txt):
-                    try:
-                        node.set_value(txt)
-                        line_edit.setStyleSheet(valid_style)
-                        line_edit.setToolTip("")
-                    except ValueError as err:
-                        line_edit.setStyleSheet(error_style)
-                        line_edit.setToolTip(str(err))
-
-                line_edit.textChanged.connect(on_text_changed)
-
-                proxy = QGraphicsProxyWidget(self)
-                proxy.setWidget(line_edit)
-                proxy.setPos(12, 38)
-
-        # VectorNode & PlacementNode
-        elif hasattr(node, "set_components") or hasattr(node, "set_position"):
-            setter = getattr(node, "set_components", getattr(node, "set_position", None))
-
-            container = QWidget()
-            container.setStyleSheet("background: transparent;")
-            layout = QVBoxLayout(container)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(4)
-
-            curr_x = getattr(node, "x", getattr(node, "pos_x", 0.0))
-            curr_y = getattr(node, "y", getattr(node, "pos_y", 0.0))
-            curr_z = getattr(node, "z", getattr(node, "pos_z", 0.0))
-
-            vals = {"x": curr_x, "y": curr_y, "z": curr_z}
-
-            for comp in ["X", "Y", "Z"]:
-                row = QHBoxLayout()
-                row.setContentsMargins(0, 0, 0, 0)
-                row.setSpacing(4)
-                lbl = QLabel(f"{comp}:")
-                lbl.setFixedWidth(16)
-                lbl.setStyleSheet("color: #E0E0E0; font-size: 11px; font-weight: bold; background: transparent;")
-                edit = QLineEdit(str(vals[comp.lower()]))
-                edit.setFixedWidth(75)
-                edit.setStyleSheet(valid_style)
-
-                def make_comp_handler(c_name, le):
-                    def handler(txt):
-                        try:
-                            val_f = float(txt)
-                            vals[c_name.lower()] = val_f
-                            setter(**{c_name.lower(): val_f})
-                            le.setStyleSheet(valid_style)
-                            le.setToolTip("")
-                        except ValueError:
-                            le.setStyleSheet(error_style)
-                            le.setToolTip(f"Invalid float for {c_name}: '{txt}'")
-                    return handler
-
-                edit.textChanged.connect(make_comp_handler(comp, edit))
-
-                row.addWidget(lbl)
-                row.addWidget(edit)
-                row.addStretch()
-                layout.addLayout(row)
-
-            proxy = QGraphicsProxyWidget(self)
-            proxy.setWidget(container)
-            proxy.setPos(12, 38)
 
     def contextMenuEvent(self, event):
         """Handle secondary (right-click) context menu on node."""

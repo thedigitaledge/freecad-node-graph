@@ -3,7 +3,7 @@
 from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
-from freecad_nodegraph.nodes.inputs import create_vector, HAS_FREECAD
+from freecad_nodegraph.nodes.inputs import create_vector
 from freecad_nodegraph.nodes.primitives import MockShape, Part
 
 
@@ -25,12 +25,11 @@ class TranslateNode(BaseNode):
         if shape is None:
             res = None
         else:
-            if Part and HAS_FREECAD and hasattr(shape, "copy"):
+            if hasattr(shape, "copy"):
                 res = shape.copy()
                 res.translate(vec)
             else:
-                res = MockShape("Translate", {"shape": shape, "vector": vec})
-
+                res = None  # Fallback for non-Part shapes
         self.set_output_value("Shape", res)
 
 
@@ -52,11 +51,10 @@ class ExtrudeNode(BaseNode):
         if shape is None:
             res = None
         else:
-            if Part and HAS_FREECAD and hasattr(shape, "extrude"):
+            if hasattr(shape, "extrude"):
                 res = shape.extrude(vec)
             else:
-                res = MockShape("Extrude", {"shape": shape, "vector": vec})
-
+                res = None  # Fallback for non-Part shapes
         self.set_output_value("Shape", res)
 
 
@@ -82,9 +80,8 @@ class CompoundNode(BaseNode):
         elif len(shapes) == 1:
             res = shapes[0]
         else:
-            if Part and HAS_FREECAD and hasattr(Part, "makeCompound"):
+            if hasattr(Part, "makeCompound"):
                 res = Part.makeCompound(shapes)
             else:
-                res = MockShape("Compound", {"shapes": shapes})
-
+                res = None  # Fallback for non-Part shapes
         self.set_output_value("Shape", res)

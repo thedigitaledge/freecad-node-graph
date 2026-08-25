@@ -1,15 +1,11 @@
 # FreeCAD Gui init script for NodeGraph Workbench
 # Executed when FreeCAD GUI initializes
 
-try:
-    import FreeCAD
-    import FreeCADGui
-    HAS_FREECAD = True
-except ImportError:
-    HAS_FREECAD = False
+import FreeCAD
+import FreeCADGui
 
 
-class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
+class NodeGraphWorkbench(FreeCADGui.Workbench):
     """FreeCAD NodeGraph Workbench definition."""
 
     MenuText = "NodeGraph"
@@ -21,10 +17,16 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
     def Initialize(self):
         """Initialize workbench commands, toolbars and menus."""
         import freecad_nodegraph.commands as commands
+
         commands.register_commands()
 
-        self.appendToolbar("NodeGraph", ["NodeGraph_OpenEditor", "NodeGraph_RunGraph"])
-        self.appendMenu("NodeGraph", ["NodeGraph_OpenEditor", "NodeGraph_RunGraph"])
+        cmd_list = [
+            "NodeGraph_CreateObject",
+            "NodeGraph_OpenEditor",
+            "NodeGraph_RunGraph",
+        ]
+        self.appendToolbar("NodeGraph", cmd_list)
+        self.appendMenu("NodeGraph", cmd_list)
 
     def GetClassName(self):
         return "Gui::PythonWorkbench"
@@ -38,5 +40,6 @@ class NodeGraphWorkbench(FreeCADGui.Workbench if HAS_FREECAD else object):
         pass
 
 
-if HAS_FREECAD:
+if __name__ == "__main__":
     FreeCADGui.addWorkbench(NodeGraphWorkbench())
+

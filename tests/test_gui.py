@@ -19,7 +19,8 @@ def test_gui_creation(qapp):
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.scene import NodeGraphicsScene
     from freecad_nodegraph.gui.view import NodeGraphicsView
-    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget, NodeGraphTaskPanel
 
     graph = Graph()
     f1 = FloatNode(graph=graph)
@@ -33,9 +34,15 @@ def test_gui_creation(qapp):
     view = NodeGraphicsView(scene)
     assert view is not None
 
-    window = NodeGraphEditorWindow(graph=graph)
-    assert window is not None
-    assert window.windowTitle() == "FreeCAD NodeGraph Editor"
+    editor = NodeGraphEditorWidget(graph=graph)
+    assert editor is not None
+
+    panel = NodeGraphSidePanelWidget(graph=graph)
+    assert panel is not None
+
+    task_panel = NodeGraphTaskPanel(graph=graph)
+    assert task_panel.widget is not None
+    assert len(task_panel.form) == 1
 
 
 def test_socket_colors_and_labels(qapp):
@@ -61,6 +68,33 @@ def test_socket_colors_and_labels(qapp):
     shape_sock = box.get_output_socket("Shape")
     shape_item = node_item.socket_items[shape_sock]
     assert shape_item.get_color() == SOCKET_TYPE_COLORS[DataType.SHAPE]
+
+def test_side_panel_node_search(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    graph = Graph()
+    panel = NodeGraphSidePanelWidget(graph=graph)
+
+    # Initial state: no search filter
+    root = panel.node_tree.invisibleRootItem()
+    assert root.childCount() > 0
+
+    # Filter for 'box'
+    panel.search_input.setText("box")
+    panel.filter_node_library("box")
+
+    # Find Box node item
+    found_box = False
+    for i in range(root.childCount()):
+        cat_item = root.child(i)
+        if not cat_item.isHidden():
+            for j in range(cat_item.childCount()):
+                child = cat_item.child(j)
+                if not child.isHidden() and "box" in child.text(0).lower():
+                    found_box = True
+
+    assert found_box is True
 
 
 def test_detach_links(qapp):
