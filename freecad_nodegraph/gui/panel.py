@@ -95,7 +95,6 @@ class NodeGraphSidePanelWidget(QWidget):
         self.node_tree = QTreeWidget()
         self.node_tree.setHeaderHidden(True)
         self.node_tree.itemDoubleClicked.connect(self.on_node_library_double_clicked)
-        self.node_tree.itemActivated.connect(self.on_node_library_double_clicked)
         layout.addWidget(self.node_tree)
 
         self.add_node_btn = QPushButton("Add Node to Active Graph")

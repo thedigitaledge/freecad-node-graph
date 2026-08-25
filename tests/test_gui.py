@@ -126,6 +126,41 @@ def test_detach_links(qapp):
     assert len(scene.edge_items) == 0
 
 
+def test_double_click_creates_single_node(qapp):
+    from freecad_nodegraph.commands import _active_editors, get_active_editor
+    from freecad_nodegraph.document_object import MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    _active_editors.clear()
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+    editor.show()
+    _active_editors[obj] = (editor, editor)
+
+    panel = NodeGraphSidePanelWidget(graph=editor.graph)
+
+    root = panel.node_tree.invisibleRootItem()
+    box_tree_item = None
+    for i in range(root.childCount()):
+        cat = root.child(i)
+        for j in range(cat.childCount()):
+            child = cat.child(j)
+            if child.data(0, 0x0100) == "BoxNode":
+                box_tree_item = child
+                break
+
+    assert box_tree_item is not None
+
+    panel.on_node_library_double_clicked(box_tree_item)
+
+    assert len(editor.graph.nodes) == 1
+    assert len(editor.scene.node_items) == 1
+
+    _active_editors.clear()
+
+
 def test_add_node_from_library_to_active_editor(qapp):
     from freecad_nodegraph.commands import _active_editors, get_active_editor
     from freecad_nodegraph.document_object import MockDocumentObject
