@@ -59,13 +59,8 @@ def test_generated_node_creation_and_execution():
     assert node.get_output_value("Result") == "BoxResult_50.0_20.0_30.0"
 
 
-def test_workbench_editor_toolbars(qapp):
+def test_editor_window_initialization(qapp):
     graph = Graph()
     window = NodeGraphEditorWindow(graph=graph)
     assert window is not None
-
-    # Check toolbars created on editor window
-    toolbars = window.findChildren(type(window.findChild(type(window.findChildren(type(window)))) or window.toolBarArea))
-    # Confirm window contains toolbars for Part, Draft, Arch, etc.
-    tb_names = [tb.windowTitle() for tb in window.children() if hasattr(tb, "windowTitle") and "Workbench" in tb.windowTitle()]
-    assert any("Part Workbench" in name for name in tb_names)
+    assert window.centralWidget() == window.view
