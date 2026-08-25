@@ -3,11 +3,35 @@
 import pytest
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
-from freecad_nodegraph.nodes.inputs import FloatNode, VectorNode, PlacementNode
+from freecad_nodegraph.core.registry import NodeRegistry
+from freecad_nodegraph.nodes.inputs import FloatNode, IntegerNode, StringNode, BooleanNode, VectorNode, PlacementNode
 from freecad_nodegraph.nodes.primitives import BoxNode, CylinderNode, SphereNode, ConeNode
 from freecad_nodegraph.nodes.booleans import FuseNode, CutNode, CommonNode
 from freecad_nodegraph.nodes.transforms import TranslateNode, ExtrudeNode, CompoundNode
 from freecad_nodegraph.nodes.output import DocumentOutputNode
+
+
+def test_node_categories():
+    categories = NodeRegistry.get_nodes_by_category()
+    assert "Input" in categories
+    assert "Output" in categories
+    assert "Geometry" in categories
+
+    input_node_types = [cls.node_type for cls in categories["Input"]]
+    assert "FloatNode" in input_node_types
+    assert "IntegerNode" in input_node_types
+    assert "StringNode" in input_node_types
+    assert "BooleanNode" in input_node_types
+    assert "VectorNode" in input_node_types
+
+    geometry_node_types = [cls.node_type for cls in categories["Geometry"]]
+    assert "BoxNode" in geometry_node_types
+    assert "CylinderNode" in geometry_node_types
+    assert "FuseNode" in geometry_node_types
+    assert "TranslateNode" in geometry_node_types
+
+    output_node_types = [cls.node_type for cls in categories["Output"]]
+    assert "DocumentOutputNode" in output_node_types
 
 
 def test_float_and_vector_nodes():

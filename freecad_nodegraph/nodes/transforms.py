@@ -10,7 +10,7 @@ from freecad_nodegraph.nodes.primitives import MockShape, Part
 @register_node
 class TranslateNode(BaseNode):
     node_type = "TranslateNode"
-    category = "Transforms"
+    category = "Geometry"
     title = "Translate"
 
     def setup_sockets(self) -> None:
@@ -37,7 +37,7 @@ class TranslateNode(BaseNode):
 @register_node
 class ExtrudeNode(BaseNode):
     node_type = "ExtrudeNode"
-    category = "Features"
+    category = "Geometry"
     title = "Extrude"
 
     def setup_sockets(self) -> None:
@@ -63,7 +63,7 @@ class ExtrudeNode(BaseNode):
 @register_node
 class CompoundNode(BaseNode):
     node_type = "CompoundNode"
-    category = "Features"
+    category = "Geometry"
     title = "Compound"
 
     def setup_sockets(self) -> None:

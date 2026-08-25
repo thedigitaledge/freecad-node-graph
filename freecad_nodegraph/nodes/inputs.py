@@ -55,7 +55,7 @@ def create_placement(pos=None):
 @register_node
 class FloatNode(BaseNode):
     node_type = "FloatNode"
-    category = "Inputs"
+    category = "Input"
     title = "Float Value"
 
     def setup_sockets(self) -> None:
@@ -68,9 +68,54 @@ class FloatNode(BaseNode):
 
 
 @register_node
+class IntegerNode(BaseNode):
+    node_type = "IntegerNode"
+    category = "Input"
+    title = "Integer Value"
+
+    def setup_sockets(self) -> None:
+        self.add_input("Value", DataType.INTEGER, 0)
+        self.add_output("Value", DataType.INTEGER)
+
+    def compute(self) -> None:
+        val = self.get_input_value("Value")
+        self.set_output_value("Value", int(val) if val is not None else 0)
+
+
+@register_node
+class StringNode(BaseNode):
+    node_type = "StringNode"
+    category = "Input"
+    title = "String Value"
+
+    def setup_sockets(self) -> None:
+        self.add_input("Value", DataType.STRING, "")
+        self.add_output("Value", DataType.STRING)
+
+    def compute(self) -> None:
+        val = self.get_input_value("Value")
+        self.set_output_value("Value", str(val) if val is not None else "")
+
+
+@register_node
+class BooleanNode(BaseNode):
+    node_type = "BooleanNode"
+    category = "Input"
+    title = "Boolean Value"
+
+    def setup_sockets(self) -> None:
+        self.add_input("Value", DataType.BOOLEAN, False)
+        self.add_output("Value", DataType.BOOLEAN)
+
+    def compute(self) -> None:
+        val = self.get_input_value("Value")
+        self.set_output_value("Value", bool(val) if val is not None else False)
+
+
+@register_node
 class VectorNode(BaseNode):
     node_type = "VectorNode"
-    category = "Inputs"
+    category = "Input"
     title = "Vector"
 
     def setup_sockets(self) -> None:
@@ -90,7 +135,7 @@ class VectorNode(BaseNode):
 @register_node
 class PlacementNode(BaseNode):
     node_type = "PlacementNode"
-    category = "Inputs"
+    category = "Input"
     title = "Placement"
 
     def setup_sockets(self) -> None:

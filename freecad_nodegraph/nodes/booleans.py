@@ -9,7 +9,7 @@ from freecad_nodegraph.nodes.primitives import MockShape, Part, HAS_FREECAD
 @register_node
 class FuseNode(BaseNode):
     node_type = "FuseNode"
-    category = "Booleans"
+    category = "Geometry"
     title = "Fuse (Union)"
 
     def setup_sockets(self) -> None:
@@ -37,7 +37,7 @@ class FuseNode(BaseNode):
 @register_node
 class CutNode(BaseNode):
     node_type = "CutNode"
-    category = "Booleans"
+    category = "Geometry"
     title = "Cut (Difference)"
 
     def setup_sockets(self) -> None:
@@ -65,7 +65,7 @@ class CutNode(BaseNode):
 @register_node
 class CommonNode(BaseNode):
     node_type = "CommonNode"
-    category = "Booleans"
+    category = "Geometry"
     title = "Common (Intersection)"
 
     def setup_sockets(self) -> None:
