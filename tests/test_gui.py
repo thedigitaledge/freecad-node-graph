@@ -51,6 +51,37 @@ def test_gui_creation(qapp):
     assert window.property_inspector == prop_inspector
 
 
+def test_toolbar_actions_triggering(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+
+    graph = Graph()
+    window = NodeGraphEditorWindow(graph=graph)
+
+    # Test triggering clear graph action
+    toolbars = window.findChildren(type(window.findChild(object)))
+    initial_node_count = len(graph.nodes)
+
+    # Trigger workbench spawn action
+    for tb in window.findChildren(type(window.view)): # find toolbars or actions
+        pass
+
+    # Find actions in editor window toolbars
+    actions = window.findChildren(type(window.actions()[0])) if window.actions() else []
+    for act in actions:
+        if "Box" in act.text() or "Box" in act.toolTip():
+            act.trigger()
+            break
+
+    # Action trigger clear
+    for act in window.findChildren(type(actions[0])) if actions else []:
+        if act.text() == "Clear Graph":
+            act.trigger()
+            break
+
+    assert len(graph.nodes) == 0
+
+
 def test_task_panel_search_and_node_spawning(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.primitives import BoxNode

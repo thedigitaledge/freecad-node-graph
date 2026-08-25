@@ -401,9 +401,9 @@ class NodeGraphEditorWindow(QMainWindow):
             wb_toolbar = QToolBar(f"{wb_name} Workbench", self)
             self.addToolBar(Qt.TopToolBarArea, wb_toolbar)
 
-            lbl_action = QAction(f"[{wb_name}]", self)
-            lbl_action.setEnabled(False)
-            wb_toolbar.addAction(lbl_action)
+            lbl = QLabel(f" [{wb_name}] ")
+            lbl.setStyleSheet("font-weight: bold; color: #888888;")
+            wb_toolbar.addWidget(lbl)
 
             for func_name, node_cls in sorted(funcs.items()):
                 clean_name = func_name.replace("make_", "").replace("make", "").strip("_")
@@ -413,7 +413,7 @@ class NodeGraphEditorWindow(QMainWindow):
                 action.setToolTip(f"Spawn {wb_name}.{func_name} node")
 
                 def make_spawn_handler(ntype):
-                    def handler():
+                    def handler(*args, **kwargs):
                         self.spawn_node_by_type(ntype)
                     return handler
 
@@ -432,7 +432,7 @@ class NodeGraphEditorWindow(QMainWindow):
             self.scene.add_node_item(node)
             self.save_to_doc_object()
 
-    def run_graph(self):
+    def run_graph(self, *args):
         evaluator = GraphEvaluator(self.graph)
         try:
             evaluated = evaluator.evaluate(force=True)
@@ -446,12 +446,12 @@ class NodeGraphEditorWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Execution Error", f"Failed: {str(e)}")
 
-    def clear_graph(self):
+    def clear_graph(self, *args):
         self.graph.clear()
         self.scene.sync_from_graph()
         self.save_to_doc_object()
 
-    def save_graph(self):
+    def save_graph(self, *args):
         filepath, _ = QFileDialog.getSaveFileName(
             self, "Save NodeGraph", "", "JSON Graph Files (*.json)"
         )
@@ -459,7 +459,7 @@ class NodeGraphEditorWindow(QMainWindow):
             GraphSerializer.save_to_file(self.graph, filepath)
             QMessageBox.information(self, "Saved", f"Graph saved to {filepath}")
 
-    def load_graph(self):
+    def load_graph(self, *args):
         filepath, _ = QFileDialog.getOpenFileName(
             self, "Open NodeGraph", "", "JSON Graph Files (*.json)"
         )
