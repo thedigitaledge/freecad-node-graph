@@ -119,21 +119,19 @@ def test_model_tab_property_inspector(qapp):
     assert prop_inspector.prop_form_layout.rowCount() > 0
 
 
-def test_command_open_editor(qapp):
-    from freecad_nodegraph.commands import CommandOpenNodeGraphEditor
-    cmd = CommandOpenNodeGraphEditor()
+def test_command_create_node_graph(qapp):
+    import freecad_nodegraph.commands as commands
+    cmd = commands.CommandCreateNodeGraph()
     res = cmd.GetResources()
     assert "Pixmap" in res
+    assert res["MenuText"] == "Create New Node Graph"
     assert cmd.IsActive() is True
 
     # Activate command
     cmd.Activated()
-    from freecad_nodegraph.commands import _editor_window, _task_panel, _property_inspector
-    assert _editor_window is not None
-    assert _task_panel is not None
-    assert _property_inspector is not None
-    assert _editor_window.task_panel == _task_panel
-    assert _editor_window.property_inspector == _property_inspector
+    assert len(commands._editor_windows) > 0
+    assert commands._task_panel is not None
+    assert commands._property_inspector is not None
 
 
 def test_socket_colors_and_labels(qapp):

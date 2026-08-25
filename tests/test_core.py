@@ -1,4 +1,4 @@
-"""Unit tests for FreeCAD NodeGraph core package."""
+"""Unit tests for FreeCAD NodeGraph core package and DocumentObject."""
 
 import os
 import tempfile
@@ -10,6 +10,7 @@ from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.registry import NodeRegistry, register_node
 from freecad_nodegraph.core.evaluator import GraphEvaluator, EvaluationError
 from freecad_nodegraph.core.serializer import GraphSerializer
+from freecad_nodegraph.document_object import create_nodegraph_object, MockDocumentObject
 
 
 class AddNode(BaseNode):
@@ -172,3 +173,15 @@ def test_file_save_load():
     finally:
         if os.path.exists(filepath):
             os.remove(filepath)
+
+
+def test_document_object_creation_and_nesting():
+    # Test top-level creation
+    top_obj = create_nodegraph_object()
+    assert top_obj is not None
+    assert hasattr(top_obj, "GraphData")
+
+    # Test sub-branch nesting under parent object
+    parent_obj = MockDocumentObject(name="Group", label="Group")
+    child_obj = create_nodegraph_object(parent_obj=parent_obj)
+    assert child_obj in parent_obj.Group

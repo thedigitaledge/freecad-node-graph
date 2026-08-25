@@ -137,16 +137,13 @@ class NodePropertyInspector(QWidget):
             if not mw:
                 return False
 
-            # Search for ComboView or Model tab splitter / dock
             combo_view = mw.findChild(QWidget, "Combo View") or mw.findChild(QWidget, "ComboView")
             if combo_view:
-                # Search for splitter inside ComboView or Model tab
                 splitters = combo_view.findChildren(QSplitter)
                 if splitters:
                     splitters[0].addWidget(self)
                     return True
 
-                # Search for Model tab layout
                 tabs = combo_view.findChildren(QTabWidget)
                 if tabs:
                     model_tab = tabs[0].widget(0)
@@ -154,7 +151,6 @@ class NodePropertyInspector(QWidget):
                         model_tab.layout().addWidget(self)
                         return True
 
-            # Fallback to main window left dock
             left_docks = [d for d in mw.findChildren(QDockWidget) if mw.dockWidgetArea(d) == Qt.LeftDockWidgetArea]
             if left_docks and left_docks[0].widget():
                 w = left_docks[0].widget()
@@ -207,6 +203,8 @@ class NodePropertyInspector(QWidget):
                             def handler(val):
                                 s.default_value = val
                                 s.node.mark_dirty()
+                                if self.editor_window:
+                                    self.editor_window.save_to_doc_object()
                             return handler
 
                         spin.valueChanged.connect(make_change_handler(sock, spin))
@@ -218,6 +216,8 @@ class NodePropertyInspector(QWidget):
                             def handler(txt):
                                 s.default_value = txt
                                 s.node.mark_dirty()
+                                if self.editor_window:
+                                    self.editor_window.save_to_doc_object()
                             return handler
 
                         line_edit.textChanged.connect(make_text_handler(sock, line_edit))
@@ -320,12 +320,12 @@ class NodeGraphTaskPanel(QWidget):
 class NodeGraphEditorWindow(QMainWindow):
     """MDI View tab window for the FreeCAD NodeGraph editor."""
 
-    def __init__(self, graph: Graph = None, parent=None, title: str = "NodeGraph"):
+    def __init__(self, graph: Graph = None, parent=None, title: str = "NodeGraph", doc_object=None):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.resize(1000, 700)
 
-        # Discover FreeCAD workbenches and generate function nodes
+        self.doc_object = doc_object
         self.discovered_workbenches = discover_workbench_functions()
 
         self.graph = graph or Graph()
@@ -334,13 +334,12 @@ class NodeGraphEditorWindow(QMainWindow):
 
         self.task_panel = None
         self.property_inspector = None
+
+        self.load_from_doc_object()
         self.init_ui()
 
     def init_ui(self):
-        # The central widget contains only the node graph view canvas.
         self.setCentralWidget(self.view)
-
-        # Setup toolbars
         self.create_main_toolbar()
         self.create_workbench_toolbars()
 
@@ -355,6 +354,23 @@ class NodeGraphEditorWindow(QMainWindow):
         self.property_inspector = property_inspector
         if self.property_inspector:
             self.property_inspector.set_editor_window(self)
+
+    def load_from_doc_object(self):
+        """Load graph data from linked document object's GraphData property."""
+        if self.doc_object and hasattr(self.doc_object, "GraphData") and self.doc_object.GraphData:
+            try:
+                data = json.loads(self.doc_object.GraphData)
+                if data and isinstance(data, dict) and "nodes" in data:
+                    GraphSerializer.deserialize(data, self.graph)
+                    self.scene.sync_from_graph()
+            except Exception as e:
+                print(f"Error loading graph from document object: {e}")
+
+    def save_to_doc_object(self):
+        """Save active graph data into linked document object's GraphData property."""
+        if self.doc_object and hasattr(self.doc_object, "GraphData"):
+            data = GraphSerializer.serialize(self.graph)
+            self.doc_object.GraphData = json.dumps(data)
 
     def create_main_toolbar(self):
         toolbar = QToolBar("NodeGraph Controls", self)
@@ -414,6 +430,7 @@ class NodeGraphEditorWindow(QMainWindow):
 
             self.graph.add_node(node)
             self.scene.add_node_item(node)
+            self.save_to_doc_object()
 
     def run_graph(self):
         evaluator = GraphEvaluator(self.graph)
@@ -432,6 +449,7 @@ class NodeGraphEditorWindow(QMainWindow):
     def clear_graph(self):
         self.graph.clear()
         self.scene.sync_from_graph()
+        self.save_to_doc_object()
 
     def save_graph(self):
         filepath, _ = QFileDialog.getSaveFileName(
@@ -448,4 +466,5 @@ class NodeGraphEditorWindow(QMainWindow):
         if filepath and os.path.exists(filepath):
             GraphSerializer.load_from_file(filepath, self.graph)
             self.scene.sync_from_graph()
+            self.save_to_doc_object()
             QMessageBox.information(self, "Loaded", f"Graph loaded from {filepath}")
