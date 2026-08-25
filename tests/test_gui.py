@@ -15,11 +15,15 @@ def qapp():
 
 def test_gui_creation(qapp):
     from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.nodes.inputs import FloatNode, VectorNode
+    from freecad_nodegraph.nodes.inputs import FloatNode
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.scene import NodeGraphicsScene
     from freecad_nodegraph.gui.view import NodeGraphicsView
-    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+    from freecad_nodegraph.gui.editor import (
+        NodeGraphEditorWindow,
+        NodeGraphTaskPanel,
+        NodePropertyInspector,
+    )
 
     graph = Graph()
     f1 = FloatNode(graph=graph)
@@ -33,14 +37,136 @@ def test_gui_creation(qapp):
     view = NodeGraphicsView(scene)
     assert view is not None
 
-    window = NodeGraphEditorWindow(graph=graph)
+    window = NodeGraphEditorWindow(graph=graph, title="NodeGraph")
     assert window is not None
-    assert window.windowTitle() == "FreeCAD NodeGraph Editor"
+    assert window.windowTitle() == "NodeGraph"
+    assert window.centralWidget() == window.view
+
+    task_panel = NodeGraphTaskPanel(editor_window=window)
+    assert task_panel.form == task_panel
+    assert task_panel.getStandardButtons() == 0
+    assert window.task_panel == task_panel
+
+    prop_inspector = NodePropertyInspector(editor_window=window)
+    assert window.property_inspector == prop_inspector
+
+
+def test_toolbar_actions_triggering(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
+
+    graph = Graph()
+    window = NodeGraphEditorWindow(graph=graph)
+
+    # Test triggering clear graph action
+    toolbars = window.findChildren(type(window.findChild(object)))
+    initial_node_count = len(graph.nodes)
+
+    # Trigger workbench spawn action
+    for tb in window.findChildren(type(window.view)): # find toolbars or actions
+        pass
+
+    # Find actions in editor window toolbars
+    actions = window.findChildren(type(window.actions()[0])) if window.actions() else []
+    for act in actions:
+        if "Box" in act.text() or "Box" in act.toolTip():
+            act.trigger()
+            break
+
+    # Action trigger clear
+    for act in window.findChildren(type(actions[0])) if actions else []:
+        if act.text() == "Clear Graph":
+            act.trigger()
+            break
+
+    assert len(graph.nodes) == 0
+
+
+def test_task_panel_search_and_node_spawning(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodeGraphTaskPanel
+
+    graph = Graph()
+    box = BoxNode(graph=graph)
+    graph.add_node(box)
+
+    window = NodeGraphEditorWindow(graph=graph)
+    task_panel = NodeGraphTaskPanel(editor_window=window)
+
+    # 1. Test search filter in node tree
+    task_panel.search_edit.setText("Box")
+    root = task_panel.node_tree.invisibleRootItem()
+    box_found = False
+    for i in range(root.childCount()):
+        cat_item = root.child(i)
+        for j in range(cat_item.childCount()):
+            child = cat_item.child(j)
+            if "Box" in child.text(0) and not child.isHidden():
+                box_found = True
+    assert box_found
+
+    # Test filtering out
+    task_panel.search_edit.setText("NonExistentNodeNameXYZ")
+    visible_count = 0
+    for i in range(root.childCount()):
+        cat_item = root.child(i)
+        for j in range(cat_item.childCount()):
+            child = cat_item.child(j)
+            if not child.isHidden():
+                visible_count += 1
+    assert visible_count == 0
+
+    # Reset search
+    task_panel.search_edit.setText("")
+
+    # 2. Test spawning node by double clicking
+    initial_node_count = len(graph.nodes)
+    for i in range(root.childCount()):
+        cat_item = root.child(i)
+        if cat_item.childCount() > 0:
+            item_to_click = cat_item.child(0)
+            task_panel.on_node_library_double_clicked(item_to_click, 0)
+            break
+    assert len(graph.nodes) == initial_node_count + 1
+
+
+def test_model_tab_property_inspector(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodePropertyInspector
+
+    graph = Graph()
+    box = BoxNode(graph=graph)
+    graph.add_node(box)
+
+    window = NodeGraphEditorWindow(graph=graph)
+    prop_inspector = NodePropertyInspector(editor_window=window)
+
+    # Selection changed updates Properties Inspector
+    scene_box_item = window.scene.node_items[box]
+    scene_box_item.setSelected(True)
+    assert prop_inspector.prop_group.title() == "Node: Box"
+    assert prop_inspector.prop_form_layout.rowCount() > 0
+
+
+def test_command_create_node_graph(qapp):
+    import freecad_nodegraph.commands as commands
+    cmd = commands.CommandCreateNodeGraph()
+    res = cmd.GetResources()
+    assert "Pixmap" in res
+    assert res["MenuText"] == "Create New Node Graph"
+    assert cmd.IsActive() is True
+
+    # Activate command
+    cmd.Activated()
+    assert len(commands._editor_windows) > 0
+    assert commands._task_panel is not None
+    assert commands._property_inspector is not None
 
 
 def test_socket_colors_and_labels(qapp):
     from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.nodes.inputs import FloatNode, VectorNode
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.items import GraphicsNodeItem, SOCKET_TYPE_COLORS
 
