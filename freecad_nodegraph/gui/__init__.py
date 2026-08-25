@@ -7,6 +7,10 @@ from freecad_nodegraph.gui.items import (
 )
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
+from freecad_nodegraph.gui.editor import (
+    NodeGraphEditorWindow,
+    NodeGraphTaskPanel,
+)
 
 __all__ = [
     "GraphicsSocketItem",
@@ -14,4 +18,6 @@ __all__ = [
     "GraphicsNodeItem",
     "NodeGraphicsScene",
     "NodeGraphicsView",
+    "NodeGraphEditorWindow",
+    "NodeGraphTaskPanel",
 ]

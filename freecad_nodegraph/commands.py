@@ -7,33 +7,76 @@ try:
 except ImportError:
     HAS_FREECAD = False
 
+try:
+    from PySide6.QtWidgets import QMdiArea
+except ImportError:
+    try:
+        from PySide2.QtWidgets import QMdiArea
+    except ImportError:
+        try:
+            from PyQt5.QtWidgets import QMdiArea
+        except ImportError:
+            QMdiArea = None
+
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 
 global_graph = Graph()
 _editor_window = None
+_task_panel = None
 
 
 class CommandOpenNodeGraphEditor:
-    """FreeCAD Command to open Node Graph Editor Window."""
+    """FreeCAD Command to open Node Graph Editor MDI view tab and Task Panel."""
 
     def GetResources(self):
         return {
             "Pixmap": "NodeGraph_Editor",
             "MenuText": "Open Node Graph Editor",
-            "ToolTip": "Opens the Node Graph visual editor window",
+            "ToolTip": "Opens the Node Graph visual editor MDI view tab and Task Panel",
         }
 
     def Activated(self):
-        global _editor_window, global_graph
+        global _editor_window, _task_panel, global_graph
         try:
-            from freecad_nodegraph.gui.editor import NodeGraphEditorWindow
-            if _editor_window is None or not _editor_window.isVisible():
-                _editor_window = NodeGraphEditorWindow(graph=global_graph)
-                _editor_window.show()
+            from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodeGraphTaskPanel
+
+            if HAS_FREECAD:
+                mw = FreeCADGui.getMainWindow() if hasattr(FreeCADGui, "getMainWindow") else None
+                mdi_area = mw.findChild(QMdiArea) if (mw and QMdiArea) else None
+
+                if _editor_window is None or not _editor_window.isVisible():
+                    _editor_window = NodeGraphEditorWindow(graph=global_graph, title="NodeGraph")
+                    _task_panel = NodeGraphTaskPanel(editor_window=_editor_window)
+                    _editor_window.set_task_panel(_task_panel)
+
+                    if mdi_area:
+                        sub_window = mdi_area.addSubWindow(_editor_window)
+                        sub_window.setWindowTitle("NodeGraph")
+                        sub_window.show()
+                        mdi_area.setActiveSubWindow(sub_window)
+                    else:
+                        _editor_window.show()
+
+                    if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
+                        FreeCADGui.Control.showDialog(_task_panel)
+                else:
+                    if hasattr(_editor_window, "parentWidget") and _editor_window.parentWidget():
+                        _editor_window.parentWidget().raise_()
+                    _editor_window.raise_()
+                    _editor_window.activateWindow()
+                    if _task_panel and hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
+                        FreeCADGui.Control.showDialog(_task_panel)
             else:
-                _editor_window.raise_()
-                _editor_window.activateWindow()
+                if _editor_window is None or not _editor_window.isVisible():
+                    _editor_window = NodeGraphEditorWindow(graph=global_graph, title="NodeGraph")
+                    _task_panel = NodeGraphTaskPanel(editor_window=_editor_window)
+                    _editor_window.set_task_panel(_task_panel)
+                    _editor_window.show()
+                else:
+                    _editor_window.raise_()
+                    _editor_window.activateWindow()
+
         except Exception as e:
             if HAS_FREECAD and hasattr(FreeCAD, "Console"):
                 FreeCAD.Console.PrintError(f"Error opening Node Graph Editor: {e}\n")
