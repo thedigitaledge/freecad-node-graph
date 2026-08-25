@@ -27,7 +27,7 @@ class DocumentOutputNode(BaseNode):
         self.last_result_shape = shape
         self.last_object_name = obj_name
 
-        if shape is None:
+        if shape is None or FreeCAD is None or not getattr(FreeCAD, "ActiveDocument", None):
             return
 
         doc = FreeCAD.ActiveDocument

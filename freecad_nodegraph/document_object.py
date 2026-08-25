@@ -6,8 +6,12 @@ from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 from freecad_nodegraph.core.serializer import GraphSerializer
 
-import FreeCAD
-import Part
+try:
+    import FreeCAD
+    import Part
+except ImportError:
+    FreeCAD = None
+    Part = None
 
 
 class NodeGraphObject:

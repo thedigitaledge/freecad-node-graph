@@ -1,7 +1,11 @@
 """FreeCAD GUI Commands and Selection Observer for NodeGraph Workbench."""
 
-import FreeCAD
-import FreeCADGui
+try:
+    import FreeCAD
+    import FreeCADGui
+except ImportError:
+    FreeCAD = None
+    FreeCADGui = None
 
 from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
 from PySide6.QtCore import Qt
@@ -135,7 +139,7 @@ class CommandOpenNodeGraphEditor:
 
             if hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()
-                mdi_area = main_win.findChild(QMdiArea)
+                mdi_area = main_win.findChild(QMdiArea) if main_win else None
 
                 subwin_info = _active_editors.get(doc_object)
                 if subwin_info is None or not subwin_info[0].isVisible():
@@ -165,6 +169,30 @@ class CommandOpenNodeGraphEditor:
                 else:
                     editor_widget = subwin_info[1]
                     editor_widget.show()
+
+            # Integrate Node Library into FreeCAD Tasks combo view when selecting NodeGraph object
+            if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
+                from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+
+                active_dlg = getattr(FreeCADGui.Control, "activeDialog", lambda: None)()
+                if isinstance(active_dlg, NodeGraphTaskPanel):
+                    active_dlg.widget.graph = editor_widget.graph
+                    active_dlg.widget.populate_node_library()
+                    task_panel_inst = active_dlg
+                else:
+                    if active_dlg and hasattr(FreeCADGui.Control, "closeDialog"):
+                        FreeCADGui.Control.closeDialog()
+                    task_panel_inst = NodeGraphTaskPanel(graph=editor_widget.graph)
+                    FreeCADGui.Control.showDialog(task_panel_inst)
+
+                def on_scene_selection_changed():
+                    selected_items = editor_widget.scene.selectedItems()
+                    task_panel_inst.widget.update_properties_inspector(selected_items)
+
+                try:
+                    editor_widget.scene.selectionChanged.connect(on_scene_selection_changed)
+                except Exception:
+                    pass
 
         except Exception as e:
             if hasattr(FreeCAD, "Console"):
