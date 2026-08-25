@@ -4,6 +4,42 @@ Changelog
 
 All notable changes to the FreeCAD NodeGraph Workbench project will be documented in this file.
 
+Version 0.19.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Restored SVG icon registrations and resource linking in ``InitGui.py``, ``freecad_nodegraph/commands.py``, ``freecad_nodegraph/document_object.py``, and unit tests matching commit 44122ce5ef405abdce7bb1ddaf97a23caf2217e6.
+
+Version 0.18.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Removed software icon references in commands, ViewProviders, and workbench initialization scripts per design update.
+
+Version 0.17.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- FreeCAD integration unit test suite (``tests/test_freecad_integration.py``) verifying module loading, workbench initialization, command registration, and asserting zero FreeCAD log errors.
+
+Version 0.16.0 (2025-02-28)
+---------------------------
+
+Changed
+~~~~~~~
+- Aligned icon storage, path registration, and resource linking with FreeCAD's CAM workbench pattern using ``FreeCADGui.addIconPath`` and registered icon identifiers across commands, workbench definitions, and ViewProviders.
+
+Version 0.15.0 (2025-02-28)
+---------------------------
+
+Added
+~~~~~
+- Vector SVG icons for NodeGraph Workbench: ``NodeGraph_Workbench.svg``, ``NodeGraph_Create.svg``, ``NodeGraph_Editor.svg``, ``NodeGraph_Run.svg``, ``NodeGraph_Node.svg``, and ``NodeGraph_Link.svg``.
+- Integrated icon path registration in ``InitGui.py`` via ``FreeCADGui.addIconPath``.
+
 Version 0.14.0 (2025-02-28)
 ---------------------------
 

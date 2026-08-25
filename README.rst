@@ -10,6 +10,7 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
+- **CAM Workbench Style Icon Management**: Icons are stored as SVG vector graphics and registered via ``FreeCADGui.addIconPath()`` for seamless integration with FreeCAD's icon bitmap manager across toolbars, menus, and model tree view objects.
 - **Node Library in FreeCAD Tasks View**: Displays the Node Library palette and Properties Inspector inside FreeCAD's **Tasks** view overlay panel using FreeCAD's TaskPanel system.
 - **Parent-Child Object Nesting**: Creating a new NodeGraph object while another object is selected in the Model tree view automatically adds the NodeGraph object as a child of the selected parent object.
 - **NodeGraph:X Auto-Naming**: Automatically names new document objects ``NodeGraph:1``, ``NodeGraph:2``, etc., and displays ``NodeGraph:X`` directly as the window title.
@@ -53,7 +54,7 @@ How to Use
 
 1. Open or create a FreeCAD document.
 2. Select a parent object in the Model view if you want to nest the NodeGraph object as a child, or leave unselected for top-level creation.
-3. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu to create a NodeGraph object in the Model view tree without forcing focus onto the Tasks view.
+3. Click **Create NodeGraph Object** in the NodeGraph workbench toolbar or menu.
 4. Selecting any NodeGraph object in the Model view automatically opens and displays its specific node graph canvas tab (titled ``NodeGraph:X``).
 5. Use the **Tasks** view panel to search and double-click nodes into the canvas.
 6. Connect sockets and modify node parameters in the **Properties Inspector**.
