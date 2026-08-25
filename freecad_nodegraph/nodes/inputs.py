@@ -55,6 +55,8 @@ def create_placement(pos=None):
 
 @register_node
 class FloatNode(BaseNode):
+    """Provides a floating-point numeric value."""
+
     node_type = "FloatNode"
     category = "Input"
     title = "Float Value"
@@ -88,6 +90,8 @@ class FloatNode(BaseNode):
 
 @register_node
 class IntegerNode(BaseNode):
+    """Provides an integer numeric value."""
+
     node_type = "IntegerNode"
     category = "Input"
     title = "Integer Value"
@@ -121,6 +125,8 @@ class IntegerNode(BaseNode):
 
 @register_node
 class StringNode(BaseNode):
+    """Provides a text string value."""
+
     node_type = "StringNode"
     category = "Input"
     title = "String Value"
@@ -150,6 +156,8 @@ class StringNode(BaseNode):
 
 @register_node
 class BooleanNode(BaseNode):
+    """Provides a boolean True/False value."""
+
     node_type = "BooleanNode"
     category = "Input"
     title = "Boolean Value"
@@ -192,6 +200,8 @@ class BooleanNode(BaseNode):
 
 @register_node
 class VectorNode(BaseNode):
+    """Creates a 3D Vector from X, Y, and Z components."""
+
     node_type = "VectorNode"
     category = "Input"
     title = "Vector"
@@ -241,6 +251,8 @@ class VectorNode(BaseNode):
 
 @register_node
 class PlacementNode(BaseNode):
+    """Creates a FreeCAD Placement from position coordinates."""
+
     node_type = "PlacementNode"
     category = "Input"
     title = "Placement"

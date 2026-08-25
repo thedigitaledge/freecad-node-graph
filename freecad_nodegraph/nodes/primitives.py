@@ -25,6 +25,8 @@ class MockShape:
 
 @register_node
 class BoxNode(BaseNode):
+    """Creates a 3D Box primitive with Length, Width, Height, and Placement."""
+
     node_type = "BoxNode"
     category = "Geometry"
     title = "Box"
@@ -56,6 +58,8 @@ class BoxNode(BaseNode):
 
 @register_node
 class CylinderNode(BaseNode):
+    """Creates a 3D Cylinder primitive with Radius, Height, and Placement."""
+
     node_type = "CylinderNode"
     category = "Geometry"
     title = "Cylinder"
@@ -84,6 +88,8 @@ class CylinderNode(BaseNode):
 
 @register_node
 class SphereNode(BaseNode):
+    """Creates a 3D Sphere primitive with Radius and Placement."""
+
     node_type = "SphereNode"
     category = "Geometry"
     title = "Sphere"
@@ -111,6 +117,8 @@ class SphereNode(BaseNode):
 
 @register_node
 class ConeNode(BaseNode):
+    """Creates a 3D Cone primitive with Radius1, Radius2, Height, and Placement."""
+
     node_type = "ConeNode"
     category = "Geometry"
     title = "Cone"

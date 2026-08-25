@@ -211,6 +211,33 @@ def test_input_node_value_entry_and_validation(qapp):
     assert panel.prop_form_layout.count() > 0
 
 
+def test_canvas_and_library_help_tooltips(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.items import GraphicsNodeItem
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    graph = Graph()
+    box = BoxNode(graph=graph)
+    item = GraphicsNodeItem(box)
+
+    assert item.toolTip() == BoxNode.get_help_summary()
+
+    panel = NodeGraphSidePanelWidget(graph=graph)
+    root = panel.node_tree.invisibleRootItem()
+    box_tree_item = None
+    for i in range(root.childCount()):
+        cat = root.child(i)
+        for j in range(cat.childCount()):
+            child = cat.child(j)
+            if child.data(0, 0x0100) == "BoxNode":
+                box_tree_item = child
+                break
+
+    assert box_tree_item is not None
+    assert box_tree_item.toolTip(0) == BoxNode.get_help_summary()
+
+
 def test_copy_cut_paste_duplicate(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode

@@ -9,6 +9,8 @@ from freecad_nodegraph.nodes.primitives import MockShape, Part
 
 @register_node
 class TranslateNode(BaseNode):
+    """Translates (moves) a shape by a specified vector."""
+
     node_type = "TranslateNode"
     category = "Geometry"
     title = "Translate"
@@ -35,6 +37,8 @@ class TranslateNode(BaseNode):
 
 @register_node
 class ExtrudeNode(BaseNode):
+    """Extrudes a shape along a specified vector."""
+
     node_type = "ExtrudeNode"
     category = "Geometry"
     title = "Extrude"
@@ -60,6 +64,8 @@ class ExtrudeNode(BaseNode):
 
 @register_node
 class CompoundNode(BaseNode):
+    """Combines multiple shapes into a single compound shape."""
+
     node_type = "CompoundNode"
     category = "Geometry"
     title = "Compound"

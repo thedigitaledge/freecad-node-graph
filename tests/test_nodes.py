@@ -11,6 +11,12 @@ from freecad_nodegraph.nodes.transforms import TranslateNode, ExtrudeNode, Compo
 from freecad_nodegraph.nodes.output import DocumentOutputNode
 
 
+def test_node_help_summary():
+    assert BoxNode.get_help_summary() == "Creates a 3D Box primitive with Length, Width, Height, and Placement."
+    assert FloatNode.get_help_summary() == "Provides a floating-point numeric value."
+    assert FuseNode.get_help_summary() == "Performs a boolean union (fuse) operation between Shape A and Shape B."
+
+
 def test_node_categories():
     categories = NodeRegistry.get_nodes_by_category()
     assert "Input" in categories

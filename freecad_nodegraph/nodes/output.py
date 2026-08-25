@@ -12,6 +12,8 @@ except ImportError:
 
 @register_node
 class DocumentOutputNode(BaseNode):
+    """Outputs the final computed shape into the active FreeCAD document."""
+
     node_type = "DocumentOutputNode"
     category = "Output"
     title = "Document Output"

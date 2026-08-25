@@ -8,6 +8,8 @@ from freecad_nodegraph.nodes.primitives import MockShape, Part
 
 @register_node
 class FuseNode(BaseNode):
+    """Performs a boolean union (fuse) operation between Shape A and Shape B."""
+
     node_type = "FuseNode"
     category = "Geometry"
     title = "Fuse (Union)"
@@ -35,6 +37,8 @@ class FuseNode(BaseNode):
 
 @register_node
 class CutNode(BaseNode):
+    """Performs a boolean difference (cut) operation subtracting Tool Shape from Base Shape."""
+
     node_type = "CutNode"
     category = "Geometry"
     title = "Cut (Difference)"
@@ -63,6 +67,8 @@ class CutNode(BaseNode):
 
 @register_node
 class CommonNode(BaseNode):
+    """Performs a boolean intersection (common) operation between Shape A and Shape B."""
+
     node_type = "CommonNode"
     category = "Geometry"
     title = "Common (Intersection)"

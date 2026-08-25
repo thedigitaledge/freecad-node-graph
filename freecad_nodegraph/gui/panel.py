@@ -122,6 +122,8 @@ class NodeGraphSidePanelWidget(QWidget):
             for node_cls in node_classes:
                 node_item = QTreeWidgetItem(cat_item, [node_cls.title])
                 node_item.setData(0, Qt.UserRole, node_cls.node_type)
+                if hasattr(node_cls, "get_help_summary"):
+                    node_item.setToolTip(0, node_cls.get_help_summary())
 
     def filter_node_library(self, text: str):
         """Filter node tree items in real-time based on search input query."""

@@ -215,6 +215,9 @@ class GraphicsNodeItem(QGraphicsItem):
             | QGraphicsItem.ItemIsSelectable
             | QGraphicsItem.ItemSendsGeometryChanges
         )
+        self.setAcceptHoverEvents(True)
+        if hasattr(self.node, "get_help_summary"):
+            self.setToolTip(self.node.get_help_summary())
 
         self.init_ui()
 
