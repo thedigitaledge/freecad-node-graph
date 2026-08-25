@@ -42,11 +42,14 @@ class BoxNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeBox(length, width, height)
-        if placement:
-            shape.Placement = placement
+        if Part:
+            shape = Part.makeBox(length, width, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = MockShape("Box", {"Length": length, "Width": width, "Height": height, "Placement": placement})
 
         self.set_output_value("Shape", shape)
 
@@ -68,11 +71,14 @@ class CylinderNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeCylinder(radius, height)
-        if placement:
-            shape.Placement = placement
+        if Part:
+            shape = Part.makeCylinder(radius, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = MockShape("Cylinder", {"Radius": radius, "Height": height, "Placement": placement})
         self.set_output_value("Shape", shape)
 
 
@@ -91,11 +97,14 @@ class SphereNode(BaseNode):
         radius = float(self.get_input_value("Radius") or 5.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeSphere(radius)
-        if placement:
-            shape.Placement = placement
+        if Part:
+            shape = Part.makeSphere(radius)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = MockShape("Sphere", {"Radius": radius, "Placement": placement})
 
         self.set_output_value("Shape", shape)
 
@@ -119,10 +128,13 @@ class ConeNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeCone(r1, r2, height)
-        if placement:
-            shape.Placement = placement
+        if Part:
+            shape = Part.makeCone(r1, r2, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = MockShape("Cone", {"Radius1": r1, "Radius2": r2, "Height": height, "Placement": placement})
 
         self.set_output_value("Shape", shape)

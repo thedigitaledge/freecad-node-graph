@@ -29,7 +29,7 @@ class TranslateNode(BaseNode):
                 res = shape.copy()
                 res.translate(vec)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Translate", {"shape": shape, "vector": vec})
         self.set_output_value("Shape", res)
 
 
@@ -54,7 +54,7 @@ class ExtrudeNode(BaseNode):
             if hasattr(shape, "extrude"):
                 res = shape.extrude(vec)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Extrude", {"shape": shape, "vector": vec})
         self.set_output_value("Shape", res)
 
 
@@ -83,5 +83,5 @@ class CompoundNode(BaseNode):
             if hasattr(Part, "makeCompound"):
                 res = Part.makeCompound(shapes)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Compound", {"shapes": shapes})
         self.set_output_value("Shape", res)

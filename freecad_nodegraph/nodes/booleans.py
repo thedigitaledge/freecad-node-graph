@@ -29,7 +29,7 @@ class FuseNode(BaseNode):
             if Part and hasattr(shape_a, "fuse") and hasattr(shape_b, "fuse"):
                 res = shape_a.fuse(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Fuse", {"a": shape_a, "b": shape_b})
         self.set_output_value("Shape", res)
 
 
@@ -82,6 +82,6 @@ class CommonNode(BaseNode):
             if Part and hasattr(shape_a, "common") and hasattr(shape_b, "common"):
                 res = shape_a.common(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Common", {"a": shape_a, "b": shape_b})
 
         self.set_output_value("Shape", res)

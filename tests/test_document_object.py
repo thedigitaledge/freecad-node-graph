@@ -129,3 +129,39 @@ def test_selection_observer_triggers_editor(qapp):
     assert observer is not None
     assert hasattr(observer, "addSelection")
     assert hasattr(observer, "check_selection")
+
+
+def test_task_panel_integration_on_editor_open(qapp, monkeypatch):
+    """Verify Node Library TaskPanel is displayed in FreeCAD's Tasks view combo box when opening Node Graph editor."""
+    from freecad_nodegraph import commands
+    from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+
+    class MockControl:
+        shown_dialog = None
+        closed = False
+
+        @classmethod
+        def showDialog(cls, dialog):
+            cls.shown_dialog = dialog
+
+        @classmethod
+        def activeDialog(cls):
+            return cls.shown_dialog
+
+        @classmethod
+        def closeDialog(cls):
+            cls.closed = True
+            cls.shown_dialog = None
+
+    class MockFreeCADGui:
+        Control = MockControl
+
+    monkeypatch.setattr(commands, "FreeCADGui", MockFreeCADGui)
+
+    obj = make_nodegraph_object(doc=None)
+    cmd = commands.CommandOpenNodeGraphEditor()
+    cmd.Activated(doc_object=obj)
+
+    assert MockControl.shown_dialog is not None
+    assert isinstance(MockControl.shown_dialog, NodeGraphTaskPanel)
+    assert MockControl.shown_dialog.widget.graph is not None
