@@ -2,6 +2,7 @@
 
 import os
 import json
+
 try:
     from PySide6.QtWidgets import (
         QMainWindow,
@@ -76,7 +77,6 @@ from freecad_nodegraph.core.serializer import GraphSerializer
 from freecad_nodegraph.workbench_generator import discover_workbench_functions
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
-from freecad_nodegraph.gui.ai_panel import AIAssistantPanel
 
 
 class NodeGraphEditorWindow(QMainWindow):
@@ -126,7 +126,7 @@ class NodeGraphEditorWindow(QMainWindow):
         # Center panel: Node Graph view
         splitter.addWidget(self.view)
 
-        # Right panel: Properties Inspector & AI Assistant tabbed panel
+        # Right panel: Properties Inspector tabbed panel
         self.right_tabs = QTabWidget()
 
         # Tab 1: Properties Inspector
@@ -142,10 +142,6 @@ class NodeGraphEditorWindow(QMainWindow):
         self.scene.selectionChanged.connect(self.on_selection_changed)
 
         self.right_tabs.addTab(prop_panel, "Properties")
-
-        # Tab 2: AI Assistant
-        self.ai_panel = AIAssistantPanel(editor_window=self)
-        self.right_tabs.addTab(self.ai_panel, "AI Assistant")
 
         splitter.addWidget(self.right_tabs)
 
@@ -178,13 +174,6 @@ class NodeGraphEditorWindow(QMainWindow):
 
         toolbar.addSeparator()
 
-        ai_action = QAction("AI Assistant", self)
-        ai_action.setToolTip("Open AI Prompt Assistant Panel")
-        ai_action.triggered.connect(self.toggle_ai_panel)
-        toolbar.addAction(ai_action)
-
-        toolbar.addSeparator()
-
         clear_action = QAction("Clear Graph", self)
         clear_action.triggered.connect(self.clear_graph)
         toolbar.addAction(clear_action)
@@ -197,11 +186,6 @@ class NodeGraphEditorWindow(QMainWindow):
         load_action.triggered.connect(self.load_graph)
         toolbar.addAction(load_action)
 
-    def toggle_ai_panel(self):
-        """Switch right tab to AI Assistant panel."""
-        if hasattr(self, "right_tabs") and hasattr(self, "ai_panel"):
-            self.right_tabs.setCurrentWidget(self.ai_panel)
-
     def create_workbench_toolbars(self):
         """Create toolbars with buttons for each workbench's scriptable functions."""
         for wb_name, funcs in sorted(self.discovered_workbenches.items()):
@@ -213,8 +197,12 @@ class NodeGraphEditorWindow(QMainWindow):
             wb_toolbar.addAction(lbl_action)
 
             for func_name, node_cls in sorted(funcs.items()):
-                clean_name = func_name.replace("make_", "").replace("make", "").strip("_")
-                btn_title = clean_name[0].upper() + clean_name[1:] if clean_name else func_name
+                clean_name = (
+                    func_name.replace("make_", "").replace("make", "").strip("_")
+                )
+                btn_title = (
+                    clean_name[0].upper() + clean_name[1:] if clean_name else func_name
+                )
 
                 action = QAction(btn_title, self)
                 action.setToolTip(f"Spawn {wb_name}.{func_name} node")
@@ -222,6 +210,7 @@ class NodeGraphEditorWindow(QMainWindow):
                 def make_spawn_handler(ntype):
                     def handler():
                         self.spawn_node_by_type(ntype)
+
                     return handler
 
                 action.triggered.connect(make_spawn_handler(node_cls.node_type))
@@ -277,13 +266,16 @@ class NodeGraphEditorWindow(QMainWindow):
                             except ValueError as err:
                                 le.setStyleSheet(error_style)
                                 le.setToolTip(str(err))
+
                         return handler
 
                     line_edit.textChanged.connect(make_val_handler(node, line_edit))
                     self.prop_form_layout.addRow("Value:", line_edit)
 
                 elif hasattr(node, "set_components") or hasattr(node, "set_position"):
-                    setter = getattr(node, "set_components", getattr(node, "set_position", None))
+                    setter = getattr(
+                        node, "set_components", getattr(node, "set_position", None)
+                    )
                     curr_x = getattr(node, "x", getattr(node, "pos_x", 0.0))
                     curr_y = getattr(node, "y", getattr(node, "pos_y", 0.0))
                     curr_z = getattr(node, "z", getattr(node, "pos_z", 0.0))
@@ -303,10 +295,15 @@ class NodeGraphEditorWindow(QMainWindow):
                                     le.setToolTip("")
                                 except ValueError:
                                     le.setStyleSheet(error_style)
-                                    le.setToolTip(f"Invalid float for {c_name}: '{txt}'")
+                                    le.setToolTip(
+                                        f"Invalid float for {c_name}: '{txt}'"
+                                    )
+
                             return handler
 
-                        line_edit.textChanged.connect(make_comp_handler(comp, line_edit))
+                        line_edit.textChanged.connect(
+                            make_comp_handler(comp, line_edit)
+                        )
                         self.prop_form_layout.addRow(f"{comp}:", line_edit)
 
             # For standard nodes with input sockets
@@ -326,6 +323,7 @@ class NodeGraphEditorWindow(QMainWindow):
                             def handler(val):
                                 s.default_value = val
                                 s.node.mark_dirty()
+
                             return handler
 
                         spin.valueChanged.connect(make_change_handler(sock, spin))
@@ -337,9 +335,12 @@ class NodeGraphEditorWindow(QMainWindow):
                             def handler(txt):
                                 s.default_value = txt
                                 s.node.mark_dirty()
+
                             return handler
 
-                        line_edit.textChanged.connect(make_text_handler(sock, line_edit))
+                        line_edit.textChanged.connect(
+                            make_text_handler(sock, line_edit)
+                        )
                         self.prop_form_layout.addRow(f"{sock.name}:", line_edit)
 
     def run_graph(self):
