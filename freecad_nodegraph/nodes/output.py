@@ -3,7 +3,6 @@
 from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
-from freecad_nodegraph.nodes.inputs import HAS_FREECAD
 
 try:
     import FreeCAD
@@ -31,12 +30,11 @@ class DocumentOutputNode(BaseNode):
         if shape is None:
             return
 
-        if HAS_FREECAD and FreeCAD and FreeCAD.ActiveDocument:
-            doc = FreeCAD.ActiveDocument
-            obj = doc.getObject(obj_name)
-            if obj is None:
-                obj = doc.addObject("Part::Feature", obj_name)
+        doc = FreeCAD.ActiveDocument
+        obj = doc.getObject(obj_name)
+        if obj is None:
+            obj = doc.addObject("Part::Feature", obj_name)
 
-            if hasattr(obj, "Shape"):
-                obj.Shape = shape
-            doc.recompute()
+        if hasattr(obj, "Shape"):
+            obj.Shape = shape
+        doc.recompute()

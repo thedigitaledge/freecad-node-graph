@@ -3,7 +3,7 @@
 from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
-from freecad_nodegraph.nodes.inputs import create_vector, create_placement, HAS_FREECAD
+from freecad_nodegraph.nodes.inputs import create_placement
 
 try:
     import Part
@@ -13,6 +13,7 @@ except ImportError:
 
 class MockShape:
     """Mock Part shape representation for testing outside FreeCAD."""
+
     def __init__(self, shape_type: str, params: dict):
         self.shape_type = shape_type
         self.params = params
@@ -25,7 +26,7 @@ class MockShape:
 @register_node
 class BoxNode(BaseNode):
     node_type = "BoxNode"
-    category = "Primitives"
+    category = "Geometry"
     title = "Box"
 
     def setup_sockets(self) -> None:
@@ -41,12 +42,11 @@ class BoxNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        if Part and HAS_FREECAD:
-            shape = Part.makeBox(length, width, height)
-            if placement:
-                shape.Placement = placement
+        shape = Part.makeBox(length, width, height)
+        if placement:
+            shape.Placement = placement
         else:
-            shape = MockShape("Box", {"Length": length, "Width": width, "Height": height, "Placement": placement})
+            shape.Placement = create_placement()
 
         self.set_output_value("Shape", shape)
 
@@ -54,7 +54,7 @@ class BoxNode(BaseNode):
 @register_node
 class CylinderNode(BaseNode):
     node_type = "CylinderNode"
-    category = "Primitives"
+    category = "Geometry"
     title = "Cylinder"
 
     def setup_sockets(self) -> None:
@@ -68,20 +68,18 @@ class CylinderNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        if Part and HAS_FREECAD:
-            shape = Part.makeCylinder(radius, height)
-            if placement:
-                shape.Placement = placement
+        shape = Part.makeCylinder(radius, height)
+        if placement:
+            shape.Placement = placement
         else:
-            shape = MockShape("Cylinder", {"Radius": radius, "Height": height, "Placement": placement})
-
+            shape.Placement = create_placement()
         self.set_output_value("Shape", shape)
 
 
 @register_node
 class SphereNode(BaseNode):
     node_type = "SphereNode"
-    category = "Primitives"
+    category = "Geometry"
     title = "Sphere"
 
     def setup_sockets(self) -> None:
@@ -93,12 +91,11 @@ class SphereNode(BaseNode):
         radius = float(self.get_input_value("Radius") or 5.0)
         placement = self.get_input_value("Placement")
 
-        if Part and HAS_FREECAD:
-            shape = Part.makeSphere(radius)
-            if placement:
-                shape.Placement = placement
+        shape = Part.makeSphere(radius)
+        if placement:
+            shape.Placement = placement
         else:
-            shape = MockShape("Sphere", {"Radius": radius, "Placement": placement})
+            shape.Placement = create_placement()
 
         self.set_output_value("Shape", shape)
 
@@ -106,7 +103,7 @@ class SphereNode(BaseNode):
 @register_node
 class ConeNode(BaseNode):
     node_type = "ConeNode"
-    category = "Primitives"
+    category = "Geometry"
     title = "Cone"
 
     def setup_sockets(self) -> None:
@@ -122,11 +119,10 @@ class ConeNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        if Part and HAS_FREECAD:
-            shape = Part.makeCone(r1, r2, height)
-            if placement:
-                shape.Placement = placement
+        shape = Part.makeCone(r1, r2, height)
+        if placement:
+            shape.Placement = placement
         else:
-            shape = MockShape("Cone", {"Radius1": r1, "Radius2": r2, "Height": height, "Placement": placement})
+            shape.Placement = create_placement()
 
         self.set_output_value("Shape", shape)

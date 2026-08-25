@@ -6,14 +6,8 @@ from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 from freecad_nodegraph.core.serializer import GraphSerializer
 
-try:
-    import FreeCAD
-    import Part
-    HAS_FREECAD = True
-except ImportError:
-    FreeCAD = None
-    Part = None
-    HAS_FREECAD = False
+import FreeCAD
+import Part
 
 
 class NodeGraphObject:
@@ -58,7 +52,9 @@ class NodeGraphObject:
             if result_shape is None:
                 # If no output node, find last computed shape from any node
                 for node in reversed(graph.nodes):
-                    val = node.get_output_value("Shape") or node.get_output_value("Result")
+                    val = node.get_output_value("Shape") or node.get_output_value(
+                        "Result"
+                    )
                     if val is not None and not isinstance(val, str):
                         result_shape = val
                         break
@@ -67,7 +63,7 @@ class NodeGraphObject:
                 obj.Shape = result_shape
 
         except Exception as e:
-            if HAS_FREECAD and FreeCAD and hasattr(FreeCAD, "Console"):
+            if FreeCAD and hasattr(FreeCAD, "Console"):
                 FreeCAD.Console.PrintError(f"NodeGraphObject recompute error: {e}\n")
 
     def __getstate__(self):
@@ -94,6 +90,7 @@ class ViewProviderNodeGraph:
         """Open NodeGraph Editor for this object when double-clicked in Model tree view."""
         try:
             from freecad_nodegraph.commands import CommandOpenNodeGraphEditor
+
             cmd = CommandOpenNodeGraphEditor()
             cmd.Activated(doc_object=getattr(vobj, "Object", None))
             return True
@@ -120,7 +117,9 @@ class MockDocumentObject:
         self.OutList = []
         self.Group = []
 
-    def addProperty(self, prop_type: str, prop_name: str, group: str = "", doc: str = ""):
+    def addProperty(
+        self, prop_type: str, prop_name: str, group: str = "", doc: str = ""
+    ):
         if not hasattr(self, prop_name):
             setattr(self, prop_name, "")
 
@@ -133,7 +132,7 @@ class MockDocumentObject:
 def get_next_nodegraph_name(doc: Any = None) -> str:
     """Count existing NodeGraph objects in active document and return 'NodeGraph:X'."""
     count = 1
-    if HAS_FREECAD and doc is not None:
+    if doc is not None:
         for obj in getattr(doc, "Objects", []):
             if (
                 getattr(obj, "Proxy", None).__class__.__name__ == "NodeGraphObject"
@@ -153,7 +152,7 @@ def make_nodegraph_object(
     if name is None:
         name = get_next_nodegraph_name(doc)
 
-    if HAS_FREECAD and doc is not None:
+    if doc is not None:
         # FreeCAD object name cannot contain colons, so use valid internal name and set Label to 'NodeGraph:X'
         valid_internal_name = name.replace(":", "_")
         obj = doc.addObject("Part::FeaturePython", valid_internal_name)

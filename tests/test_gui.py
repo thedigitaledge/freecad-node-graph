@@ -75,6 +75,33 @@ def test_socket_colors_and_labels(qapp):
     shape_item = node_item.socket_items[shape_sock]
     assert shape_item.get_color() == SOCKET_TYPE_COLORS[DataType.SHAPE]
 
+def test_side_panel_node_search(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
+
+    graph = Graph()
+    panel = NodeGraphSidePanelWidget(graph=graph)
+
+    # Initial state: no search filter
+    root = panel.node_tree.invisibleRootItem()
+    assert root.childCount() > 0
+
+    # Filter for 'box'
+    panel.search_input.setText("box")
+    panel.filter_node_library("box")
+
+    # Find Box node item
+    found_box = False
+    for i in range(root.childCount()):
+        cat_item = root.child(i)
+        if not cat_item.isHidden():
+            for j in range(cat_item.childCount()):
+                child = cat_item.child(j)
+                if not child.isHidden() and "box" in child.text(0).lower():
+                    found_box = True
+
+    assert found_box is True
+
 
 def test_side_panel_node_search(qapp):
     from freecad_nodegraph.core.graph import Graph
