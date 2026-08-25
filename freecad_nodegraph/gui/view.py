@@ -40,6 +40,15 @@ class NodeGraphicsView(QGraphicsView):
         self.is_panning: bool = False
         self.pan_start = None
 
+    def keyPressEvent(self, event):
+        """Handle key press events (e.g. Del/Backspace to delete selected nodes)."""
+        if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
+            if self.node_scene and hasattr(self.node_scene, "delete_selected_nodes"):
+                self.node_scene.delete_selected_nodes()
+                event.accept()
+                return
+        super().keyPressEvent(event)
+
     def wheelEvent(self, event: QWheelEvent):
         """Handle zoom in/out with mouse wheel."""
         zoom_in_factor = 1.15

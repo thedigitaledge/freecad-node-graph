@@ -160,6 +160,11 @@ class NodeGraphicsScene(QGraphicsScene):
     def cut_selected_nodes(self) -> dict:
         """Copy selected nodes to clipboard and remove them from graph."""
         data = self.copy_selected_nodes()
+        self.delete_selected_nodes()
+        return data
+
+    def delete_selected_nodes(self) -> List[BaseNode]:
+        """Delete selected nodes and their connected edges from the graph and scene."""
         selected_nodes = [
             item.node for item in self.selectedItems() if isinstance(item, GraphicsNodeItem)
         ]
@@ -167,7 +172,7 @@ class NodeGraphicsScene(QGraphicsScene):
             self.detach_node_links(node)
             self.remove_node_item(node)
             self.graph.remove_node(node)
-        return data
+        return selected_nodes
 
     def paste_nodes(self, offset_x: float = 30.0, offset_y: float = 30.0) -> List[BaseNode]:
         """Paste nodes from clipboard data into the graph with remapped unique IDs."""

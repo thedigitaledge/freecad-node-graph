@@ -290,6 +290,59 @@ def test_canvas_and_library_help_tooltips(qapp):
     assert box_tree_item.toolTip(0) == BoxNode.get_help_summary()
 
 
+def test_delete_selected_nodes_and_del_key(qapp):
+    try:
+        from PySide6.QtCore import Qt
+        from PySide6.QtGui import QKeyEvent
+    except ImportError:
+        try:
+            from PySide2.QtCore import Qt
+            from PySide2.QtGui import QKeyEvent
+        except ImportError:
+            from PyQt5.QtCore import Qt
+            from PyQt5.QtGui import QKeyEvent
+
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.inputs import FloatNode
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.scene import NodeGraphicsScene
+    from freecad_nodegraph.gui.view import NodeGraphicsView
+
+    graph = Graph()
+    f1 = FloatNode(graph=graph)
+    box = BoxNode(graph=graph)
+    graph.add_node(f1)
+    graph.add_node(box)
+    edge = graph.connect_sockets(f1.get_output_socket("Value"), box.get_input_socket("Length"))
+
+    scene = NodeGraphicsScene(graph)
+    view = NodeGraphicsView(scene)
+
+    assert len(graph.nodes) == 2
+    assert len(scene.node_items) == 2
+    assert len(scene.edge_items) == 1
+
+    # Select box node item and trigger delete
+    item_box = scene.node_items[box]
+    item_box.setSelected(True)
+
+    deleted = scene.delete_selected_nodes()
+    assert len(deleted) == 1
+    assert box not in graph.nodes
+    assert len(graph.edges) == 0
+
+    # Select f1 node item and trigger Del key press on view
+    item_f1 = scene.node_items[f1]
+    item_f1.setSelected(True)
+
+    key_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Delete, Qt.NoModifier)
+    view.keyPressEvent(key_event)
+
+    assert f1 not in graph.nodes
+    assert len(graph.nodes) == 0
+    assert len(scene.node_items) == 0
+
+
 def test_copy_cut_paste_duplicate(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode

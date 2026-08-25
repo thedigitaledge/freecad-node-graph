@@ -453,6 +453,7 @@ class GraphicsNodeItem(QGraphicsItem):
         copy_act = menu.addAction("Copy")
         paste_act = menu.addAction("Paste")
         duplicate_act = menu.addAction("Duplicate")
+        delete_act = menu.addAction("Delete")
         menu.addSeparator()
         detach_act = menu.addAction("Detach Links")
 
@@ -483,6 +484,11 @@ class GraphicsNodeItem(QGraphicsItem):
                 if not self.isSelected():
                     self.setSelected(True)
                 scene.duplicate_selected_nodes()
+        elif selected_action == delete_act:
+            if scene and hasattr(scene, "delete_selected_nodes"):
+                if not self.isSelected():
+                    self.setSelected(True)
+                scene.delete_selected_nodes()
         elif selected_action == detach_act:
             if scene and hasattr(scene, "detach_node_links"):
                 scene.detach_node_links(self.node)
