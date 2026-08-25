@@ -240,7 +240,7 @@ class GraphicsNodeItem(QGraphicsItem):
 
         if getattr(self.node, "category", "") == "Input":
             if hasattr(self.node, "set_components") or hasattr(self.node, "set_position"):
-                self.height = 115.0
+                self.height = 135.0
                 self.width = 180.0
             else:
                 self.height = 75.0
@@ -294,15 +294,15 @@ class GraphicsNodeItem(QGraphicsItem):
             return
 
         node = self.node
-        valid_style = "border: 1px solid #555555; background-color: #222222; color: #A6E22E; font-weight: bold;"
-        error_style = "border: 2px solid #FF5252; background-color: #381A1A; color: #FFD2D2;"
+        valid_style = "border: 1px solid #555555; background-color: #222222; color: #E0E0E0; border-radius: 3px; padding: 2px;"
+        error_style = "border: 2px solid #FF5252; background-color: #381A1A; color: #FFD2D2; border-radius: 3px; padding: 2px;"
 
         # FloatNode, IntegerNode, StringNode
         if hasattr(node, "set_value") and not hasattr(node, "set_components"):
             if node.node_type == "BooleanNode":
                 cb = QCheckBox("True")
                 cb.setChecked(getattr(node, "value", False))
-                cb.setStyleSheet("color: #AE81FF; font-weight: bold;")
+                cb.setStyleSheet("color: #E0E0E0; font-size: 11px; font-weight: bold; background: transparent;")
 
                 def on_toggle(checked):
                     node.set_value(checked)
@@ -311,10 +311,10 @@ class GraphicsNodeItem(QGraphicsItem):
 
                 proxy = QGraphicsProxyWidget(self)
                 proxy.setWidget(cb)
-                proxy.setPos(15, 40)
+                proxy.setPos(12, 38)
             else:
                 line_edit = QLineEdit(str(getattr(node, "value", "")))
-                line_edit.setMaximumWidth(110)
+                line_edit.setMinimumWidth(110)
                 line_edit.setStyleSheet(valid_style)
 
                 def on_text_changed(txt):
@@ -330,16 +330,17 @@ class GraphicsNodeItem(QGraphicsItem):
 
                 proxy = QGraphicsProxyWidget(self)
                 proxy.setWidget(line_edit)
-                proxy.setPos(15, 40)
+                proxy.setPos(12, 38)
 
         # VectorNode & PlacementNode
         elif hasattr(node, "set_components") or hasattr(node, "set_position"):
             setter = getattr(node, "set_components", getattr(node, "set_position", None))
 
             container = QWidget()
+            container.setStyleSheet("background: transparent;")
             layout = QVBoxLayout(container)
-            layout.setContentsMargins(2, 2, 2, 2)
-            layout.setSpacing(2)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(3)
 
             curr_x = getattr(node, "x", getattr(node, "pos_x", 0.0))
             curr_y = getattr(node, "y", getattr(node, "pos_y", 0.0))
@@ -350,10 +351,11 @@ class GraphicsNodeItem(QGraphicsItem):
             for comp in ["X", "Y", "Z"]:
                 row = QHBoxLayout()
                 row.setContentsMargins(0, 0, 0, 0)
+                row.setSpacing(4)
                 lbl = QLabel(f"{comp}:")
-                lbl.setStyleSheet("color: #FD971F; font-weight: bold;")
+                lbl.setStyleSheet("color: #E0E0E0; font-size: 11px; font-weight: bold; background: transparent;")
                 edit = QLineEdit(str(vals[comp.lower()]))
-                edit.setMaximumWidth(75)
+                edit.setMaximumWidth(80)
                 edit.setStyleSheet(valid_style)
 
                 def make_comp_handler(c_name, le):
@@ -377,7 +379,7 @@ class GraphicsNodeItem(QGraphicsItem):
 
             proxy = QGraphicsProxyWidget(self)
             proxy.setWidget(container)
-            proxy.setPos(15, 38)
+            proxy.setPos(12, 36)
 
     def contextMenuEvent(self, event):
         """Handle secondary (right-click) context menu on node."""
