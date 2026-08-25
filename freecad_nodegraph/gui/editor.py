@@ -69,6 +69,16 @@ class NodeGraphEditorWidget(QWidget):
             data = GraphSerializer.to_dict(self.graph)
             self.doc_object.GraphData = json.dumps(data)
 
+    def closeEvent(self, event):
+        """Close task panel when editor view is closed."""
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "closeDialog"):
+                FreeCADGui.Control.closeDialog()
+        except Exception:
+            pass
+        super().closeEvent(event)
+
 
 # Alias for compatibility
 NodeGraphEditorWindow = NodeGraphEditorWidget

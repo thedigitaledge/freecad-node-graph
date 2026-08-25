@@ -38,7 +38,7 @@ def get_active_editor():
             mdi_area = main_win.findChild(QMdiArea)
             if mdi_area and mdi_area.activeSubWindow():
                 subwin = mdi_area.activeSubWindow()
-                widget = subwin.widget()
+                widget = subwin.widget() if hasattr(subwin, "widget") else None
                 if widget is not None and widget.__class__.__name__ == "NodeGraphEditorWidget":
                     return widget
 
@@ -48,6 +48,33 @@ def get_active_editor():
                 return editor
 
     return None
+
+
+def on_subwindow_activated(subwin):
+    """Handle MDI subwindow focus changes to activate/deactivate the Node Graph TaskPanel."""
+    if subwin is None:
+        if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "closeDialog"):
+            try:
+                FreeCADGui.Control.closeDialog()
+            except Exception:
+                pass
+        return
+
+    widget = subwin.widget() if hasattr(subwin, "widget") else None
+    if widget is not None and widget.__class__.__name__ == "NodeGraphEditorWidget":
+        from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+        if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
+            try:
+                task_panel = NodeGraphTaskPanel(graph=widget.graph)
+                FreeCADGui.Control.showDialog(task_panel)
+            except Exception:
+                pass
+    else:
+        if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "closeDialog"):
+            try:
+                FreeCADGui.Control.closeDialog()
+            except Exception:
+                pass
 
 
 class NodeGraphSelectionObserver:
@@ -170,7 +197,13 @@ class CommandOpenNodeGraphEditor:
 
             if hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()
-                mdi_area = main_win.findChild(QMdiArea)
+                mdi_area = main_win.findChild(QMdiArea) if main_win else None
+                if mdi_area and not getattr(mdi_area, "_nodegraph_connected", False):
+                    try:
+                        mdi_area.subWindowActivated.connect(on_subwindow_activated)
+                        setattr(mdi_area, "_nodegraph_connected", True)
+                    except Exception:
+                        pass
 
                 subwin_info = _active_editors.get(doc_object)
                 if subwin_info is None or not subwin_info[0].isVisible():

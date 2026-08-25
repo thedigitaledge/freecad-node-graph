@@ -176,3 +176,31 @@ def test_selection_observer_closes_task_panel(qapp, monkeypatch):
 
     observer.close_task_panel()
     assert len(closed_dialogs) == 2
+
+
+def test_subwindow_activated_deactivates_task_panel(qapp, monkeypatch):
+    import freecad_nodegraph.commands as commands
+
+    closed_dialogs = []
+
+    class MockControl:
+        @staticmethod
+        def closeDialog():
+            closed_dialogs.append(True)
+
+    class MockFreeCADGui:
+        Control = MockControl
+
+    monkeypatch.setattr(commands, "FreeCADGui", MockFreeCADGui)
+
+    # When active subwindow becomes None (e.g. clicking off to a non-subwindow area)
+    commands.on_subwindow_activated(None)
+    assert len(closed_dialogs) == 1
+
+    # When active subwindow belongs to a non-NodeGraph widget
+    class MockSubWindow:
+        def widget(self):
+            return None
+
+    commands.on_subwindow_activated(MockSubWindow())
+    assert len(closed_dialogs) == 2
