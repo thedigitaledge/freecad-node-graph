@@ -195,9 +195,11 @@ class AIGraphGenerator:
 
             trans_nums = extract_numbers(re.sub(r"box|cube|cylinder|sphere|cone|radius|height|length|width", "", text))
             if trans_nums:
-                vec_node.get_input_socket("X").default_value = trans_nums[0] if len(trans_nums) > 0 else 0.0
-                vec_node.get_input_socket("Y").default_value = trans_nums[1] if len(trans_nums) > 1 else 0.0
-                vec_node.get_input_socket("Z").default_value = trans_nums[2] if len(trans_nums) > 2 else 0.0
+                vec_node.set_components(
+                    x=trans_nums[0] if len(trans_nums) > 0 else 0.0,
+                    y=trans_nums[1] if len(trans_nums) > 1 else 0.0,
+                    z=trans_nums[2] if len(trans_nums) > 2 else 0.0,
+                )
 
             trans_node = TranslateNode(graph=graph)
             trans_node.pos_x = pos_x

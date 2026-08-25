@@ -34,27 +34,57 @@ def test_node_categories():
     assert "DocumentOutputNode" in output_node_types
 
 
+def test_input_nodes_and_error_validation():
+    # FloatNode validation
+    f_node = FloatNode()
+    assert len(f_node.inputs) == 0  # Only output socket
+    assert len(f_node.outputs) == 1
+    f_node.set_value("42.5")
+    assert f_node.value == 42.5
+    with pytest.raises(ValueError, match="Invalid float value"):
+        f_node.set_value("invalid_float")
+
+    # IntegerNode validation
+    i_node = IntegerNode()
+    assert len(i_node.inputs) == 0
+    i_node.set_value("100")
+    assert i_node.value == 100
+    with pytest.raises(ValueError, match="Invalid integer value"):
+        i_node.set_value("12.34abc")
+
+    # BooleanNode validation
+    b_node = BooleanNode()
+    assert len(b_node.inputs) == 0
+    b_node.set_value("true")
+    assert b_node.value is True
+    b_node.set_value("off")
+    assert b_node.value is False
+    with pytest.raises(ValueError, match="Invalid boolean value"):
+        b_node.set_value("not_a_bool")
+
+    # VectorNode validation
+    v_node = VectorNode()
+    assert len(v_node.inputs) == 0
+    v_node.set_components(x=10.0, y=20.0, z=30.0)
+    assert v_node.x == 10.0 and v_node.y == 20.0 and v_node.z == 30.0
+    with pytest.raises(ValueError, match="Invalid float for X component"):
+        v_node.set_components(x="bad_x")
+
+    # PlacementNode validation
+    p_node = PlacementNode()
+    assert len(p_node.inputs) == 0
+    p_node.set_position(x=1.0, y=2.0, z=3.0)
+    assert p_node.pos_x == 1.0 and p_node.pos_y == 2.0 and p_node.pos_z == 3.0
+    with pytest.raises(ValueError, match="Invalid float for Y position"):
+        p_node.set_position(y="bad_y")
+
+
 def test_float_and_vector_nodes():
     graph = Graph()
 
-    fx = FloatNode(graph=graph)
-    fx.get_input_socket("Value").default_value = 10.0
-    graph.add_node(fx)
-
-    fy = FloatNode(graph=graph)
-    fy.get_input_socket("Value").default_value = 20.0
-    graph.add_node(fy)
-
-    fz = FloatNode(graph=graph)
-    fz.get_input_socket("Value").default_value = 30.0
-    graph.add_node(fz)
-
     vec_node = VectorNode(graph=graph)
+    vec_node.set_components(x=10.0, y=20.0, z=30.0)
     graph.add_node(vec_node)
-
-    graph.connect_sockets(fx.get_output_socket("Value"), vec_node.get_input_socket("X"))
-    graph.connect_sockets(fy.get_output_socket("Value"), vec_node.get_input_socket("Y"))
-    graph.connect_sockets(fz.get_output_socket("Value"), vec_node.get_input_socket("Z"))
 
     evaluator = GraphEvaluator(graph)
     evaluator.evaluate()
@@ -69,15 +99,9 @@ def test_float_and_vector_nodes():
 def test_placement_and_box_nodes():
     graph = Graph()
 
-    vec_node = VectorNode(graph=graph)
-    vec_node.get_input_socket("X").default_value = 5.0
-    vec_node.get_input_socket("Y").default_value = 5.0
-    vec_node.get_input_socket("Z").default_value = 0.0
-    graph.add_node(vec_node)
-
     place_node = PlacementNode(graph=graph)
+    place_node.set_position(x=5.0, y=5.0, z=0.0)
     graph.add_node(place_node)
-    graph.connect_sockets(vec_node.get_output_socket("Vector"), place_node.get_input_socket("Position"))
 
     box_node = BoxNode(graph=graph)
     box_node.get_input_socket("Length").default_value = 50.0
@@ -148,7 +172,7 @@ def test_transforms_and_other_primitives():
     graph.connect_sockets(cone.get_output_socket("Shape"), cut.get_input_socket("Tool Shape"))
 
     vec = VectorNode(graph=graph)
-    vec.get_input_socket("Z").default_value = 100.0
+    vec.set_components(z=100.0)
     graph.add_node(vec)
 
     translate = TranslateNode(graph=graph)
