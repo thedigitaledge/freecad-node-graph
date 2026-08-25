@@ -29,6 +29,11 @@ Transforms & Features
 - **Extrude**: Extrudes a shape along a vector direction.
 - **Compound**: Combines multiple shapes into a compound Part shape.
 
+AI
+~~
+- **AI Geometry Generator**: Generates CAD sub-graphs and 3D shapes dynamically from natural language prompt instructions.
+- **AI Prompt Assistant**: Formats system and user prompts for AI-driven CAD workflows.
+
 Output
 ~~~~~~
 - **Document Output**: Injects final computed 3D shape into FreeCAD active document.

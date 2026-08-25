@@ -20,6 +20,7 @@ try:
         QFormLayout,
         QGroupBox,
         QPushButton,
+        QTabWidget,
     )
     from PySide6.QtCore import Qt
     from PySide6.QtGui import QAction, QIcon
@@ -42,6 +43,7 @@ except ImportError:
             QFormLayout,
             QGroupBox,
             QPushButton,
+            QTabWidget,
         )
         from PySide2.QtCore import Qt, QAction, QIcon
     except ImportError:
@@ -63,6 +65,7 @@ except ImportError:
             QGroupBox,
             QPushButton,
             QAction,
+            QTabWidget,
         )
         from PyQt5.QtCore import Qt
 
@@ -73,6 +76,7 @@ from freecad_nodegraph.core.serializer import GraphSerializer
 from freecad_nodegraph.workbench_generator import discover_workbench_functions
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
+from freecad_nodegraph.gui.ai_panel import AIAssistantPanel
 
 
 class NodeGraphEditorWindow(QMainWindow):
@@ -122,24 +126,30 @@ class NodeGraphEditorWindow(QMainWindow):
         # Center panel: Node Graph view
         splitter.addWidget(self.view)
 
-        # Right panel: Properties Inspector
-        right_panel = QWidget()
-        right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(2, 2, 2, 2)
+        # Right panel: Properties Inspector & AI Assistant tabbed panel
+        self.right_tabs = QTabWidget()
 
-        prop_label = QLabel("<b>Properties Inspector</b>")
-        right_layout.addWidget(prop_label)
+        # Tab 1: Properties Inspector
+        prop_panel = QWidget()
+        prop_layout = QVBoxLayout(prop_panel)
+        prop_layout.setContentsMargins(2, 2, 2, 2)
 
         self.prop_group = QGroupBox("Selected Node Inputs")
         self.prop_form_layout = QFormLayout(self.prop_group)
-        right_layout.addWidget(self.prop_group)
+        prop_layout.addWidget(self.prop_group)
+        prop_layout.addStretch()
 
         self.scene.selectionChanged.connect(self.on_selection_changed)
 
-        right_layout.addStretch()
-        splitter.addWidget(right_panel)
+        self.right_tabs.addTab(prop_panel, "Properties")
 
-        splitter.setSizes([220, 740, 240])
+        # Tab 2: AI Assistant
+        self.ai_panel = AIAssistantPanel(editor_window=self)
+        self.right_tabs.addTab(self.ai_panel, "AI Assistant")
+
+        splitter.addWidget(self.right_tabs)
+
+        splitter.setSizes([220, 680, 300])
 
         # Setup toolbars
         self.create_main_toolbar()
@@ -168,6 +178,13 @@ class NodeGraphEditorWindow(QMainWindow):
 
         toolbar.addSeparator()
 
+        ai_action = QAction("AI Assistant", self)
+        ai_action.setToolTip("Open AI Prompt Assistant Panel")
+        ai_action.triggered.connect(self.toggle_ai_panel)
+        toolbar.addAction(ai_action)
+
+        toolbar.addSeparator()
+
         clear_action = QAction("Clear Graph", self)
         clear_action.triggered.connect(self.clear_graph)
         toolbar.addAction(clear_action)
@@ -179,6 +196,11 @@ class NodeGraphEditorWindow(QMainWindow):
         load_action = QAction("Load Graph...", self)
         load_action.triggered.connect(self.load_graph)
         toolbar.addAction(load_action)
+
+    def toggle_ai_panel(self):
+        """Switch right tab to AI Assistant panel."""
+        if hasattr(self, "right_tabs") and hasattr(self, "ai_panel"):
+            self.right_tabs.setCurrentWidget(self.ai_panel)
 
     def create_workbench_toolbars(self):
         """Create toolbars with buttons for each workbench's scriptable functions."""
