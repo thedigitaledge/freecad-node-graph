@@ -241,7 +241,7 @@ class GraphicsNodeItem(QGraphicsItem):
         if getattr(self.node, "category", "") == "Input":
             if hasattr(self.node, "set_components") or hasattr(self.node, "set_position"):
                 self.height = 135.0
-                self.width = 180.0
+                self.width = 200.0
             else:
                 self.height = 75.0
                 self.width = 180.0
@@ -314,7 +314,7 @@ class GraphicsNodeItem(QGraphicsItem):
                 proxy.setPos(12, 38)
             else:
                 line_edit = QLineEdit(str(getattr(node, "value", "")))
-                line_edit.setMinimumWidth(110)
+                line_edit.setFixedWidth(110)
                 line_edit.setStyleSheet(valid_style)
 
                 def on_text_changed(txt):
@@ -340,7 +340,7 @@ class GraphicsNodeItem(QGraphicsItem):
             container.setStyleSheet("background: transparent;")
             layout = QVBoxLayout(container)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(3)
+            layout.setSpacing(4)
 
             curr_x = getattr(node, "x", getattr(node, "pos_x", 0.0))
             curr_y = getattr(node, "y", getattr(node, "pos_y", 0.0))
@@ -353,9 +353,10 @@ class GraphicsNodeItem(QGraphicsItem):
                 row.setContentsMargins(0, 0, 0, 0)
                 row.setSpacing(4)
                 lbl = QLabel(f"{comp}:")
+                lbl.setFixedWidth(16)
                 lbl.setStyleSheet("color: #E0E0E0; font-size: 11px; font-weight: bold; background: transparent;")
                 edit = QLineEdit(str(vals[comp.lower()]))
-                edit.setMaximumWidth(80)
+                edit.setFixedWidth(75)
                 edit.setStyleSheet(valid_style)
 
                 def make_comp_handler(c_name, le):
@@ -375,11 +376,12 @@ class GraphicsNodeItem(QGraphicsItem):
 
                 row.addWidget(lbl)
                 row.addWidget(edit)
+                row.addStretch()
                 layout.addLayout(row)
 
             proxy = QGraphicsProxyWidget(self)
             proxy.setWidget(container)
-            proxy.setPos(12, 36)
+            proxy.setPos(12, 38)
 
     def contextMenuEvent(self, event):
         """Handle secondary (right-click) context menu on node."""
