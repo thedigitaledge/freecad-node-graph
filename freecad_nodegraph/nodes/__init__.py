@@ -21,7 +21,6 @@ from freecad_nodegraph.nodes.transforms import (
     CompoundNode,
 )
 from freecad_nodegraph.nodes.output import DocumentOutputNode
-from freecad_nodegraph.nodes.ai import AINode, AIPromptNode
 
 __all__ = [
     "FloatNode",
@@ -41,6 +40,4 @@ __all__ = [
     "ExtrudeNode",
     "CompoundNode",
     "DocumentOutputNode",
-    "AINode",
-    "AIPromptNode",
 ]

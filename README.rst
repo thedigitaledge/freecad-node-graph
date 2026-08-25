@@ -10,7 +10,6 @@ FreeCAD NodeGraph Workbench
 Features
 --------
 
-- **AI Assistant & Prompt-to-Graph**: Natural language prompt processor and AI Assistant panel (`AINode` and `AIGraphGenerator`) that converts text descriptions into parametric CAD graphs automatically.
 - **Automatic Workbench Function Discovery**: Automatically scans FreeCAD workbenches (``Part``, ``Draft``, ``Arch``, ``Mesh``, ``Sketcher``, ``PartDesign``) and dynamically generates scriptable function nodes and toolbars.
 - **Node Context Menu**: Secondary click (right-click) on any node to perform **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
 - **Color-Coded Sockets & Labels**: Visual nodes display clear text labels for input/output sockets and distinct data-type color coding (Float, Vector, Shape, String, Boolean, etc.).
@@ -47,7 +46,7 @@ How to Use
 
 1. Open or create a FreeCAD document.
 2. Click the **Open Node Graph Editor** button on the NodeGraph toolbar.
-3. Use the top **Workbench Toolbars** (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``), double-click items in the **Node Library** palette, or open the **AI Assistant** panel to generate node graphs from text prompts.
+3. Use the top **Workbench Toolbars** (e.g. ``[Part]``, ``[Draft]``, ``[Arch]``) or double-click items in the **Node Library** palette to spawn nodes onto the canvas.
 4. Drag connections between color-coded output sockets and input sockets.
 5. Right-click on nodes to **Cut**, **Copy**, **Paste**, **Duplicate**, or **Detach Links**.
 6. Select nodes to inspect and modify input parameters in the **Properties Inspector**.

@@ -4,35 +4,27 @@ Available Nodes & Workbench Scriptable Functions
 Standard Core Nodes
 -------------------
 
-Inputs
-~~~~~~
+Input
+~~~~~
 - **Float Value**: Provides a single floating-point number.
+- **Integer Value**: Provides an integer number.
+- **String Value**: Provides a text string.
+- **Boolean Value**: Provides a boolean flag.
 - **Vector**: Constructs a 3D vector (X, Y, Z).
 - **Placement**: Constructs a placement transformation from a position vector.
 
-Primitives
-~~~~~~~~~~
+Geometry
+~~~~~~~~
 - **Box**: Generates a 3D rectangular box with Length, Width, Height.
 - **Cylinder**: Generates a 3D cylinder with Radius and Height.
 - **Sphere**: Generates a 3D sphere with Radius.
 - **Cone**: Generates a 3D cone with Radius1, Radius2, and Height.
-
-Booleans
-~~~~~~~~
 - **Fuse (Union)**: Combines two 3D shapes.
 - **Cut (Difference)**: Subtracts Tool Shape from Base Shape.
 - **Common (Intersection)**: Computes intersection of two shapes.
-
-Transforms & Features
-~~~~~~~~~~~~~~~~~~~~~
 - **Translate**: Translates a shape by a vector offset.
 - **Extrude**: Extrudes a shape along a vector direction.
 - **Compound**: Combines multiple shapes into a compound Part shape.
-
-AI
-~~
-- **AI Geometry Generator**: Generates CAD sub-graphs and 3D shapes dynamically from natural language prompt instructions.
-- **AI Prompt Assistant**: Formats system and user prompts for AI-driven CAD workflows.
 
 Output
 ~~~~~~

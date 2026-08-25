@@ -37,7 +37,7 @@ def test_node_categories():
 def test_input_nodes_and_error_validation():
     # FloatNode validation
     f_node = FloatNode()
-    assert len(f_node.inputs) == 0  # Only output socket
+    assert len(f_node.inputs) == 0  # Output socket only
     assert len(f_node.outputs) == 1
     f_node.set_value("42.5")
     assert f_node.value == 42.5
