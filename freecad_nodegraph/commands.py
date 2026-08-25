@@ -24,22 +24,27 @@ from freecad_nodegraph.core.evaluator import GraphEvaluator
 global_graph = Graph()
 _editor_window = None
 _task_panel = None
+_property_inspector = None
 
 
 class CommandOpenNodeGraphEditor:
-    """FreeCAD Command to open Node Graph Editor MDI view tab and Task Panel."""
+    """FreeCAD Command to open Node Graph Editor MDI view tab, Task Panel, and Model tab Property Inspector."""
 
     def GetResources(self):
         return {
             "Pixmap": "NodeGraph_Editor",
             "MenuText": "Open Node Graph Editor",
-            "ToolTip": "Opens the Node Graph visual editor MDI view tab and Task Panel",
+            "ToolTip": "Opens the Node Graph visual editor MDI view tab, Task Panel, and Model tab Property Inspector",
         }
 
     def Activated(self):
-        global _editor_window, _task_panel, global_graph
+        global _editor_window, _task_panel, _property_inspector, global_graph
         try:
-            from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodeGraphTaskPanel
+            from freecad_nodegraph.gui.editor import (
+                NodeGraphEditorWindow,
+                NodeGraphTaskPanel,
+                NodePropertyInspector,
+            )
 
             if HAS_FREECAD:
                 mw = FreeCADGui.getMainWindow() if hasattr(FreeCADGui, "getMainWindow") else None
@@ -48,7 +53,11 @@ class CommandOpenNodeGraphEditor:
                 if _editor_window is None or not _editor_window.isVisible():
                     _editor_window = NodeGraphEditorWindow(graph=global_graph, title="NodeGraph")
                     _task_panel = NodeGraphTaskPanel(editor_window=_editor_window)
+                    _property_inspector = NodePropertyInspector(editor_window=_editor_window)
+
                     _editor_window.set_task_panel(_task_panel)
+                    _editor_window.set_property_inspector(_property_inspector)
+                    _property_inspector.embed_in_model_tab_base()
 
                     if mdi_area:
                         sub_window = mdi_area.addSubWindow(_editor_window)
@@ -71,7 +80,10 @@ class CommandOpenNodeGraphEditor:
                 if _editor_window is None or not _editor_window.isVisible():
                     _editor_window = NodeGraphEditorWindow(graph=global_graph, title="NodeGraph")
                     _task_panel = NodeGraphTaskPanel(editor_window=_editor_window)
+                    _property_inspector = NodePropertyInspector(editor_window=_editor_window)
+
                     _editor_window.set_task_panel(_task_panel)
+                    _editor_window.set_property_inspector(_property_inspector)
                     _editor_window.show()
                 else:
                     _editor_window.raise_()

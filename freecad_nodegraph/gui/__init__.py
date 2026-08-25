@@ -10,6 +10,7 @@ from freecad_nodegraph.gui.view import NodeGraphicsView
 from freecad_nodegraph.gui.editor import (
     NodeGraphEditorWindow,
     NodeGraphTaskPanel,
+    NodePropertyInspector,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "NodeGraphicsView",
     "NodeGraphEditorWindow",
     "NodeGraphTaskPanel",
+    "NodePropertyInspector",
 ]

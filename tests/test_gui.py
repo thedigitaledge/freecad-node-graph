@@ -1,7 +1,7 @@
 """Unit tests for NodeGraph GUI components in offscreen/qapp context."""
 
 import pytest
-from PySide6.QtWidgets import QApplication, QTreeWidget, QGroupBox, QDoubleSpinBox
+from PySide6.QtWidgets import QApplication
 from freecad_nodegraph.core.socket import DataType
 
 # Ensure QApplication instance exists for GUI tests
@@ -19,7 +19,11 @@ def test_gui_creation(qapp):
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.scene import NodeGraphicsScene
     from freecad_nodegraph.gui.view import NodeGraphicsView
-    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodeGraphTaskPanel
+    from freecad_nodegraph.gui.editor import (
+        NodeGraphEditorWindow,
+        NodeGraphTaskPanel,
+        NodePropertyInspector,
+    )
 
     graph = Graph()
     f1 = FloatNode(graph=graph)
@@ -43,10 +47,12 @@ def test_gui_creation(qapp):
     assert task_panel.getStandardButtons() == 0
     assert window.task_panel == task_panel
 
+    prop_inspector = NodePropertyInspector(editor_window=window)
+    assert window.property_inspector == prop_inspector
 
-def test_task_panel_search_and_properties(qapp):
+
+def test_task_panel_search_and_node_spawning(qapp):
     from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.nodes.inputs import FloatNode
     from freecad_nodegraph.nodes.primitives import BoxNode
     from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodeGraphTaskPanel
 
@@ -56,12 +62,10 @@ def test_task_panel_search_and_properties(qapp):
 
     window = NodeGraphEditorWindow(graph=graph)
     task_panel = NodeGraphTaskPanel(editor_window=window)
-    window.set_task_panel(task_panel)
 
     # 1. Test search filter in node tree
     task_panel.search_edit.setText("Box")
     root = task_panel.node_tree.invisibleRootItem()
-    # Find matching items
     box_found = False
     for i in range(root.childCount()):
         cat_item = root.child(i)
@@ -95,12 +99,24 @@ def test_task_panel_search_and_properties(qapp):
             break
     assert len(graph.nodes) == initial_node_count + 1
 
-    # 3. Test selection changed updating Properties Inspector
+
+def test_model_tab_property_inspector(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWindow, NodePropertyInspector
+
+    graph = Graph()
+    box = BoxNode(graph=graph)
+    graph.add_node(box)
+
+    window = NodeGraphEditorWindow(graph=graph)
+    prop_inspector = NodePropertyInspector(editor_window=window)
+
+    # Selection changed updates Properties Inspector
     scene_box_item = window.scene.node_items[box]
     scene_box_item.setSelected(True)
-    assert task_panel.prop_group.title() == "Node: Box"
-    # Form layout should have row items for Box inputs (Length, Width, Height)
-    assert task_panel.prop_form_layout.rowCount() > 0
+    assert prop_inspector.prop_group.title() == "Node: Box"
+    assert prop_inspector.prop_form_layout.rowCount() > 0
 
 
 def test_command_open_editor(qapp):
@@ -112,10 +128,12 @@ def test_command_open_editor(qapp):
 
     # Activate command
     cmd.Activated()
-    from freecad_nodegraph.commands import _editor_window, _task_panel
+    from freecad_nodegraph.commands import _editor_window, _task_panel, _property_inspector
     assert _editor_window is not None
     assert _task_panel is not None
+    assert _property_inspector is not None
     assert _editor_window.task_panel == _task_panel
+    assert _editor_window.property_inspector == _property_inspector
 
 
 def test_socket_colors_and_labels(qapp):
