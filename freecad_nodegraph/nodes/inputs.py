@@ -4,7 +4,10 @@ from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
 
-import FreeCAD
+try:
+    import FreeCAD
+except ImportError:
+    FreeCAD = None
 
 
 class MockVector:
@@ -36,14 +39,18 @@ class MockPlacement:
 
 
 def create_vector(x: float, y: float, z: float):
-    return FreeCAD.Vector(x, y, z)
+    if FreeCAD and hasattr(FreeCAD, "Vector"):
+        return FreeCAD.Vector(x, y, z)
+    return MockVector(x, y, z)
 
 
 def create_placement(pos=None):
-    p = FreeCAD.Placement()
-    if pos:
-        p.Base = pos
-    return p
+    if FreeCAD and hasattr(FreeCAD, "Placement"):
+        p = FreeCAD.Placement()
+        if pos:
+            p.Base = pos
+        return p
+    return MockPlacement(Base=pos)
 
 
 @register_node

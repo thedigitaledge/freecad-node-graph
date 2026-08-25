@@ -25,11 +25,11 @@ class TranslateNode(BaseNode):
         if shape is None:
             res = None
         else:
-            if hasattr(shape, "copy"):
+            if hasattr(shape, "copy") and hasattr(shape, "translate"):
                 res = shape.copy()
                 res.translate(vec)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Translate", {"shape": shape, "vector": vec})
         self.set_output_value("Shape", res)
 
 

@@ -1,7 +1,11 @@
 """FreeCAD GUI Commands and Selection Observer for NodeGraph Workbench."""
 
-import FreeCAD
-import FreeCADGui
+try:
+    import FreeCAD
+    import FreeCADGui
+except ImportError:
+    FreeCAD = None
+    FreeCADGui = None
 
 from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
 from PySide6.QtCore import Qt
@@ -133,6 +137,8 @@ class CommandOpenNodeGraphEditor:
                 doc_object, "Label", getattr(doc_object, "Name", "NodeGraph:1")
             )
 
+            from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+
             if hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()
                 mdi_area = main_win.findChild(QMdiArea)
@@ -165,6 +171,15 @@ class CommandOpenNodeGraphEditor:
                 else:
                     editor_widget = subwin_info[1]
                     editor_widget.show()
+
+            # Integrate Node Library into FreeCAD's task view combo box
+            if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
+                try:
+                    task_panel = NodeGraphTaskPanel(graph=editor_widget.graph)
+                    FreeCADGui.Control.showDialog(task_panel)
+                except Exception as ex:
+                    if hasattr(FreeCAD, "Console"):
+                        FreeCAD.Console.PrintError(f"Error displaying TaskPanel: {ex}\n")
 
         except Exception as e:
             if hasattr(FreeCAD, "Console"):

@@ -129,3 +129,27 @@ def test_selection_observer_triggers_editor(qapp):
     assert observer is not None
     assert hasattr(observer, "addSelection")
     assert hasattr(observer, "check_selection")
+
+
+def test_command_open_editor_shows_task_panel(qapp, monkeypatch):
+    import freecad_nodegraph.commands as commands
+    from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+
+    shown_dialogs = []
+
+    class MockControl:
+        @staticmethod
+        def showDialog(panel):
+            shown_dialogs.append(panel)
+
+    class MockFreeCADGui:
+        Control = MockControl
+
+    monkeypatch.setattr(commands, "FreeCADGui", MockFreeCADGui)
+
+    cmd = commands.CommandOpenNodeGraphEditor()
+    obj = MockDocumentObject(name="NodeGraph:1")
+    cmd.Activated(doc_object=obj)
+
+    assert len(shown_dialogs) == 1
+    assert isinstance(shown_dialogs[0], NodeGraphTaskPanel)
