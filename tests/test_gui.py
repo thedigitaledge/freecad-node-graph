@@ -211,6 +211,23 @@ def test_input_node_value_entry_and_validation(qapp):
     assert panel.prop_form_layout.count() > 0
 
 
+def test_input_node_graphics_item_layout_clearance(qapp):
+    from freecad_nodegraph.nodes.inputs import FloatNode, VectorNode
+    from freecad_nodegraph.gui.items import GraphicsNodeItem
+
+    f_node = FloatNode()
+    f_item = GraphicsNodeItem(f_node)
+
+    # Verify z-value on output labels
+    for label in f_item.label_items:
+        assert label.zValue() == 2
+
+    # Verify width leaves clearance
+    v_node = VectorNode()
+    v_item = GraphicsNodeItem(v_node)
+    assert v_item.width >= 210.0
+
+
 def test_canvas_and_library_help_tooltips(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.primitives import BoxNode

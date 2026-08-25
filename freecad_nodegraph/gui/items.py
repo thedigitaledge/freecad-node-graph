@@ -255,10 +255,10 @@ class GraphicsNodeItem(QGraphicsItem):
         if cat == "Input":
             if node_type in ("VectorNode", "PlacementNode"):
                 self.height = max(self.height, 135.0)
-                self.width = max(self.width, 200.0)
+                self.width = max(self.width, 210.0)
             else:
                 self.height = max(self.height, 80.0)
-                self.width = max(self.width, 180.0)
+                self.width = max(self.width, 190.0)
 
     def create_input_widgets(self):
         cat = getattr(self.node, "category", "")
@@ -267,9 +267,21 @@ class GraphicsNodeItem(QGraphicsItem):
         if cat != "Input":
             return
 
+        # Calculate max width for input widget container to leave room for output labels
+        output_label_width = 65.0
+        if self.node.outputs:
+            label_font = QFont("Arial", 8, QFont.Bold)
+            for sock in self.node.outputs:
+                tmp = QGraphicsTextItem(sock.name)
+                tmp.setFont(label_font)
+                output_label_width = max(output_label_width, tmp.boundingRect().width() + 18.0)
+
+        container_width = max(70.0, self.width - output_label_width - 15.0)
+
         proxy = QGraphicsProxyWidget(self)
         container = QWidget()
         container.setStyleSheet("background: transparent;")
+        container.setFixedWidth(int(container_width))
 
         if node_type == "FloatNode":
             layout = QHBoxLayout(container)
@@ -429,6 +441,7 @@ class GraphicsNodeItem(QGraphicsItem):
             txt = QGraphicsTextItem(sock.name, self)
             txt.setDefaultTextColor(QColor("#E0E0E0"))
             txt.setFont(label_font)
+            txt.setZValue(2)
             txt.setPos(self.width - txt.boundingRect().width() - 12, y_pos - 10)
             self.label_items.append(txt)
 

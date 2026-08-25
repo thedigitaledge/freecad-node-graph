@@ -178,6 +178,38 @@ def test_selection_observer_closes_task_panel(qapp, monkeypatch):
     assert len(closed_dialogs) == 2
 
 
+def test_show_task_panel_safely_handles_existing_dialog(qapp, monkeypatch):
+    import freecad_nodegraph.commands as commands
+    from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+
+    closed_dialogs = []
+    shown_dialogs = []
+
+    class MockControl:
+        @staticmethod
+        def activeDialog():
+            return "ActiveDialog"
+
+        @staticmethod
+        def closeDialog():
+            closed_dialogs.append(True)
+
+        @staticmethod
+        def showDialog(panel):
+            shown_dialogs.append(panel)
+
+    class MockFreeCADGui:
+        Control = MockControl
+
+    monkeypatch.setattr(commands, "FreeCADGui", MockFreeCADGui)
+
+    commands.show_task_panel_safely(None)
+
+    assert len(closed_dialogs) == 1
+    assert len(shown_dialogs) == 1
+    assert isinstance(shown_dialogs[0], NodeGraphTaskPanel)
+
+
 def test_subwindow_activated_deactivates_task_panel(qapp, monkeypatch):
     import freecad_nodegraph.commands as commands
 

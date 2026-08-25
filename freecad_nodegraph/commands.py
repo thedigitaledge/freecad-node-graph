@@ -50,6 +50,31 @@ def get_active_editor():
     return None
 
 
+def show_task_panel_safely(graph):
+    """Safely display NodeGraphTaskPanel in FreeCAD Tasks view, closing active dialog if present."""
+    if hasattr(FreeCADGui, "Control"):
+        try:
+            if hasattr(FreeCADGui.Control, "activeDialog") and FreeCADGui.Control.activeDialog() is not None:
+                FreeCADGui.Control.closeDialog()
+        except Exception:
+            pass
+
+        try:
+            from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+            task_panel = NodeGraphTaskPanel(graph=graph)
+            FreeCADGui.Control.showDialog(task_panel)
+        except Exception:
+            try:
+                if hasattr(FreeCADGui.Control, "closeDialog"):
+                    FreeCADGui.Control.closeDialog()
+                from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
+                task_panel = NodeGraphTaskPanel(graph=graph)
+                FreeCADGui.Control.showDialog(task_panel)
+            except Exception as ex:
+                if hasattr(FreeCAD, "Console"):
+                    FreeCAD.Console.PrintError(f"Error displaying TaskPanel: {ex}\n")
+
+
 def on_subwindow_activated(subwin):
     """Handle MDI subwindow focus changes to activate/deactivate the Node Graph TaskPanel."""
     if subwin is None:
@@ -62,13 +87,7 @@ def on_subwindow_activated(subwin):
 
     widget = subwin.widget() if hasattr(subwin, "widget") else None
     if widget is not None and widget.__class__.__name__ == "NodeGraphEditorWidget":
-        from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
-        if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
-            try:
-                task_panel = NodeGraphTaskPanel(graph=widget.graph)
-                FreeCADGui.Control.showDialog(task_panel)
-            except Exception:
-                pass
+        show_task_panel_safely(widget.graph)
     else:
         if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "closeDialog"):
             try:
@@ -241,13 +260,7 @@ class CommandOpenNodeGraphEditor:
                     editor_widget.showMaximized()
 
             # Integrate Node Library into FreeCAD's task view combo box
-            if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "showDialog"):
-                try:
-                    task_panel = NodeGraphTaskPanel(graph=editor_widget.graph)
-                    FreeCADGui.Control.showDialog(task_panel)
-                except Exception as ex:
-                    if hasattr(FreeCAD, "Console"):
-                        FreeCAD.Console.PrintError(f"Error displaying TaskPanel: {ex}\n")
+            show_task_panel_safely(editor_widget.graph)
 
         except Exception as e:
             if hasattr(FreeCAD, "Console"):
