@@ -237,57 +237,6 @@ class NodeGraphEditorWindow(QMainWindow):
             node = item.node
             self.prop_group.setTitle(f"Node: {node.title}")
 
-            # For Input category nodes with internal value setters
-            if getattr(node, "category", "") == "Input":
-                valid_style = "border: 1px solid #555555; background-color: #222222; color: #A6E22E;"
-                error_style = "border: 2px solid #FF5252; background-color: #381A1A; color: #FFD2D2;"
-
-                if hasattr(node, "set_value") and not hasattr(node, "set_components"):
-                    line_edit = QLineEdit(str(getattr(node, "value", "")))
-                    line_edit.setStyleSheet(valid_style)
-
-                    def make_val_handler(n, le):
-                        def handler(txt):
-                            try:
-                                n.set_value(txt)
-                                le.setStyleSheet(valid_style)
-                                le.setToolTip("")
-                            except ValueError as err:
-                                le.setStyleSheet(error_style)
-                                le.setToolTip(str(err))
-                        return handler
-
-                    line_edit.textChanged.connect(make_val_handler(node, line_edit))
-                    self.prop_form_layout.addRow("Value:", line_edit)
-
-                elif hasattr(node, "set_components") or hasattr(node, "set_position"):
-                    setter = getattr(node, "set_components", getattr(node, "set_position", None))
-                    curr_x = getattr(node, "x", getattr(node, "pos_x", 0.0))
-                    curr_y = getattr(node, "y", getattr(node, "pos_y", 0.0))
-                    curr_z = getattr(node, "z", getattr(node, "pos_z", 0.0))
-                    vals = {"x": curr_x, "y": curr_y, "z": curr_z}
-
-                    for comp in ["X", "Y", "Z"]:
-                        line_edit = QLineEdit(str(vals[comp.lower()]))
-                        line_edit.setStyleSheet(valid_style)
-
-                        def make_comp_handler(c_name, le):
-                            def handler(txt):
-                                try:
-                                    val_f = float(txt)
-                                    vals[c_name.lower()] = val_f
-                                    setter(**{c_name.lower(): val_f})
-                                    le.setStyleSheet(valid_style)
-                                    le.setToolTip("")
-                                except ValueError:
-                                    le.setStyleSheet(error_style)
-                                    le.setToolTip(f"Invalid float for {c_name}: '{txt}'")
-                            return handler
-
-                        line_edit.textChanged.connect(make_comp_handler(comp, line_edit))
-                        self.prop_form_layout.addRow(f"{comp}:", line_edit)
-
-            # For standard nodes with input sockets
             for sock in node.inputs:
                 if sock.is_connected:
                     lbl = QLabel("(Connected)")

@@ -25,7 +25,7 @@ class MockShape:
 @register_node
 class BoxNode(BaseNode):
     node_type = "BoxNode"
-    category = "Geometry"
+    category = "Primitives"
     title = "Box"
 
     def setup_sockets(self) -> None:
@@ -54,7 +54,7 @@ class BoxNode(BaseNode):
 @register_node
 class CylinderNode(BaseNode):
     node_type = "CylinderNode"
-    category = "Geometry"
+    category = "Primitives"
     title = "Cylinder"
 
     def setup_sockets(self) -> None:
@@ -81,7 +81,7 @@ class CylinderNode(BaseNode):
 @register_node
 class SphereNode(BaseNode):
     node_type = "SphereNode"
-    category = "Geometry"
+    category = "Primitives"
     title = "Sphere"
 
     def setup_sockets(self) -> None:
@@ -106,7 +106,7 @@ class SphereNode(BaseNode):
 @register_node
 class ConeNode(BaseNode):
     node_type = "ConeNode"
-    category = "Geometry"
+    category = "Primitives"
     title = "Cone"
 
     def setup_sockets(self) -> None:
