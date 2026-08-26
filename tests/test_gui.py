@@ -343,6 +343,103 @@ def test_delete_selected_nodes_and_del_key(qapp):
     assert len(scene.node_items) == 0
 
 
+def test_gui_lifecycle_add_connect_move_delete_undo_redo(qapp):
+    from freecad_nodegraph.document_object import MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.nodes.inputs import FloatNode
+    from freecad_nodegraph.nodes.primitives import BoxNode
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+
+    # Initial state: 0 nodes, 0 edges
+    assert len(editor.graph.nodes) == 0
+    assert len(editor.graph.edges) == 0
+
+    # Step 1: Add Node 1 (FloatNode)
+    f1 = FloatNode(graph=editor.graph)
+    editor.graph.add_node(f1)
+    editor.scene.add_node_item(f1)
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 1
+
+    # Step 2: Add Node 2 (BoxNode)
+    box = BoxNode(graph=editor.graph)
+    editor.graph.add_node(box)
+    editor.scene.add_node_item(box)
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 2
+
+    # Step 3: Connect sockets
+    edge = editor.graph.connect_sockets(f1.get_output_socket("Value"), box.get_input_socket("Length"))
+    editor.scene.add_edge_item(edge)
+    editor.save_to_document_object()
+    assert len(editor.graph.edges) == 1
+
+    # Step 4: Move Node 1
+    f1.pos_x = 150.0
+    f1.pos_y = 200.0
+    item_f1 = editor.scene.node_items[f1]
+    item_f1.setPos(150.0, 200.0)
+    editor.save_to_document_object()
+    assert f1.pos_x == 150.0 and f1.pos_y == 200.0
+
+    # Step 5: Delete Node 2 (BoxNode)
+    item_box = editor.scene.node_items[box]
+    editor.scene.clearSelection()
+    item_box.setSelected(True)
+    editor.scene.delete_selected_nodes()
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 1
+    assert len(editor.graph.edges) == 0
+
+    # --- UNDO ALL STEPS IN REVERSE ---
+    # Undo Step 5 (Delete BoxNode)
+    assert editor.undo() is True
+    assert len(editor.graph.nodes) == 2
+    assert len(editor.graph.edges) == 1
+
+    # Undo Step 4 (Move Node 1)
+    assert editor.undo() is True
+    restored_f1 = [n for n in editor.graph.nodes if n.node_type == "FloatNode"][0]
+    assert restored_f1.pos_x == 0.0 and restored_f1.pos_y == 0.0
+
+    # Undo Step 3 (Connect Sockets)
+    assert editor.undo() is True
+    assert len(editor.graph.edges) == 0
+
+    # Undo Step 2 (Add BoxNode)
+    assert editor.undo() is True
+    assert len(editor.graph.nodes) == 1
+
+    # Undo Step 1 (Add FloatNode)
+    assert editor.undo() is True
+    assert len(editor.graph.nodes) == 0
+
+    # --- REDO ALL STEPS FORWARD ---
+    # Redo Step 1 (Add FloatNode)
+    assert editor.redo() is True
+    assert len(editor.graph.nodes) == 1
+
+    # Redo Step 2 (Add BoxNode)
+    assert editor.redo() is True
+    assert len(editor.graph.nodes) == 2
+
+    # Redo Step 3 (Connect Sockets)
+    assert editor.redo() is True
+    assert len(editor.graph.edges) == 1
+
+    # Redo Step 4 (Move Node 1)
+    assert editor.redo() is True
+    redone_f1 = [n for n in editor.graph.nodes if n.node_type == "FloatNode"][0]
+    assert redone_f1.pos_x == 150.0 and redone_f1.pos_y == 200.0
+
+    # Redo Step 5 (Delete BoxNode)
+    assert editor.redo() is True
+    assert len(editor.graph.nodes) == 1
+    assert len(editor.graph.edges) == 0
+
+
 def test_editor_history_undo_redo(qapp):
     from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
