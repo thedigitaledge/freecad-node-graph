@@ -333,6 +333,47 @@ def test_integer_node_click_wait_and_data_entry(qapp):
     assert i_node.value == 42
 
 
+def test_integer_node_focus_retention_over_time(qapp):
+    """Full GUI test adding an IntegerNode to the graph view, clicking integer data input, and asserting focus doesn't change over 2 seconds."""
+    from freecad_nodegraph.nodes.inputs import IntegerNode
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+    editor.show()
+
+    # Add IntegerNode to graph and scene
+    i_node = IntegerNode(graph=editor.graph)
+    editor.graph.add_node(i_node)
+    item_i = editor.scene.add_node_item(i_node)
+
+    proxy_i = None
+    for child in item_i.childItems():
+        if isinstance(child, QGraphicsProxyWidget):
+            proxy_i = child
+            break
+
+    assert proxy_i is not None
+
+    spin = proxy_i.widget().findChild(QSpinBox)
+    assert spin is not None
+
+    # Click on integer data input control
+    QTest.mouseClick(spin, Qt.LeftButton)
+    QApplication.processEvents()
+
+    # Set focus on the spin control and proxy
+    spin.setFocus()
+    editor.scene.setFocusItem(proxy_i)
+    assert spin.hasFocus() or editor.scene.focusItem() == proxy_i
+
+    # Monitor focus retention over 2 seconds (checking every 500ms)
+    for _ in range(4):
+        QTest.qWait(500)
+        QApplication.processEvents()
+        assert spin.hasFocus() or editor.scene.focusItem() == proxy_i
+
+
 def test_text_entry_focus_retention_on_selection_changed(qapp):
     """Test text entry focus retention when selection changes on editor canvas."""
     from freecad_nodegraph.nodes.inputs import StringNode
