@@ -1,25 +1,11 @@
 """Main Node Graph Editor View widget (MDI workspace canvas view)."""
 
 import json
-try:
-    from PySide6.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-    )
-    from PySide6.QtCore import Qt
-except ImportError:
-    try:
-        from PySide2.QtWidgets import (
-            QWidget,
-            QVBoxLayout,
-        )
-        from PySide2.QtCore import Qt
-    except ImportError:
-        from PyQt5.QtWidgets import (
-            QWidget,
-            QVBoxLayout,
-        )
-        from PyQt5.QtCore import Qt
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+)
+from PySide6.QtCore import Qt
 
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.history import GraphHistory

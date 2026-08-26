@@ -10,17 +10,6 @@ except ImportError:
 from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
 from PySide6.QtCore import Qt
 
-try:
-    from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
-    from PySide6.QtCore import Qt
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
-        from PySide2.QtCore import Qt
-    except ImportError:
-        from PyQt5.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
-        from PyQt5.QtCore import Qt
-
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 from freecad_nodegraph.document_object import make_nodegraph_object
@@ -248,8 +237,6 @@ class CommandOpenNodeGraphEditor:
             obj_title = getattr(
                 doc_object, "Label", getattr(doc_object, "Name", "NodeGraph:1")
             )
-
-            from freecad_nodegraph.gui.panel import NodeGraphTaskPanel
 
             if hasattr(FreeCADGui, "getMainWindow"):
                 main_win = FreeCADGui.getMainWindow()

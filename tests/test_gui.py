@@ -1,13 +1,9 @@
 """Unit tests for NodeGraph GUI components in offscreen/qapp context."""
 
 import pytest
-try:
-    from PySide6.QtWidgets import QApplication
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QApplication
-    except ImportError:
-        from PyQt5.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent
 
 from freecad_nodegraph.core.socket import DataType
 from tests.mocks import MockDocumentObject
@@ -127,7 +123,7 @@ def test_detach_links(qapp):
 
 
 def test_double_click_creates_single_node(qapp):
-    from freecad_nodegraph.commands import _active_editors, get_active_editor
+    from freecad_nodegraph.commands import _active_editors
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
@@ -202,7 +198,7 @@ def test_add_node_from_library_to_active_editor(qapp):
 
 def test_input_node_value_entry_and_validation(qapp):
     from freecad_nodegraph.core.graph import Graph
-    from freecad_nodegraph.nodes.inputs import FloatNode, IntegerNode, StringNode, VectorNode
+    from freecad_nodegraph.nodes.inputs import FloatNode, IntegerNode, VectorNode
     from freecad_nodegraph.gui.items import GraphicsNodeItem
     from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
@@ -249,10 +245,9 @@ def test_input_node_graphics_item_layout_clearance(qapp):
     from freecad_nodegraph.gui.items import GraphicsNodeItem
 
     f_node = FloatNode()
-    f_item = GraphicsNodeItem(f_node)
 
     # Verify z-value on output labels
-    for label in f_item.label_items:
+    for label in GraphicsNodeItem(f_node).label_items:
         assert label.zValue() == 2
 
     # Verify width leaves clearance
@@ -289,17 +284,6 @@ def test_canvas_and_library_help_tooltips(qapp):
 
 
 def test_delete_selected_nodes_and_del_key(qapp):
-    try:
-        from PySide6.QtCore import Qt
-        from PySide6.QtGui import QKeyEvent
-    except ImportError:
-        try:
-            from PySide2.QtCore import Qt
-            from PySide2.QtGui import QKeyEvent
-        except ImportError:
-            from PyQt5.QtCore import Qt
-            from PyQt5.QtGui import QKeyEvent
-
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode
     from freecad_nodegraph.nodes.primitives import BoxNode
@@ -311,7 +295,7 @@ def test_delete_selected_nodes_and_del_key(qapp):
     box = BoxNode(graph=graph)
     graph.add_node(f1)
     graph.add_node(box)
-    edge = graph.connect_sockets(f1.get_output_socket("Value"), box.get_input_socket("Length"))
+    graph.connect_sockets(f1.get_output_socket("Value"), box.get_input_socket("Length"))
 
     scene = NodeGraphicsScene(graph)
     view = NodeGraphicsView(scene)

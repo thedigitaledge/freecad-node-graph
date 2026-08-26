@@ -1,19 +1,9 @@
 """QGraphicsScene for rendering and interacting with the NodeGraph."""
 
 import uuid
-try:
-    from PySide6.QtWidgets import QGraphicsScene, QGraphicsPathItem
-    from PySide6.QtCore import Qt, QPointF
-    from PySide6.QtGui import QPen, QColor, QPainter, QBrush
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QGraphicsScene, QGraphicsPathItem
-        from PySide2.QtCore import Qt, QPointF
-        from PySide2.QtGui import QPen, QColor, QPainter, QBrush
-    except ImportError:
-        from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPathItem
-        from PyQt5.QtCore import Qt, QPointF
-        from PyQt5.QtGui import QPen, QColor, QPainter, QBrush
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsPathItem
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QColor, QPainter, QBrush
 
 from typing import Dict, List, Optional
 from freecad_nodegraph.core.graph import Graph

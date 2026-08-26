@@ -1,18 +1,8 @@
 """Interactive QGraphicsView for navigating and connecting nodes."""
 
-try:
-    from PySide6.QtWidgets import QGraphicsView, QGraphicsPathItem
-    from PySide6.QtCore import Qt, QPointF
-    from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QGraphicsView, QGraphicsPathItem
-        from PySide2.QtCore import Qt, QPointF
-        from PySide2.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
-    except ImportError:
-        from PyQt5.QtWidgets import QGraphicsView, QGraphicsPathItem
-        from PyQt5.QtCore import Qt, QPointF
-        from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
+from PySide6.QtWidgets import QGraphicsView, QGraphicsPathItem
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
 
 from typing import Optional
 from freecad_nodegraph.gui.items import GraphicsSocketItem, GraphicsNodeItem
@@ -75,14 +65,19 @@ class NodeGraphicsView(QGraphicsView):
                 return
 
         doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
-        if hasattr(FreeCADGui, "runCommand"):
-            try:
-                FreeCADGui.runCommand("Std_Undo")
-            except Exception:
-                if doc and hasattr(doc, "undo"):
-                    doc.undo()
-        elif doc and hasattr(doc, "undo"):
-            doc.undo()
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "runCommand"):
+                try:
+                    FreeCADGui.runCommand("Std_Undo")
+                except Exception:
+                    if doc and hasattr(doc, "undo"):
+                        doc.undo()
+            elif doc and hasattr(doc, "undo"):
+                doc.undo()
+        except ImportError:
+            if doc and hasattr(doc, "undo"):
+                doc.undo()
 
         if editor and hasattr(editor, "sync_from_document_object"):
             editor.sync_from_document_object()
@@ -95,14 +90,19 @@ class NodeGraphicsView(QGraphicsView):
                 return
 
         doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
-        if hasattr(FreeCADGui, "runCommand"):
-            try:
-                FreeCADGui.runCommand("Std_Redo")
-            except Exception:
-                if doc and hasattr(doc, "redo"):
-                    doc.redo()
-        elif doc and hasattr(doc, "redo"):
-            doc.redo()
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "runCommand"):
+                try:
+                    FreeCADGui.runCommand("Std_Redo")
+                except Exception:
+                    if doc and hasattr(doc, "redo"):
+                        doc.redo()
+            elif doc and hasattr(doc, "redo"):
+                doc.redo()
+        except ImportError:
+            if doc and hasattr(doc, "redo"):
+                doc.redo()
 
         if editor and hasattr(editor, "sync_from_document_object"):
             editor.sync_from_document_object()

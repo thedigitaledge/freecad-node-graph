@@ -1,89 +1,35 @@
 """QGraphicsItem representations for Sockets, Edges, and Nodes."""
 
 import sys
-try:
-    from PySide6.QtWidgets import (
-        QGraphicsItem,
-        QGraphicsTextItem,
-        QGraphicsPathItem,
-        QGraphicsDropShadowEffect,
-        QStyleOptionGraphicsItem,
-        QGraphicsProxyWidget,
-        QDoubleSpinBox,
-        QSpinBox,
-        QLineEdit,
-        QCheckBox,
-        QLabel,
-        QHBoxLayout,
-        QVBoxLayout,
-        QWidget,
-        QMenu,
-    )
-    from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
-    from PySide6.QtGui import (
-        QPen,
-        QBrush,
-        QColor,
-        QPainter,
-        QPainterPath,
-        QFont,
-        QLinearGradient,
-        QAction,
-        QCursor,
-    )
-except ImportError:
-    try:
-        from PySide2.QtWidgets import (
-            QGraphicsItem,
-            QGraphicsTextItem,
-            QGraphicsPathItem,
-            QGraphicsDropShadowEffect,
-            QStyleOptionGraphicsItem,
-            QWidget,
-            QMenu,
-        )
-        from PySide2.QtCore import Qt, QPointF, QRectF, QPoint
-        from PySide2.QtGui import (
-            QPen,
-            QBrush,
-            QColor,
-            QPainter,
-            QPainterPath,
-            QFont,
-            QLinearGradient,
-            QAction,
-            QCursor,
-        )
-    except ImportError:
-        from PyQt5.QtWidgets import (
-            QGraphicsItem,
-            QGraphicsTextItem,
-            QGraphicsPathItem,
-            QGraphicsDropShadowEffect,
-            QStyleOptionGraphicsItem,
-            QGraphicsProxyWidget,
-            QDoubleSpinBox,
-            QSpinBox,
-            QLineEdit,
-            QCheckBox,
-            QLabel,
-            QHBoxLayout,
-            QVBoxLayout,
-            QWidget,
-            QMenu,
-            QAction,
-        )
-        from PyQt5.QtCore import Qt, QPointF, QRectF, QPoint
-        from PyQt5.QtGui import (
-            QPen,
-            QBrush,
-            QColor,
-            QPainter,
-            QPainterPath,
-            QFont,
-            QLinearGradient,
-            QCursor,
-        )
+from PySide6.QtWidgets import (
+    QGraphicsItem,
+    QGraphicsTextItem,
+    QGraphicsPathItem,
+    QGraphicsDropShadowEffect,
+    QStyleOptionGraphicsItem,
+    QGraphicsProxyWidget,
+    QDoubleSpinBox,
+    QSpinBox,
+    QLineEdit,
+    QCheckBox,
+    QLabel,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QMenu,
+)
+from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
+from PySide6.QtGui import (
+    QPen,
+    QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QFont,
+    QLinearGradient,
+    QAction,
+    QCursor,
+)
 
 from typing import TYPE_CHECKING, Optional
 from freecad_nodegraph.core.socket import DataType

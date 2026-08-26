@@ -6,7 +6,7 @@ Requirements
 
 - FreeCAD 0.20 or newer.
 - Python 3.8+
-- PySide6, PySide2, or PyQt5 (included with standard FreeCAD installations).
+- PySide6 (included with modern FreeCAD installations or installed via pip).
 
 How to Load in FreeCAD
 ----------------------

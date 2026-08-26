@@ -2,13 +2,7 @@
 
 import json
 import pytest
-try:
-    from PySide6.QtWidgets import QApplication
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QApplication
-    except ImportError:
-        from PyQt5.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.nodes.inputs import FloatNode
