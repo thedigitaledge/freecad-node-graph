@@ -19,6 +19,7 @@ dependencies = [
 test = [
     "pytest>=7.0.0",
     "pytest-bdd>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 docs = [
     "sphinx>=5.0.0",
@@ -27,6 +28,10 @@ docs = [
 dev = [
     "pytest>=7.0.0",
     "pytest-bdd>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "flake8>=6.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
     "sphinx>=5.0.0",
     "sphinx-rtd-theme>=1.0.0",
 ]
@@ -35,3 +40,10 @@ dev = [
 minversion = "7.0"
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = "--cov=freecad_nodegraph --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["freecad_nodegraph"]
+
+[tool.coverage.report]
+show_missing = true
