@@ -18,7 +18,8 @@ class NodeGraphicsView(QGraphicsView):
 
         self.setRenderHint(QPainter.Antialiasing)
         self.setRenderHint(QPainter.SmoothPixmapTransform)
-        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
+        self.setOptimizationFlags(QGraphicsView.DontSavePainterState)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -182,6 +183,8 @@ class NodeGraphicsView(QGraphicsView):
             event.accept()
             return
 
+        res = super().mouseReleaseEvent(event)
+
         if event.button() == Qt.LeftButton and self.drag_start_socket_item:
             if self.temp_edge_item:
                 self.node_scene.removeItem(self.temp_edge_item)
@@ -197,6 +200,10 @@ class NodeGraphicsView(QGraphicsView):
 
             self.drag_start_socket_item = None
             event.accept()
-            return
 
-        super().mouseReleaseEvent(event)
+        # Trigger save to document object on drag completion
+        parent_widget = self.parent()
+        if parent_widget and hasattr(parent_widget, "save_to_document_object"):
+            parent_widget.save_to_document_object()
+
+        return res

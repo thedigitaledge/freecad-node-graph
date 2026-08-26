@@ -2,7 +2,7 @@
 
 import uuid
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsPathItem
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtGui import QPen, QColor, QPainter, QBrush
 
 from typing import Dict, List, Optional
@@ -245,21 +245,23 @@ class NodeGraphicsScene(QGraphicsScene):
         lines_thick = []
 
         for x in range(left, int(rect.right()), grid_size):
+            line = QLineF(x, rect.top(), x, rect.bottom())
             if x % (grid_size * 5) == 0:
-                lines_thick.append((x, rect.top(), x, rect.bottom()))
+                lines_thick.append(line)
             else:
-                lines_fine.append((x, rect.top(), x, rect.bottom()))
+                lines_fine.append(line)
 
         for y in range(top, int(rect.bottom()), grid_size):
+            line = QLineF(rect.left(), y, rect.right(), y)
             if y % (grid_size * 5) == 0:
-                lines_thick.append((rect.left(), y, rect.right(), y))
+                lines_thick.append(line)
             else:
-                lines_fine.append((rect.left(), y, rect.right(), y))
+                lines_fine.append(line)
 
-        painter.setPen(QPen(QColor("#2A2A2A"), 1.0))
-        for line in lines_fine:
-            painter.drawLine(line[0], line[1], line[2], line[3])
+        if lines_fine:
+            painter.setPen(QPen(QColor("#2A2A2A"), 1.0))
+            painter.drawLines(lines_fine)
 
-        painter.setPen(QPen(QColor("#1E1E1E"), 1.5))
-        for line in lines_thick:
-            painter.drawLine(line[0], line[1], line[2], line[3])
+        if lines_thick:
+            painter.setPen(QPen(QColor("#1E1E1E"), 1.5))
+            painter.drawLines(lines_thick)

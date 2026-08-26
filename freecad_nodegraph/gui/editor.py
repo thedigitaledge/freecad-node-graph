@@ -66,6 +66,10 @@ class NodeGraphEditorWidget(QWidget):
         if not self.doc_object:
             return
 
+        # Defer full document transaction push while user is actively dragging items
+        if self.scene and self.scene.mouseGrabberItem() is not None:
+            return
+
         try:
             doc = getattr(self.doc_object, "Document", None)
             if doc:
