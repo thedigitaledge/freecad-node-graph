@@ -3,6 +3,8 @@ API Reference
 
 This section details the Python API for the **FreeCAD NodeGraph** workbench components.
 
+The Sphinx ``sphinx.ext.viewcode`` extension is enabled across these documentation pages, rendering interactive **[source]** links next to every class, function, and method that link directly to the corresponding syntax-highlighted Python source code file.
+
 Core Modules
 ------------
 

@@ -26,6 +26,11 @@ Generate standalone HTML documentation locally without any internet or network d
 
    sphinx-build -b html docs docs/_build/html
 
+Source Code Links (sphinx.ext.viewcode)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Sphinx ``sphinx.ext.viewcode`` extension is enabled in ``docs/conf.py``. During documentation compilation, Sphinx scans the Python source modules in ``freecad_nodegraph/`` and builds syntax-highlighted HTML source view pages under ``docs/_build/html/_modules/``. Each API element documented in the Sphinx API reference contains a **[source]** hyperlink that points directly to its corresponding definition in the source view.
+
 Serve and View Local Documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
