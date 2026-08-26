@@ -18,6 +18,13 @@ The NodeGraph Workbench is a visual programming addon for `FreeCAD <https://www.
    nodes
    changelog
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Reference
+
+   api
+   code_quality
+
 Indices and tables
 ==================
 
