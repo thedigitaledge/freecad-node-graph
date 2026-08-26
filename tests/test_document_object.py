@@ -252,6 +252,45 @@ def test_show_task_panel_safely_handles_existing_dialog(qapp, monkeypatch):
     assert isinstance(shown_dialogs[0], NodeGraphTaskPanel)
 
 
+def test_nodegraph_object_onchanged_and_document_observer_callbacks(qapp):
+    from freecad_nodegraph.commands import _active_editors, NodeGraphDocumentObserver
+    from freecad_nodegraph.document_object import NodeGraphObject, MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+
+    _active_editors.clear()
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+    editor.show()
+    _active_editors[obj] = (editor, editor)
+
+    proxy = NodeGraphObject(obj)
+
+    # Adding a node to editor and saving
+    box = BoxNode(graph=editor.graph)
+    editor.graph.add_node(box)
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 1
+
+    initial_data = json.dumps(GraphSerializer.to_dict(Graph()))
+
+    # Modify GraphData directly on obj (simulating C++ document undo)
+    obj.GraphData = initial_data
+
+    # Test Proxy onChanged
+    proxy.onChanged(obj, "GraphData")
+    assert len(editor.graph.nodes) == 0
+
+    # Test NodeGraphDocumentObserver callbacks
+    doc_observer = NodeGraphDocumentObserver()
+    doc_observer.slotUndo(None)
+    doc_observer.slotRedo(None)
+    doc_observer.slotChangedObject(obj, "GraphData")
+    doc_observer.slotChangeProperty(obj, "GraphData")
+
+    _active_editors.clear()
+
+
 def test_subwindow_activated_deactivates_task_panel(qapp, monkeypatch):
     import freecad_nodegraph.commands as commands
 

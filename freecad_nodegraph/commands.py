@@ -34,11 +34,32 @@ _document_observer = None
 class NodeGraphDocumentObserver:
     """Observer listening for FreeCAD document undo/redo events to update open NodeGraph editors."""
 
+    def slotUndo(self, doc):
+        self.sync_active_editors()
+
+    def slotRedo(self, doc):
+        self.sync_active_editors()
+
     def slotUndoDocument(self, doc):
         self.sync_active_editors()
 
     def slotRedoDocument(self, doc):
         self.sync_active_editors()
+
+    def slotChangedObject(self, obj, prop):
+        if prop == "GraphData":
+            self.sync_editor_for_obj(obj)
+
+    def slotChangeProperty(self, obj, prop):
+        if prop == "GraphData":
+            self.sync_editor_for_obj(obj)
+
+    def sync_editor_for_obj(self, obj):
+        subwin_info = _active_editors.get(obj)
+        if subwin_info:
+            editor = subwin_info[1]
+            if hasattr(editor, "sync_from_document_object"):
+                editor.sync_from_document_object()
 
     def sync_active_editors(self):
         for doc_obj, (subwin, editor) in list(_active_editors.items()):

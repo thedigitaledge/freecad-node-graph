@@ -37,6 +37,19 @@ class NodeGraphObject:
             empty_graph = Graph()
             obj.GraphData = json.dumps(GraphSerializer.to_dict(empty_graph))
 
+    def onChanged(self, obj: Any, prop: str) -> None:
+        """Called by FreeCAD when object property is changed (e.g. via Undo/Redo)."""
+        if prop == "GraphData":
+            try:
+                from freecad_nodegraph.commands import _active_editors
+                subwin_info = _active_editors.get(obj)
+                if subwin_info:
+                    editor = subwin_info[1]
+                    if hasattr(editor, "sync_from_document_object"):
+                        editor.sync_from_document_object()
+            except Exception:
+                pass
+
     def execute(self, obj: Any) -> None:
         """Recompute node graph evaluation and update obj.Shape."""
         if not hasattr(obj, "GraphData") or not obj.GraphData:
