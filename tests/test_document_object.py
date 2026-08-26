@@ -17,11 +17,11 @@ from freecad_nodegraph.nodes.output import DocumentOutputNode
 from freecad_nodegraph.core.serializer import GraphSerializer
 from freecad_nodegraph.document_object import (
     NodeGraphObject,
-    MockDocumentObject,
     make_nodegraph_object,
     get_next_nodegraph_name,
 )
 from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+from tests.mocks import MockDocumentObject
 
 
 @pytest.fixture(scope="session")
@@ -254,7 +254,7 @@ def test_show_task_panel_safely_handles_existing_dialog(qapp, monkeypatch):
 
 def test_nodegraph_object_onchanged_and_document_observer_callbacks(qapp):
     from freecad_nodegraph.commands import _active_editors, NodeGraphDocumentObserver
-    from freecad_nodegraph.document_object import NodeGraphObject, MockDocumentObject
+    from freecad_nodegraph.document_object import NodeGraphObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
 
     _active_editors.clear()

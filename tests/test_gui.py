@@ -10,6 +10,7 @@ except ImportError:
         from PyQt5.QtWidgets import QApplication
 
 from freecad_nodegraph.core.socket import DataType
+from tests.mocks import MockDocumentObject
 
 # Ensure QApplication instance exists for GUI tests
 @pytest.fixture(scope="session")
@@ -76,7 +77,6 @@ def test_socket_colors_and_labels(qapp):
     assert shape_item.get_color() == SOCKET_TYPE_COLORS[DataType.SHAPE]
 
 
-
 def test_side_panel_node_search(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
@@ -128,7 +128,6 @@ def test_detach_links(qapp):
 
 def test_double_click_creates_single_node(qapp):
     from freecad_nodegraph.commands import _active_editors, get_active_editor
-    from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
@@ -163,7 +162,6 @@ def test_double_click_creates_single_node(qapp):
 
 def test_add_node_from_library_to_active_editor(qapp):
     from freecad_nodegraph.commands import _active_editors, get_active_editor
-    from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.gui.panel import NodeGraphSidePanelWidget
 
@@ -344,7 +342,6 @@ def test_delete_selected_nodes_and_del_key(qapp):
 
 
 def test_gui_lifecycle_add_connect_move_delete_undo_redo(qapp):
-    from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.nodes.inputs import FloatNode
     from freecad_nodegraph.nodes.primitives import BoxNode
@@ -441,7 +438,6 @@ def test_gui_lifecycle_add_connect_move_delete_undo_redo(qapp):
 
 
 def test_editor_save_guards_during_undo_redo(qapp):
-    from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.nodes.inputs import FloatNode
 
@@ -494,7 +490,6 @@ def test_editor_handles_deleted_freecad_object(qapp):
 
 
 def test_editor_history_undo_redo(qapp):
-    from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.nodes.inputs import FloatNode
     from freecad_nodegraph.nodes.primitives import BoxNode

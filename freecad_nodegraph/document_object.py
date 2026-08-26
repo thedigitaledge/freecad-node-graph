@@ -124,31 +124,6 @@ class ViewProviderNodeGraph:
         return None
 
 
-class MockDocumentObject:
-    """Mock FreeCAD document object for standalone testing outside FreeCAD."""
-
-    def __init__(self, name: str = "NodeGraph:1"):
-        self.Name = name
-        self.Label = name
-        self.GraphData = ""
-        self.Shape = None
-        self.Proxy = None
-        self.InList = []
-        self.OutList = []
-        self.Group = []
-
-    def addProperty(
-        self, prop_type: str, prop_name: str, group: str = "", doc: str = ""
-    ):
-        if not hasattr(self, prop_name):
-            setattr(self, prop_name, "")
-
-    def addObject(self, child_obj):
-        if child_obj not in self.Group:
-            self.Group.append(child_obj)
-            child_obj.InList.append(self)
-
-
 def get_next_nodegraph_name(doc: Any = None) -> str:
     """Count existing NodeGraph objects in active document and return 'NodeGraph:X'."""
     count = 1
@@ -193,7 +168,8 @@ def make_nodegraph_object(
         doc.recompute()
         return obj
     else:
-        # Fallback mock creation
+        # Fallback mock creation for testing outside FreeCAD
+        from tests.mocks import MockDocumentObject
         obj = MockDocumentObject(name=name)
         NodeGraphObject(obj)
         if parent_obj is not None:

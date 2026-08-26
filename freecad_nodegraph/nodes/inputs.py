@@ -10,37 +10,10 @@ except ImportError:
     FreeCAD = None
 
 
-class MockVector:
-    """Fallback Vector class when FreeCAD is not available."""
-
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.x = float(x)
-        self.y = float(y)
-        self.z = float(z)
-
-    def __repr__(self):
-        return f"Vector ({self.x}, {self.y}, {self.z})"
-
-    def __eq__(self, other):
-        if hasattr(other, "x") and hasattr(other, "y") and hasattr(other, "z"):
-            return (self.x, self.y, self.z) == (other.x, other.y, other.z)
-        return False
-
-
-class MockPlacement:
-    """Fallback Placement class when FreeCAD is not available."""
-
-    def __init__(self, Base=None, Rotation=None):
-        self.Base = Base or MockVector(0, 0, 0)
-        self.Rotation = Rotation or (0, 0, 0, 1)
-
-    def __repr__(self):
-        return f"Placement [Base: {self.Base}]"
-
-
 def create_vector(x: float, y: float, z: float):
     if FreeCAD and hasattr(FreeCAD, "Vector"):
         return FreeCAD.Vector(x, y, z)
+    from tests.mocks import MockVector
     return MockVector(x, y, z)
 
 
@@ -50,6 +23,7 @@ def create_placement(pos=None):
         if pos:
             p.Base = pos
         return p
+    from tests.mocks import MockPlacement
     return MockPlacement(Base=pos)
 
 

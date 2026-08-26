@@ -11,16 +11,9 @@ except ImportError:
     Part = None
 
 
-class MockShape:
-    """Mock Part shape representation for testing outside FreeCAD."""
-
-    def __init__(self, shape_type: str, params: dict):
-        self.shape_type = shape_type
-        self.params = params
-        self.Placement = params.get("Placement", create_placement())
-
-    def __repr__(self):
-        return f"<MockShape {self.shape_type} {self.params}>"
+def _get_fallback_shape(shape_type: str, params: dict):
+    from tests.mocks import MockShape
+    return MockShape(shape_type, params)
 
 
 @register_node
@@ -51,7 +44,7 @@ class BoxNode(BaseNode):
             else:
                 shape.Placement = create_placement()
         else:
-            shape = MockShape("Box", {"Length": length, "Width": width, "Height": height, "Placement": placement or create_placement()})
+            shape = _get_fallback_shape("Box", {"Length": length, "Width": width, "Height": height, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)
 
@@ -82,7 +75,7 @@ class CylinderNode(BaseNode):
             else:
                 shape.Placement = create_placement()
         else:
-            shape = MockShape("Cylinder", {"Radius": radius, "Height": height, "Placement": placement or create_placement()})
+            shape = _get_fallback_shape("Cylinder", {"Radius": radius, "Height": height, "Placement": placement or create_placement()})
         self.set_output_value("Shape", shape)
 
 
@@ -110,7 +103,7 @@ class SphereNode(BaseNode):
             else:
                 shape.Placement = create_placement()
         else:
-            shape = MockShape("Sphere", {"Radius": radius, "Placement": placement or create_placement()})
+            shape = _get_fallback_shape("Sphere", {"Radius": radius, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)
 
@@ -143,6 +136,6 @@ class ConeNode(BaseNode):
             else:
                 shape.Placement = create_placement()
         else:
-            shape = MockShape("Cone", {"Radius1": r1, "Radius2": r2, "Height": height, "Placement": placement or create_placement()})
+            shape = _get_fallback_shape("Cone", {"Radius1": r1, "Radius2": r2, "Height": height, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)

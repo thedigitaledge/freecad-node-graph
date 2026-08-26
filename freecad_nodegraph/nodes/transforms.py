@@ -4,7 +4,7 @@ from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
 from freecad_nodegraph.nodes.inputs import create_vector
-from freecad_nodegraph.nodes.primitives import MockShape, Part
+from freecad_nodegraph.nodes.primitives import _get_fallback_shape, Part
 
 
 @register_node
@@ -31,7 +31,7 @@ class TranslateNode(BaseNode):
                 res = shape.copy()
                 res.translate(vec)
             else:
-                res = MockShape("Translate", {"shape": shape, "vector": vec})
+                res = _get_fallback_shape("Translate", {"shape": shape, "vector": vec})
         self.set_output_value("Shape", res)
 
 

@@ -19,15 +19,6 @@ FREECAD_MODULE_NAMES = [
 ]
 
 
-class MockFreeCADModule:
-    """Mock workbench module when running in standalone Python mode."""
-
-    def __init__(self, name: str, functions: Dict[str, Callable]):
-        self.__name__ = name
-        for fname, func in functions.items():
-            setattr(self, fname, func)
-
-
 def _infer_data_type(param_name: str, default_val: Any) -> Tuple[DataType, Any]:
     """Infer socket DataType and default value from parameter name and default value."""
     p_lower = param_name.lower()
@@ -132,52 +123,15 @@ def generate_node_class_for_function(
     return GeneratedWorkbenchNode
 
 
-def _get_mock_workbenches() -> Dict[str, Any]:
-    """Generate fallback mock FreeCAD workbenches and scriptable functions."""
-    return {
-        "Part": MockFreeCADModule(
-            "Part",
-            {
-                "makeBox": lambda length=10.0, width=10.0, height=10.0: f"<Part.Box {length}x{width}x{height}>",
-                "makeCylinder": lambda radius=5.0, height=10.0: f"<Part.Cylinder r={radius} h={height}>",
-                "makeSphere": lambda radius=5.0: f"<Part.Sphere r={radius}>",
-                "makeCone": lambda radius1=5.0, radius2=0.0, height=10.0: f"<Part.Cone r1={radius1} r2={radius2} h={height}>",
-                "makeTorus": lambda radius1=10.0, radius2=2.0: f"<Part.Torus r1={radius1} r2={radius2}>",
-                "makeLoft": lambda shapes=None: "<Part.Loft>",
-            },
-        ),
-        "Draft": MockFreeCADModule(
-            "Draft",
-            {
-                "make_line": lambda start=None, end=None: "<Draft.Line>",
-                "make_circle": lambda radius=10.0: f"<Draft.Circle r={radius}>",
-                "make_rectangle": lambda length=20.0, height=10.0: f"<Draft.Rectangle {length}x{height}>",
-                "make_polygon": lambda nfaces=6, radius=10.0: f"<Draft.Polygon n={nfaces} r={radius}>",
-            },
-        ),
-        "Arch": MockFreeCADModule(
-            "Arch",
-            {
-                "makeWall": lambda length=100.0, width=10.0, height=30.0: f"<Arch.Wall {length}x{width}x{height}>",
-                "makeStructure": lambda length=10.0, width=10.0, height=100.0: f"<Arch.Structure>",
-                "makeWindow": lambda width=5.0, height=10.0: f"<Arch.Window>",
-            },
-        ),
-        "Mesh": MockFreeCADModule(
-            "Mesh",
-            {
-                "createBox": lambda length=10.0, width=10.0, height=10.0: f"<Mesh.Box>",
-                "createCylinder": lambda radius=5.0, height=10.0: f"<Mesh.Cylinder>",
-            },
-        ),
-    }
-
-
 def discover_workbench_functions() -> Dict[str, Dict[str, Type[BaseNode]]]:
     """Scan FreeCAD workbenches and generate node classes for scriptable functions."""
     discovered: Dict[str, Dict[str, Type[BaseNode]]] = {}
 
-    mock_modules = _get_mock_workbenches()
+    try:
+        from tests.mocks import get_mock_workbenches
+        mock_modules = get_mock_workbenches()
+    except ImportError:
+        mock_modules = {}
 
     for mod_name in FREECAD_MODULE_NAMES:
         mod = None

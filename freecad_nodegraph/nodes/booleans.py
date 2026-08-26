@@ -3,7 +3,7 @@
 from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
-from freecad_nodegraph.nodes.primitives import MockShape, Part
+from freecad_nodegraph.nodes.primitives import _get_fallback_shape, Part
 
 
 @register_node
@@ -31,7 +31,7 @@ class FuseNode(BaseNode):
             if Part and hasattr(shape_a, "fuse") and hasattr(shape_b, "fuse"):
                 res = shape_a.fuse(shape_b)
             else:
-                res = MockShape("Fuse", {"a": shape_a, "b": shape_b})
+                res = _get_fallback_shape("Fuse", {"a": shape_a, "b": shape_b})
         self.set_output_value("Shape", res)
 
 
@@ -60,7 +60,7 @@ class CutNode(BaseNode):
             if Part and hasattr(base_shape, "cut") and hasattr(tool_shape, "cut"):
                 res = base_shape.cut(tool_shape)
             else:
-                res = MockShape("Cut", {"base": base_shape, "tool": tool_shape})
+                res = _get_fallback_shape("Cut", {"base": base_shape, "tool": tool_shape})
 
         self.set_output_value("Shape", res)
 
@@ -88,6 +88,6 @@ class CommonNode(BaseNode):
             if Part and hasattr(shape_a, "common") and hasattr(shape_b, "common"):
                 res = shape_a.common(shape_b)
             else:
-                res = MockShape("Common", {"a": shape_a, "b": shape_b})
+                res = _get_fallback_shape("Common", {"a": shape_a, "b": shape_b})
 
         self.set_output_value("Shape", res)
