@@ -1,7 +1,7 @@
 """Unit tests for NodeGraph GUI components in offscreen/qapp context."""
 
 import pytest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QGraphicsView
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
@@ -37,6 +37,7 @@ def test_gui_creation(qapp):
 
     view = NodeGraphicsView(scene)
     assert view is not None
+    assert view.dragMode() == QGraphicsView.RubberBandDrag
 
     editor = NodeGraphEditorWidget(graph=graph)
     assert editor is not None
@@ -47,6 +48,46 @@ def test_gui_creation(qapp):
     task_panel = NodeGraphTaskPanel(graph=graph)
     assert task_panel.widget is not None
     assert len(task_panel.form) == 1
+
+
+def test_multi_node_selection_and_deletion(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.inputs import FloatNode, IntegerNode
+    from freecad_nodegraph.nodes.primitives import BoxNode
+    from freecad_nodegraph.gui.scene import NodeGraphicsScene
+    from freecad_nodegraph.gui.view import NodeGraphicsView
+
+    graph = Graph()
+    f1 = FloatNode(graph=graph)
+    f2 = IntegerNode(graph=graph)
+    box = BoxNode(graph=graph)
+    graph.add_node(f1)
+    graph.add_node(f2)
+    graph.add_node(box)
+
+    scene = NodeGraphicsScene(graph)
+    view = NodeGraphicsView(scene)
+
+    assert len(scene.node_items) == 3
+
+    # Select single node
+    scene.clearSelection()
+    item_f1 = scene.node_items[f1]
+    item_f1.setSelected(True)
+    assert len(scene.selectedItems()) == 1
+
+    # Select multiple nodes simultaneously
+    item_f2 = scene.node_items[f2]
+    item_box = scene.node_items[box]
+
+    item_f2.setSelected(True)
+    item_box.setSelected(True)
+    assert len(scene.selectedItems()) == 3
+
+    # Simultaneous deletion of multiple selected nodes
+    scene.delete_selected_nodes()
+    assert len(graph.nodes) == 0
+    assert len(scene.node_items) == 0
 
 
 def test_socket_colors_and_labels(qapp):

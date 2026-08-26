@@ -10,7 +10,7 @@ from freecad_nodegraph.gui.scene import NodeGraphicsScene
 
 
 class NodeGraphicsView(QGraphicsView):
-    """View widget providing panning, zooming, and edge drag-connection interaction."""
+    """View widget providing panning, zooming, rubberband selection, and edge drag-connection interaction."""
 
     def __init__(self, scene: NodeGraphicsScene, parent=None):
         super().__init__(scene, parent)
@@ -25,6 +25,7 @@ class NodeGraphicsView(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        self.setDragMode(QGraphicsView.RubberBandDrag)
 
         self.drag_start_socket_item: Optional[GraphicsSocketItem] = None
         self.temp_edge_item: Optional[QGraphicsPathItem] = None
@@ -132,6 +133,7 @@ class NodeGraphicsView(QGraphicsView):
                 return
 
             # Otherwise, right click drag on empty canvas background for view panning
+            self.setDragMode(QGraphicsView.NoDrag)
             self.is_panning = True
             self.pan_start = event.pos()
             self.setCursor(Qt.ClosedHandCursor)
@@ -180,6 +182,7 @@ class NodeGraphicsView(QGraphicsView):
         if event.button() == Qt.RightButton and self.is_panning:
             self.is_panning = False
             self.setCursor(Qt.ArrowCursor)
+            self.setDragMode(QGraphicsView.RubberBandDrag)
             event.accept()
             return
 
