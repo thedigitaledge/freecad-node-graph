@@ -13,6 +13,12 @@ release = "0.1.0"
 # Offline build configuration: standard extensions without external network requirements
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.apidoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.graphviz",
+    "sphinx.ext.inheritance_diagram",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
 ]
