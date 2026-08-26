@@ -1,7 +1,13 @@
 """Unit tests for NodeGraph GUI components in offscreen/qapp context."""
 
 import pytest
-from PySide6.QtWidgets import QApplication, QGraphicsView
+from PySide6.QtWidgets import (
+    QApplication,
+    QGraphicsView,
+    QGraphicsProxyWidget,
+    QLineEdit,
+    QDoubleSpinBox,
+)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
@@ -279,6 +285,60 @@ def test_input_node_value_entry_and_validation(qapp):
     panel = NodeGraphSidePanelWidget(graph=graph)
     panel.update_properties_inspector([f_item])
     assert panel.prop_form_layout.count() > 0
+
+
+def test_input_node_data_entry_focus_and_key_handling(qapp):
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.inputs import FloatNode, StringNode
+    from freecad_nodegraph.gui.scene import NodeGraphicsScene
+    from freecad_nodegraph.gui.view import NodeGraphicsView
+
+    graph = Graph()
+    f_node = FloatNode(graph=graph)
+    s_node = StringNode(graph=graph)
+    graph.add_node(f_node)
+    graph.add_node(s_node)
+
+    scene = NodeGraphicsScene(graph)
+    view = NodeGraphicsView(scene)
+    view.show()
+
+    item_f = scene.node_items[f_node]
+    item_s = scene.node_items[s_node]
+
+    # Find embedded spin box and line edit controls
+    proxy_f = None
+    proxy_s = None
+
+    for child in item_f.childItems():
+        if isinstance(child, QGraphicsProxyWidget):
+            proxy_f = child
+            break
+
+    for child in item_s.childItems():
+        if isinstance(child, QGraphicsProxyWidget):
+            proxy_s = child
+            break
+
+    assert proxy_f is not None
+    assert proxy_s is not None
+
+    # Verify focus policies
+    assert proxy_f.focusPolicy() == Qt.StrongFocus
+    assert proxy_s.focusPolicy() == Qt.StrongFocus
+
+    # Test key event handling when input widget has focus
+    spin_widget = proxy_f.widget().findChild(QDoubleSpinBox)
+    assert spin_widget is not None
+    spin_widget.setFocus()
+
+    # Simulate Backspace key press while spin box is focused
+    key_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Backspace, Qt.NoModifier)
+    view.keyPressEvent(key_event)
+
+    # Ensure node was NOT deleted when Backspace was pressed during input focus
+    assert f_node in graph.nodes
+    assert len(graph.nodes) == 2
 
 
 def test_input_node_graphics_item_layout_clearance(qapp):

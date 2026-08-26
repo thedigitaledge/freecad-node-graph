@@ -226,7 +226,10 @@ class GraphicsNodeItem(QGraphicsItem):
         container_width = max(70.0, self.width - output_label_width - 15.0)
 
         proxy = QGraphicsProxyWidget(self)
+        proxy.setFocusPolicy(Qt.StrongFocus)
+
         container = QWidget()
+        container.setFocusPolicy(Qt.StrongFocus)
         container.setStyleSheet("background: transparent;")
         container.setFixedWidth(int(container_width))
 
@@ -234,6 +237,8 @@ class GraphicsNodeItem(QGraphicsItem):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(10, 0, 10, 0)
             spin = QDoubleSpinBox()
+            spin.setFocusPolicy(Qt.StrongFocus)
+            spin.setKeyboardTracking(True)
             spin.setRange(-999999.0, 999999.0)
             spin.setDecimals(3)
             spin.setValue(float(getattr(self.node, "value", 0.0)))
@@ -254,6 +259,8 @@ class GraphicsNodeItem(QGraphicsItem):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(10, 0, 10, 0)
             spin = QSpinBox()
+            spin.setFocusPolicy(Qt.StrongFocus)
+            spin.setKeyboardTracking(True)
             spin.setRange(-999999, 999999)
             spin.setValue(int(getattr(self.node, "value", 0)))
 
@@ -273,6 +280,7 @@ class GraphicsNodeItem(QGraphicsItem):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(10, 0, 10, 0)
             edit = QLineEdit(str(getattr(self.node, "value", "")))
+            edit.setFocusPolicy(Qt.StrongFocus)
 
             def on_string_changed(txt):
                 self.node.set_value(txt)
@@ -286,6 +294,7 @@ class GraphicsNodeItem(QGraphicsItem):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(10, 0, 10, 0)
             chk = QCheckBox("True")
+            chk.setFocusPolicy(Qt.StrongFocus)
             chk.setChecked(bool(getattr(self.node, "value", False)))
             chk.setStyleSheet("color: white;")
 
@@ -307,6 +316,8 @@ class GraphicsNodeItem(QGraphicsItem):
                 lbl = QLabel(label_text)
                 lbl.setStyleSheet("color: white; font-weight: bold;")
                 spin = QDoubleSpinBox()
+                spin.setFocusPolicy(Qt.StrongFocus)
+                spin.setKeyboardTracking(True)
                 spin.setRange(-999999.0, 999999.0)
                 spin.setDecimals(3)
                 spin.setValue(float(getattr(self.node, comp, 0.0)))
@@ -338,6 +349,8 @@ class GraphicsNodeItem(QGraphicsItem):
                 lbl = QLabel(label_text)
                 lbl.setStyleSheet("color: white; font-weight: bold;")
                 spin = QDoubleSpinBox()
+                spin.setFocusPolicy(Qt.StrongFocus)
+                spin.setKeyboardTracking(True)
                 spin.setRange(-999999.0, 999999.0)
                 spin.setDecimals(3)
                 pos_val = getattr(self.node, f"pos_{comp}", 0.0)

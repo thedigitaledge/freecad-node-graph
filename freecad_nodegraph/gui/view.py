@@ -1,6 +1,16 @@
 """Interactive QGraphicsView for navigating and connecting nodes."""
 
-from PySide6.QtWidgets import QGraphicsView, QGraphicsPathItem
+from PySide6.QtWidgets import (
+    QGraphicsView,
+    QGraphicsPathItem,
+    QGraphicsProxyWidget,
+    QLineEdit,
+    QDoubleSpinBox,
+    QSpinBox,
+    QCheckBox,
+    QAbstractSpinBox,
+    QApplication,
+)
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
 
@@ -35,6 +45,24 @@ class NodeGraphicsView(QGraphicsView):
 
     def keyPressEvent(self, event):
         """Handle key press events (e.g. Del/Backspace to delete selected nodes, Ctrl+Z Undo, Ctrl+Y Redo)."""
+        app_inst = QApplication.instance()
+        focus_widget = app_inst.focusWidget() if app_inst else None
+        focus_item = self.scene().focusItem() if self.scene() else None
+
+        # Pass key events directly when an embedded input widget or proxy has focus
+        if focus_widget is not None:
+            if isinstance(focus_widget, (QLineEdit, QDoubleSpinBox, QSpinBox, QCheckBox, QAbstractSpinBox)) or (
+                hasattr(focus_widget, "metaObject") and focus_widget.metaObject().className() in (
+                    "QLineEdit", "QDoubleSpinBox", "QSpinBox", "QAbstractSpinBox", "QLineControl"
+                )
+            ):
+                super().keyPressEvent(event)
+                return
+
+        if focus_item is not None and isinstance(focus_item, QGraphicsProxyWidget):
+            super().keyPressEvent(event)
+            return
+
         if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
             if self.node_scene and hasattr(self.node_scene, "delete_selected_nodes"):
                 self.node_scene.delete_selected_nodes()
