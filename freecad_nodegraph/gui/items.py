@@ -227,6 +227,7 @@ class GraphicsNodeItem(QGraphicsItem):
 
         proxy = QGraphicsProxyWidget(self)
         proxy.setFocusPolicy(Qt.StrongFocus)
+        proxy.setZValue(10)
 
         container = QWidget()
         container.setFocusPolicy(Qt.StrongFocus)

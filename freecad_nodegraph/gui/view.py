@@ -179,8 +179,12 @@ class NodeGraphicsView(QGraphicsView):
                 event.accept()
                 return
 
-            # Keep RubberBandDrag active for group mouse selection on background
-            self.setDragMode(QGraphicsView.RubberBandDrag)
+            if item is None:
+                # Activate RubberBandDrag only when clicking on empty canvas background
+                self.setDragMode(QGraphicsView.RubberBandDrag)
+            else:
+                # Disable rubberband drag mode when clicking on a node or child control to pass focus/click cleanly
+                self.setDragMode(QGraphicsView.NoDrag)
 
         super().mousePressEvent(event)
 
