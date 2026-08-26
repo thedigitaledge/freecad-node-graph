@@ -110,6 +110,7 @@ class GraphicsEdgeItem(QGraphicsPathItem):
         self.setPen(self.pen)
 
     def update_path(self, start_pos: QPointF = None, end_pos: QPointF = None):
+        self.prepareGeometryChange()
         if not start_pos or not end_pos:
             if not self.edge.start_socket or not self.edge.end_socket:
                 return

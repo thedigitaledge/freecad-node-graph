@@ -18,6 +18,8 @@ FREECAD_MODULE_NAMES = [
     "PartDesign",
 ]
 
+_discovered_workbenches_cache: Optional[Dict[str, Dict[str, Type[BaseNode]]]] = None
+
 
 def _infer_data_type(param_name: str, default_val: Any) -> Tuple[DataType, Any]:
     """Infer socket DataType and default value from parameter name and default value."""
@@ -123,8 +125,12 @@ def generate_node_class_for_function(
     return GeneratedWorkbenchNode
 
 
-def discover_workbench_functions() -> Dict[str, Dict[str, Type[BaseNode]]]:
+def discover_workbench_functions(force_reload: bool = False) -> Dict[str, Dict[str, Type[BaseNode]]]:
     """Scan FreeCAD workbenches and generate node classes for scriptable functions."""
+    global _discovered_workbenches_cache
+    if _discovered_workbenches_cache is not None and not force_reload:
+        return _discovered_workbenches_cache
+
     discovered: Dict[str, Dict[str, Type[BaseNode]]] = {}
 
     try:
@@ -162,4 +168,5 @@ def discover_workbench_functions() -> Dict[str, Dict[str, Type[BaseNode]]]:
         if funcs_dict:
             discovered[mod_name] = funcs_dict
 
+    _discovered_workbenches_cache = discovered
     return discovered
