@@ -4,6 +4,7 @@ import json
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
+    QApplication,
 )
 from PySide6.QtCore import Qt
 
@@ -61,7 +62,11 @@ class NodeGraphEditorWidget(QWidget):
         root_layout.addWidget(self.view)
 
     def on_selection_changed(self):
-        """Update property inspector when selection changes in the scene."""
+        """Update property inspector when selection changes in the scene while preserving active text input focus."""
+        focus_item = self.scene.focusItem() if self.scene else None
+        app_inst = QApplication.instance()
+        focus_widget = app_inst.focusWidget() if app_inst else None
+
         selected_items = self.scene.selectedItems()
         try:
             import FreeCADGui
@@ -71,6 +76,13 @@ class NodeGraphEditorWidget(QWidget):
                     dlg.widget.update_properties_inspector(selected_items)
         except Exception:
             pass
+
+        # Restore focus to canvas view and active widget if an input control on canvas was focused
+        if focus_item is not None:
+            self.view.setFocus()
+            focus_item.setFocus()
+            if focus_widget is not None and hasattr(focus_widget, "setFocus"):
+                focus_widget.setFocus()
 
     def save_to_document_object(self, *args):
         """Save current graph state back into the bound FreeCAD Document Object property."""

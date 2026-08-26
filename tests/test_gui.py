@@ -333,6 +333,43 @@ def test_integer_node_click_wait_and_data_entry(qapp):
     assert i_node.value == 42
 
 
+def test_text_entry_focus_retention_on_selection_changed(qapp):
+    """Test text entry focus retention when selection changes on editor canvas."""
+    from freecad_nodegraph.nodes.inputs import StringNode
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+    editor.show()
+
+    s_node = StringNode(graph=editor.graph)
+    editor.graph.add_node(s_node)
+    item_s = editor.scene.add_node_item(s_node)
+
+    proxy_s = None
+    for child in item_s.childItems():
+        if isinstance(child, QGraphicsProxyWidget):
+            proxy_s = child
+            break
+
+    assert proxy_s is not None
+
+    edit_widget = proxy_s.widget().findChild(QLineEdit)
+    assert edit_widget is not None
+
+    # Set focus on text box / proxy
+    proxy_s.setFocus()
+    editor.scene.setFocusItem(proxy_s)
+    assert editor.scene.focusItem() == proxy_s
+
+    # Trigger selection change
+    item_s.setSelected(True)
+    editor.on_selection_changed()
+
+    # Confirm focus is preserved on scene
+    assert editor.scene.focusItem() == proxy_s
+
+
 def test_input_node_data_entry_focus_and_key_handling(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode, StringNode
