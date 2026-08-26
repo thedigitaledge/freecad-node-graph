@@ -15,7 +15,7 @@ Building local HTML documentation offline using Sphinx is the **primary method**
    pip install .[docs]
    sphinx-build -b html docs docs/_build/html
 
-Open ``docs/_build/html/index.html`` to access full API reference guides, node library details, and code quality procedures offline.
+Open ``docs/_build/html/index.html`` to access full API reference guides, node library details, and code quality procedures offline. You can also view the automatically generated `Interactive HTML Code Coverage Report <coverage/index.html>`_.
 
 .. toctree::
    :maxdepth: 2

@@ -49,9 +49,9 @@ Run all tests headlessly in PySide/Qt offscreen mode while profiling test durati
 
 .. code-block:: bash
 
-   PYTHONPATH=. QT_QPA_PLATFORM=offscreen pytest --durations=0
+   PYTHONPATH=. QT_QPA_PLATFORM=offscreen pytest
 
-The ``--durations=0`` flag profiles and prints execution timings for all test calls, setups, and teardowns across unit, integration, and BDD scenarios.
+The ``--durations=0`` flag is configured in ``pyproject.toml`` to automatically profile and print execution timings for all test calls, setups, and teardowns across unit, integration, and BDD scenarios.
 
 Behavior-Driven Automation (pytest-bdd)
 ----------------------------------------
@@ -71,26 +71,19 @@ Integrating Code Coverage with Documentation
 
 Code coverage is monitored automatically during test runs via ``pytest-cov``.
 
-Generating Coverage Reports
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Automatic Coverage HTML Generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run pytest with HTML coverage report generation:
+When running ``pytest``, coverage is automatically calculated and exported as an HTML report located in the Sphinx build output at `docs/_build/html/coverage <coverage/index.html>`_.
 
-.. code-block:: bash
-
-   pytest --cov=freecad_nodegraph --cov-report=term-missing --cov-report=html:docs/_build/html/coverage
-
-Integrating Coverage HTML with Sphinx Build
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When running ``pytest`` with ``--cov-report=html:docs/_build/html/coverage``, the code coverage HTML report is placed directly inside Sphinx's local output build directory, making interactive coverage reports accessible alongside Sphinx API documentation.
+Access the generated `Interactive HTML Code Coverage Report <coverage/index.html>`_ directly inside your built Sphinx documentation workspace.
 
 Configuration in ``pyproject.toml``:
 
 .. code-block:: toml
 
    [tool.pytest.ini_options]
-   addopts = "--cov=freecad_nodegraph --cov-report=term-missing --durations=0"
+   addopts = "--cov=freecad_nodegraph --cov-report=term-missing --cov-report=html:docs/_build/html/coverage --durations=0"
 
    [tool.coverage.run]
    source = ["freecad_nodegraph"]
