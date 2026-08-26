@@ -122,6 +122,48 @@ def test_view_provider_double_click(qapp):
     assert isinstance(res, bool)
 
 
+def test_editor_save_and_sync_undo_redo(qapp):
+    class MockDoc:
+        def __init__(self):
+            self.transactions = []
+
+        def openTransaction(self, name):
+            self.transactions.append(("open", name))
+
+        def commitTransaction(self):
+            self.transactions.append(("commit", None))
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    doc = MockDoc()
+    obj.Document = doc
+
+    editor = NodeGraphEditorWidget(doc_object=obj)
+
+    box = BoxNode(graph=editor.graph)
+    editor.graph.add_node(box)
+    editor.save_to_document_object()
+
+    assert len(doc.transactions) == 2
+    assert doc.transactions[0] == ("open", "Modify Node Graph")
+    assert doc.transactions[1] == ("commit", None)
+
+    initial_json = obj.GraphData
+
+    # Modify graph and save
+    f1 = FloatNode(graph=editor.graph)
+    editor.graph.add_node(f1)
+    editor.save_to_document_object()
+
+    assert len(editor.graph.nodes) == 2
+
+    # Simulate Undo restoring initial_json
+    obj.GraphData = initial_json
+    editor.sync_from_document_object()
+
+    assert len(editor.graph.nodes) == 1
+    assert len(editor.scene.node_items) == 1
+
+
 def test_selection_observer_triggers_editor(qapp):
     from freecad_nodegraph.commands import NodeGraphSelectionObserver
 

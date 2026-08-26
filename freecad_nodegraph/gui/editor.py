@@ -67,7 +67,39 @@ class NodeGraphEditorWidget(QWidget):
         """Save current graph state back into the bound FreeCAD Document Object property."""
         if self.doc_object and hasattr(self.doc_object, "GraphData"):
             data = GraphSerializer.to_dict(self.graph)
-            self.doc_object.GraphData = json.dumps(data)
+            new_json = json.dumps(data)
+
+            if getattr(self.doc_object, "GraphData", None) == new_json:
+                return
+
+            doc = getattr(self.doc_object, "Document", None)
+            if doc and hasattr(doc, "openTransaction"):
+                try:
+                    doc.openTransaction("Modify Node Graph")
+                    self.doc_object.GraphData = new_json
+                    doc.commitTransaction()
+                except Exception:
+                    self.doc_object.GraphData = new_json
+            else:
+                self.doc_object.GraphData = new_json
+
+    def sync_from_document_object(self):
+        """Sync and re-render editor graph and scene graphics items from doc_object storage."""
+        if self.doc_object and hasattr(self.doc_object, "GraphData") and self.doc_object.GraphData:
+            try:
+                data = json.loads(self.doc_object.GraphData)
+                try:
+                    self.scene.changed.disconnect(self.save_to_document_object)
+                except Exception:
+                    pass
+
+                self.graph.clear()
+                GraphSerializer.from_dict(data, graph=self.graph)
+                self.scene.sync_from_graph()
+
+                self.scene.changed.connect(self.save_to_document_object)
+            except Exception:
+                pass
 
     def closeEvent(self, event):
         """Close task panel when editor view is closed."""

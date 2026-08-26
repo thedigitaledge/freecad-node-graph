@@ -41,13 +41,65 @@ class NodeGraphicsView(QGraphicsView):
         self.pan_start = None
 
     def keyPressEvent(self, event):
-        """Handle key press events (e.g. Del/Backspace to delete selected nodes)."""
+        """Handle key press events (e.g. Del/Backspace to delete selected nodes, Ctrl+Z Undo, Ctrl+Y Redo)."""
         if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
             if self.node_scene and hasattr(self.node_scene, "delete_selected_nodes"):
                 self.node_scene.delete_selected_nodes()
                 event.accept()
                 return
+
+        # Undo: Ctrl+Z
+        if event.key() == Qt.Key_Z and (event.modifiers() & Qt.ControlModifier):
+            if not (event.modifiers() & Qt.ShiftModifier):
+                self.handle_undo()
+                event.accept()
+                return
+            else:
+                self.handle_redo()
+                event.accept()
+                return
+
+        # Redo: Ctrl+Y
+        if event.key() == Qt.Key_Y and (event.modifiers() & Qt.ControlModifier):
+            self.handle_redo()
+            event.accept()
+            return
+
         super().keyPressEvent(event)
+
+    def handle_undo(self):
+        from freecad_nodegraph.commands import get_active_editor
+        editor = get_active_editor()
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+
+        if hasattr(FreeCADGui, "runCommand"):
+            try:
+                FreeCADGui.runCommand("Std_Undo")
+            except Exception:
+                if doc and hasattr(doc, "undo"):
+                    doc.undo()
+        elif doc and hasattr(doc, "undo"):
+            doc.undo()
+
+        if editor and hasattr(editor, "sync_from_document_object"):
+            editor.sync_from_document_object()
+
+    def handle_redo(self):
+        from freecad_nodegraph.commands import get_active_editor
+        editor = get_active_editor()
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+
+        if hasattr(FreeCADGui, "runCommand"):
+            try:
+                FreeCADGui.runCommand("Std_Redo")
+            except Exception:
+                if doc and hasattr(doc, "redo"):
+                    doc.redo()
+        elif doc and hasattr(doc, "redo"):
+            doc.redo()
+
+        if editor and hasattr(editor, "sync_from_document_object"):
+            editor.sync_from_document_object()
 
     def wheelEvent(self, event: QWheelEvent):
         """Handle zoom in/out with mouse wheel."""

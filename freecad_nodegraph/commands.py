@@ -28,6 +28,22 @@ from freecad_nodegraph.document_object import make_nodegraph_object
 # Active document object editor registry mapping doc_object -> (subwindow, editor_widget)
 _active_editors = {}
 _selection_observer = None
+_document_observer = None
+
+
+class NodeGraphDocumentObserver:
+    """Observer listening for FreeCAD document undo/redo events to update open NodeGraph editors."""
+
+    def slotUndoDocument(self, doc):
+        self.sync_active_editors()
+
+    def slotRedoDocument(self, doc):
+        self.sync_active_editors()
+
+    def sync_active_editors(self):
+        for doc_obj, (subwin, editor) in list(_active_editors.items()):
+            if hasattr(editor, "sync_from_document_object"):
+                editor.sync_from_document_object()
 
 
 def get_active_editor():
@@ -301,7 +317,7 @@ class CommandRunNodeGraph:
 
 
 def register_commands():
-    global _selection_observer
+    global _selection_observer, _document_observer
     FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
     FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
     FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
@@ -309,3 +325,7 @@ def register_commands():
     if _selection_observer is None and hasattr(FreeCADGui, "Selection"):
         _selection_observer = NodeGraphSelectionObserver()
         FreeCADGui.Selection.addObserver(_selection_observer)
+
+    if _document_observer is None and hasattr(FreeCAD, "addDocumentObserver"):
+        _document_observer = NodeGraphDocumentObserver()
+        FreeCAD.addDocumentObserver(_document_observer)
