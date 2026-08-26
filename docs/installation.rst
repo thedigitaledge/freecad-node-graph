@@ -25,7 +25,13 @@ Local offline generation using Sphinx is the **primary method** for creating and
 
       sphinx-build -b html docs docs/_build/html
 
-3. Open ``docs/_build/html/index.html`` in a web browser to view offline documentation.
+3. Serve and view the built HTML documentation locally:
+
+   .. code-block:: bash
+
+      python3 -m http.server -d docs/_build/html
+
+   Then navigate to ``http://localhost:8000`` in your browser to view the offline documentation.
 
 How to Load in FreeCAD
 ----------------------
@@ -34,7 +40,26 @@ To install and load the NodeGraph Workbench into FreeCAD:
 
 1. Locate your FreeCAD user directory or ``Mod`` folder:
 
-   - **Linux**: ``~/.local/share/FreeCAD/Mod/`` or ``~/.FreeCAD/Mod/``
+   - **Linux**:
+
+     - Standard installation: ``~/.local/share/FreeCAD/Mod/`` or ``~/.FreeCAD/Mod/``
+     - Flatpak installation: ``~/.var/app/org.freecad.FreeCAD/data/FreeCAD/Mod/``
+     - Running via Flatpak:
+
+       .. code-block:: bash
+
+          flatpak run org.freecad.FreeCAD
+
+     - Specifying a custom module directory with the ``-M`` option:
+
+       .. code-block:: bash
+
+          # Native FreeCAD executable:
+          freecad -M /path/to/custom/Mod
+
+          # Flatpak FreeCAD installation:
+          flatpak run org.freecad.FreeCAD -M /path/to/custom/Mod
+
    - **Windows**: ``%APPDATA%\FreeCAD\Mod\``
    - **macOS**: ``~/Library/Application Support/FreeCAD/Mod/``
 

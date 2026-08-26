@@ -26,7 +26,16 @@ Generate standalone HTML documentation locally without any internet or network d
 
    sphinx-build -b html docs docs/_build/html
 
-The compiled HTML documentation pages are located at ``docs/_build/html/index.html``.
+Serve and View Local Documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Serve built HTML documentation using Python's built-in HTTP server:
+
+.. code-block:: bash
+
+   python3 -m http.server -d docs/_build/html
+
+Navigate to ``http://localhost:8000`` in your browser to view the offline documentation.
 
 Automated Test Suite & Speed Profiling
 ---------------------------------------
