@@ -37,17 +37,25 @@ class NodeGraphicsScene(QGraphicsScene):
         self.setBackgroundBrush(QBrush(QColor("#222222")))
         self.setSceneRect(-5000, -5000, 10000, 10000)
 
-        self.sync_from_graph()
+        self.sync_from_graph(preserve_selection=False)
 
-    def sync_from_graph(self):
-        """Rebuild scene graphics items from graph model."""
+    def sync_from_graph(self, preserve_selection: bool = True):
+        """Rebuild scene graphics items from graph model, preserving selection state."""
+        selected_node_ids = set()
+        if preserve_selection:
+            for item in self.selectedItems():
+                if isinstance(item, GraphicsNodeItem) and hasattr(item, "node") and item.node:
+                    selected_node_ids.add(item.node.id)
+
         self.clear()
         self.node_items.clear()
         self.edge_items.clear()
         self.socket_item_map.clear()
 
         for node in self.graph.nodes:
-            self.add_node_item(node)
+            item = self.add_node_item(node)
+            if preserve_selection and node.id in selected_node_ids:
+                item.setSelected(True)
 
         for edge in self.graph.edges:
             self.add_edge_item(edge)

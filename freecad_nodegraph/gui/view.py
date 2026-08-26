@@ -26,6 +26,7 @@ class NodeGraphicsView(QGraphicsView):
 
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
+        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
 
         self.drag_start_socket_item: Optional[GraphicsSocketItem] = None
         self.temp_edge_item: Optional[QGraphicsPathItem] = None
@@ -149,6 +150,9 @@ class NodeGraphicsView(QGraphicsView):
                 self.node_scene.addItem(self.temp_edge_item)
                 event.accept()
                 return
+
+            # Keep RubberBandDrag active for group mouse selection on background
+            self.setDragMode(QGraphicsView.RubberBandDrag)
 
         super().mousePressEvent(event)
 

@@ -49,6 +49,7 @@ class NodeGraphEditorWidget(QWidget):
 
         # Listen for scene graph changes to automatically save back to doc_object storage
         self.scene.changed.connect(self.save_to_document_object)
+        self.scene.selectionChanged.connect(self.on_selection_changed)
 
         self.init_ui()
 
@@ -58,6 +59,18 @@ class NodeGraphEditorWidget(QWidget):
         root_layout.setSpacing(0)
 
         root_layout.addWidget(self.view)
+
+    def on_selection_changed(self):
+        """Update property inspector when selection changes in the scene."""
+        selected_items = self.scene.selectedItems()
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "Control") and hasattr(FreeCADGui.Control, "activeDialog"):
+                dlg = FreeCADGui.Control.activeDialog()
+                if hasattr(dlg, "widget") and hasattr(dlg.widget, "update_properties_inspector"):
+                    dlg.widget.update_properties_inspector(selected_items)
+        except Exception:
+            pass
 
     def save_to_document_object(self, *args):
         """Save current graph state back into the bound FreeCAD Document Object property."""
@@ -133,7 +146,7 @@ class NodeGraphEditorWidget(QWidget):
 
             self.graph.clear()
             GraphSerializer.from_dict(data, graph=self.graph)
-            self.scene.sync_from_graph()
+            self.scene.sync_from_graph(preserve_selection=True)
 
             if self.doc_object:
                 try:
