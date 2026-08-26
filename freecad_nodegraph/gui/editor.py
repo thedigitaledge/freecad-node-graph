@@ -41,6 +41,7 @@ class NodeGraphEditorWidget(QWidget):
 
         self.graph = graph or Graph()
         self.history = GraphHistory()
+        self._is_syncing = False
 
         # If bound to a document object, load graph data from object storage
         if self.doc_object:
@@ -74,10 +75,19 @@ class NodeGraphEditorWidget(QWidget):
 
     def save_to_document_object(self, *args):
         """Save current graph state back into the bound FreeCAD Document Object property."""
+        if getattr(self, "_is_syncing", False):
+            return
         if not self.doc_object:
             return
 
         try:
+            doc = getattr(self.doc_object, "Document", None)
+            if doc:
+                is_undo = getattr(doc, "isUndo", lambda: False)() if callable(getattr(doc, "isUndo", None)) else getattr(doc, "isUndo", False)
+                is_redo = getattr(doc, "isRedo", lambda: False)() if callable(getattr(doc, "isRedo", None)) else getattr(doc, "isRedo", False)
+                if is_undo or is_redo:
+                    return
+
             data = GraphSerializer.to_dict(self.graph)
             new_json = json.dumps(data)
 
@@ -87,7 +97,6 @@ class NodeGraphEditorWidget(QWidget):
             self.history.push_state(new_json, description="Modify Node Graph")
 
             if hasattr(self.doc_object, "GraphData"):
-                doc = getattr(self.doc_object, "Document", None)
                 if doc and hasattr(doc, "openTransaction"):
                     try:
                         doc.openTransaction("Modify Node Graph")
@@ -122,6 +131,9 @@ class NodeGraphEditorWidget(QWidget):
 
     def load_state_snapshot(self, json_data: str):
         """Load state snapshot into graph and scene without pushing a new history state."""
+        if getattr(self, "_is_syncing", False):
+            return
+        self._is_syncing = True
         try:
             data = json.loads(json_data)
             try:
@@ -135,8 +147,12 @@ class NodeGraphEditorWidget(QWidget):
 
             if self.doc_object:
                 try:
-                    if hasattr(self.doc_object, "GraphData"):
-                        self.doc_object.GraphData = json_data
+                    doc = getattr(self.doc_object, "Document", None)
+                    is_undo = getattr(doc, "isUndo", lambda: False)() if callable(getattr(doc, "isUndo", None)) else getattr(doc, "isUndo", False)
+                    is_redo = getattr(doc, "isRedo", lambda: False)() if callable(getattr(doc, "isRedo", None)) else getattr(doc, "isRedo", False)
+                    if not (is_undo or is_redo):
+                        if hasattr(self.doc_object, "GraphData"):
+                            self.doc_object.GraphData = json_data
                 except (ReferenceError, RuntimeError, AttributeError):
                     self.doc_object = None
 
@@ -146,6 +162,8 @@ class NodeGraphEditorWidget(QWidget):
                 pass
         except Exception:
             pass
+        finally:
+            self._is_syncing = False
 
     def sync_from_document_object(self):
         """Sync and re-render editor graph and scene graphics items from doc_object storage."""

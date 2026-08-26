@@ -440,6 +440,39 @@ def test_gui_lifecycle_add_connect_move_delete_undo_redo(qapp):
     assert len(editor.graph.edges) == 0
 
 
+def test_editor_save_guards_during_undo_redo(qapp):
+    from freecad_nodegraph.document_object import MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.nodes.inputs import FloatNode
+
+    class MockUndoDoc:
+        def __init__(self):
+            self.undo_active = False
+
+        def isUndo(self):
+            return self.undo_active
+
+        def openTransaction(self, name):
+            raise RuntimeError("Should not open transaction during Undo")
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    doc = MockUndoDoc()
+    obj.Document = doc
+
+    editor = NodeGraphEditorWidget(doc_object=obj)
+
+    # When doc.isUndo() is True, save_to_document_object should return immediately without calling openTransaction
+    doc.undo_active = True
+    f1 = FloatNode(graph=editor.graph)
+    editor.graph.add_node(f1)
+    editor.save_to_document_object()
+
+    # Verify _is_syncing prevents reentrancy
+    editor._is_syncing = True
+    doc.undo_active = False
+    editor.save_to_document_object()
+
+
 def test_editor_handles_deleted_freecad_object(qapp):
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
     from freecad_nodegraph.nodes.inputs import FloatNode
