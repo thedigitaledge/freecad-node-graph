@@ -7,9 +7,11 @@ from PySide6.QtWidgets import (
     QGraphicsProxyWidget,
     QLineEdit,
     QDoubleSpinBox,
+    QSpinBox,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
+from PySide6.QtTest import QTest
 
 from freecad_nodegraph.core.socket import DataType
 from tests.mocks import MockDocumentObject
@@ -285,6 +287,50 @@ def test_input_node_value_entry_and_validation(qapp):
     panel = NodeGraphSidePanelWidget(graph=graph)
     panel.update_properties_inspector([f_item])
     assert panel.prop_form_layout.count() > 0
+
+
+def test_integer_node_click_wait_and_data_entry(qapp):
+    """GUI test to change data in an IntegerNode by clicking text area, waiting 2s, entering data, and confirming value."""
+    from freecad_nodegraph.core.graph import Graph
+    from freecad_nodegraph.nodes.inputs import IntegerNode
+    from freecad_nodegraph.gui.scene import NodeGraphicsScene
+    from freecad_nodegraph.gui.view import NodeGraphicsView
+
+    graph = Graph()
+    i_node = IntegerNode(graph=graph)
+    i_node.set_value(0)
+    graph.add_node(i_node)
+
+    scene = NodeGraphicsScene(graph)
+    view = NodeGraphicsView(scene)
+    view.show()
+
+    item_i = scene.node_items[i_node]
+
+    proxy_i = None
+    for child in item_i.childItems():
+        if isinstance(child, QGraphicsProxyWidget):
+            proxy_i = child
+            break
+
+    assert proxy_i is not None
+
+    spin = proxy_i.widget().findChild(QSpinBox)
+    assert spin is not None
+
+    # 1. Click on the text area of the IntegerNode spinbox
+    QTest.mouseClick(spin, Qt.LeftButton)
+    QApplication.processEvents()
+
+    # 2. Wait 2 seconds
+    QTest.qWait(2000)
+
+    # 3. Enter new integer value (42)
+    spin.setValue(42)
+    QApplication.processEvents()
+
+    # 4. Confirm data has been changed on the underlying node
+    assert i_node.value == 42
 
 
 def test_input_node_data_entry_focus_and_key_handling(qapp):
