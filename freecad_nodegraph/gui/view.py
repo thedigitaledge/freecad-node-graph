@@ -70,8 +70,11 @@ class NodeGraphicsView(QGraphicsView):
     def handle_undo(self):
         from freecad_nodegraph.commands import get_active_editor
         editor = get_active_editor()
-        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+        if editor and hasattr(editor, "undo"):
+            if editor.undo():
+                return
 
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
         if hasattr(FreeCADGui, "runCommand"):
             try:
                 FreeCADGui.runCommand("Std_Undo")
@@ -87,8 +90,11 @@ class NodeGraphicsView(QGraphicsView):
     def handle_redo(self):
         from freecad_nodegraph.commands import get_active_editor
         editor = get_active_editor()
-        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+        if editor and hasattr(editor, "redo"):
+            if editor.redo():
+                return
 
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
         if hasattr(FreeCADGui, "runCommand"):
             try:
                 FreeCADGui.runCommand("Std_Redo")

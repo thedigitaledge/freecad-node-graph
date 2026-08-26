@@ -22,6 +22,7 @@ except ImportError:
         from PyQt5.QtCore import Qt
 
 from freecad_nodegraph.core.graph import Graph
+from freecad_nodegraph.core.history import GraphHistory
 from freecad_nodegraph.core.serializer import GraphSerializer
 from freecad_nodegraph.gui.scene import NodeGraphicsScene
 from freecad_nodegraph.gui.view import NodeGraphicsView
@@ -39,6 +40,7 @@ class NodeGraphEditorWidget(QWidget):
         self.setWindowTitle(f"{title_name}")
 
         self.graph = graph or Graph()
+        self.history = GraphHistory()
 
         # If bound to a document object, load graph data from object storage
         if self.doc_object and hasattr(self.doc_object, "GraphData") and self.doc_object.GraphData:
@@ -50,6 +52,10 @@ class NodeGraphEditorWidget(QWidget):
 
         self.scene = NodeGraphicsScene(self.graph)
         self.view = NodeGraphicsView(self.scene)
+
+        # Record initial state in history
+        initial_data = json.dumps(GraphSerializer.to_dict(self.graph))
+        self.history.push_state(initial_data, description="Initial State")
 
         # Listen for scene graph changes to automatically save back to doc_object storage
         self.scene.changed.connect(self.save_to_document_object)
@@ -65,13 +71,15 @@ class NodeGraphEditorWidget(QWidget):
 
     def save_to_document_object(self, *args):
         """Save current graph state back into the bound FreeCAD Document Object property."""
+        data = GraphSerializer.to_dict(self.graph)
+        new_json = json.dumps(data)
+
+        if getattr(self.doc_object, "GraphData", None) == new_json:
+            return
+
+        self.history.push_state(new_json, description="Modify Node Graph")
+
         if self.doc_object and hasattr(self.doc_object, "GraphData"):
-            data = GraphSerializer.to_dict(self.graph)
-            new_json = json.dumps(data)
-
-            if getattr(self.doc_object, "GraphData", None) == new_json:
-                return
-
             doc = getattr(self.doc_object, "Document", None)
             if doc and hasattr(doc, "openTransaction"):
                 try:
@@ -83,23 +91,47 @@ class NodeGraphEditorWidget(QWidget):
             else:
                 self.doc_object.GraphData = new_json
 
+    def undo(self) -> bool:
+        """Undo last modification in history stack."""
+        rec = self.history.undo()
+        if rec:
+            self.load_state_snapshot(rec.json_data)
+            return True
+        return False
+
+    def redo(self) -> bool:
+        """Redo last undone modification in history stack."""
+        rec = self.history.redo()
+        if rec:
+            self.load_state_snapshot(rec.json_data)
+            return True
+        return False
+
+    def load_state_snapshot(self, json_data: str):
+        """Load state snapshot into graph and scene without pushing a new history state."""
+        try:
+            data = json.loads(json_data)
+            try:
+                self.scene.changed.disconnect(self.save_to_document_object)
+            except Exception:
+                pass
+
+            self.graph.clear()
+            GraphSerializer.from_dict(data, graph=self.graph)
+            self.scene.sync_from_graph()
+
+            if self.doc_object and hasattr(self.doc_object, "GraphData"):
+                self.doc_object.GraphData = json_data
+
+            self.scene.changed.connect(self.save_to_document_object)
+        except Exception:
+            pass
+
     def sync_from_document_object(self):
         """Sync and re-render editor graph and scene graphics items from doc_object storage."""
         if self.doc_object and hasattr(self.doc_object, "GraphData") and self.doc_object.GraphData:
-            try:
-                data = json.loads(self.doc_object.GraphData)
-                try:
-                    self.scene.changed.disconnect(self.save_to_document_object)
-                except Exception:
-                    pass
-
-                self.graph.clear()
-                GraphSerializer.from_dict(data, graph=self.graph)
-                self.scene.sync_from_graph()
-
-                self.scene.changed.connect(self.save_to_document_object)
-            except Exception:
-                pass
+            self.load_state_snapshot(self.doc_object.GraphData)
+            self.history.push_state(self.doc_object.GraphData, description="Document Sync")
 
     def closeEvent(self, event):
         """Close task panel when editor view is closed."""

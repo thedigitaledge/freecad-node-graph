@@ -343,6 +343,39 @@ def test_delete_selected_nodes_and_del_key(qapp):
     assert len(scene.node_items) == 0
 
 
+def test_editor_history_undo_redo(qapp):
+    from freecad_nodegraph.document_object import MockDocumentObject
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.nodes.inputs import FloatNode
+    from freecad_nodegraph.nodes.primitives import BoxNode
+
+    obj = MockDocumentObject(name="NodeGraph:1")
+    editor = NodeGraphEditorWidget(doc_object=obj)
+
+    # Initial state has 0 nodes
+    assert len(editor.graph.nodes) == 0
+
+    # Add BoxNode
+    box = BoxNode(graph=editor.graph)
+    editor.graph.add_node(box)
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 1
+
+    # Add FloatNode
+    f1 = FloatNode(graph=editor.graph)
+    editor.graph.add_node(f1)
+    editor.save_to_document_object()
+    assert len(editor.graph.nodes) == 2
+
+    # Undo -> 1 node
+    assert editor.undo() is True
+    assert len(editor.graph.nodes) == 1
+
+    # Redo -> 2 nodes
+    assert editor.redo() is True
+    assert len(editor.graph.nodes) == 2
+
+
 def test_copy_cut_paste_duplicate(qapp):
     from freecad_nodegraph.core.graph import Graph
     from freecad_nodegraph.nodes.inputs import FloatNode
