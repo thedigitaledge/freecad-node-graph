@@ -4,15 +4,12 @@ from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
 
-try:
-    import FreeCAD
-    HAS_FREECAD = True
-except ImportError:
-    HAS_FREECAD = False
+import FreeCAD
 
 
 class MockVector:
     """Fallback Vector class when FreeCAD is not available."""
+
     def __init__(self, x=0.0, y=0.0, z=0.0):
         self.x = float(x)
         self.y = float(y)
@@ -22,13 +19,14 @@ class MockVector:
         return f"Vector ({self.x}, {self.y}, {self.z})"
 
     def __eq__(self, other):
-        if hasattr(other, 'x') and hasattr(other, 'y') and hasattr(other, 'z'):
+        if hasattr(other, "x") and hasattr(other, "y") and hasattr(other, "z"):
             return (self.x, self.y, self.z) == (other.x, other.y, other.z)
         return False
 
 
 class MockPlacement:
     """Fallback Placement class when FreeCAD is not available."""
+
     def __init__(self, Base=None, Rotation=None):
         self.Base = Base or MockVector(0, 0, 0)
         self.Rotation = Rotation or (0, 0, 0, 1)
@@ -38,18 +36,14 @@ class MockPlacement:
 
 
 def create_vector(x: float, y: float, z: float):
-    if HAS_FREECAD:
-        return FreeCAD.Vector(x, y, z)
-    return MockVector(x, y, z)
+    return FreeCAD.Vector(x, y, z)
 
 
 def create_placement(pos=None):
-    if HAS_FREECAD:
-        p = FreeCAD.Placement()
-        if pos:
-            p.Base = pos
-        return p
-    return MockPlacement(Base=pos)
+    p = FreeCAD.Placement()
+    if pos:
+        p.Base = pos
+    return p
 
 
 @register_node
