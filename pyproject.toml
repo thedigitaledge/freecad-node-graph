@@ -40,7 +40,7 @@ dev = [
 minversion = "7.0"
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "--cov=freecad_nodegraph --cov-report=term-missing"
+addopts = "--cov=freecad_nodegraph --cov-report=term-missing --durations=0"
 
 [tool.coverage.run]
 source = ["freecad_nodegraph"]

@@ -3,10 +3,10 @@ Code Quality & Sphinx Documentation Integration
 
 The **FreeCAD NodeGraph** workbench maintains strict testing, code quality, and documentation standards to ensure reliability and maintainability.
 
-Building Sphinx Documentation
------------------------------
+Building Sphinx Documentation (Primary Creation Method)
+-------------------------------------------------------
 
-Documentation is generated using Sphinx and configured for Read the Docs.
+Local offline generation using Sphinx is the **primary method** for creating and building documentation in this project.
 
 Installation
 ~~~~~~~~~~~~
@@ -17,32 +17,32 @@ Install documentation dependencies specified in ``pyproject.toml``:
 
    pip install .[docs]
 
-Building HTML Docs
-~~~~~~~~~~~~~~~~~~
+Building Offline HTML Docs
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Generate HTML documentation from Sphinx sources:
+Generate standalone HTML documentation locally without any internet or network dependencies:
 
 .. code-block:: bash
 
    sphinx-build -b html docs docs/_build/html
 
-The generated HTML documentation will be placed in ``docs/_build/html/index.html``.
+The compiled HTML documentation pages are located at ``docs/_build/html/index.html``.
 
-Automated Test Suite
---------------------
+Automated Test Suite & Speed Profiling
+---------------------------------------
 
-The test suite is built on `pytest` and encompasses unit, integration, and behavior-driven automation tests.
+The test suite is built on `pytest` and encompasses unit, integration, and behavior-driven automation tests with automatic execution duration profiling.
 
-Running Tests Headlessly
-~~~~~~~~~~~~~~~~~~~~~~~~
+Running Tests Headlessly with Speed Profiling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run all tests headlessly using PySide/Qt offscreen mode:
+Run all tests headlessly in PySide/Qt offscreen mode while profiling test durations:
 
 .. code-block:: bash
 
-   PYTHONPATH=. QT_QPA_PLATFORM=offscreen pytest
+   PYTHONPATH=. QT_QPA_PLATFORM=offscreen pytest --durations=0
 
-Offscreen execution is configured automatically via ``tests/conftest.py``.
+The ``--durations=0`` flag profiles and prints execution timings for all test calls, setups, and teardowns across unit, integration, and BDD scenarios.
 
 Behavior-Driven Automation (pytest-bdd)
 ----------------------------------------
@@ -74,14 +74,14 @@ Run pytest with HTML coverage report generation:
 Integrating Coverage HTML with Sphinx Build
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When running ``pytest`` with ``--cov-report=html:docs/_build/html/coverage``, the code coverage HTML report is placed directly inside Sphinx's output build directory, making interactive coverage reports accessible alongside Sphinx API documentation.
+When running ``pytest`` with ``--cov-report=html:docs/_build/html/coverage``, the code coverage HTML report is placed directly inside Sphinx's local output build directory, making interactive coverage reports accessible alongside Sphinx API documentation.
 
 Configuration in ``pyproject.toml``:
 
 .. code-block:: toml
 
    [tool.pytest.ini_options]
-   addopts = "--cov=freecad_nodegraph --cov-report=term-missing"
+   addopts = "--cov=freecad_nodegraph --cov-report=term-missing --durations=0"
 
    [tool.coverage.run]
    source = ["freecad_nodegraph"]

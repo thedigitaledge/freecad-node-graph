@@ -1,5 +1,5 @@
-Installation & FreeCAD Setup
-============================
+Installation & Documentation Setup
+====================================
 
 Requirements
 ------------
@@ -7,6 +7,25 @@ Requirements
 - FreeCAD 0.20 or newer.
 - Python 3.8+
 - PySide6 (included with modern FreeCAD installations or installed via pip).
+
+Building Documentation (Primary Method)
+----------------------------------------
+
+Local offline generation using Sphinx is the **primary method** for creating and building workbench documentation:
+
+1. Install documentation dependencies:
+
+   .. code-block:: bash
+
+      pip install .[docs]
+
+2. Generate HTML documentation locally offline:
+
+   .. code-block:: bash
+
+      sphinx-build -b html docs docs/_build/html
+
+3. Open ``docs/_build/html/index.html`` in a web browser to view offline documentation.
 
 How to Load in FreeCAD
 ----------------------

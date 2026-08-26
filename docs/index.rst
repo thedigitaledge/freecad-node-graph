@@ -3,11 +3,19 @@ FreeCAD NodeGraph Workbench Documentation
 
 Welcome to the official documentation for the **FreeCAD NodeGraph Workbench**.
 
-.. image:: https://readthedocs.org/projects/freecad-nodegraph/badge/?version=latest
-   :target: https://freecad-nodegraph.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
-
 The NodeGraph Workbench is a visual programming addon for `FreeCAD <https://www.freecad.org/>`_ that enables interactive parametric modeling using connected nodes.
+
+Offline Documentation Building
+------------------------------
+
+Building local HTML documentation offline using Sphinx is the **primary method** for creating and viewing documentation in this project:
+
+.. code-block:: bash
+
+   pip install .[docs]
+   sphinx-build -b html docs docs/_build/html
+
+Open ``docs/_build/html/index.html`` to access full API reference guides, node library details, and code quality procedures offline.
 
 .. toctree::
    :maxdepth: 2
