@@ -440,6 +440,26 @@ def test_gui_lifecycle_add_connect_move_delete_undo_redo(qapp):
     assert len(editor.graph.edges) == 0
 
 
+def test_editor_handles_deleted_freecad_object(qapp):
+    from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
+    from freecad_nodegraph.nodes.inputs import FloatNode
+
+    class DeletedMockObject:
+        @property
+        def GraphData(self):
+            raise ReferenceError("Cannot access attribute 'GraphData' of deleted object")
+
+    deleted_obj = DeletedMockObject()
+    editor = NodeGraphEditorWidget(doc_object=deleted_obj)
+
+    # Adding a node triggers save_to_document_object, which encounters ReferenceError on deleted_obj
+    f1 = FloatNode(graph=editor.graph)
+    editor.graph.add_node(f1)
+    editor.save_to_document_object()
+
+    assert editor.doc_object is None
+
+
 def test_editor_history_undo_redo(qapp):
     from freecad_nodegraph.document_object import MockDocumentObject
     from freecad_nodegraph.gui.editor import NodeGraphEditorWidget
