@@ -1,10 +1,14 @@
 """FreeCAD GUI Commands and Selection Observer for NodeGraph Workbench."""
 
-import FreeCAD
-import FreeCADGui
+try:
+    import FreeCAD
+except ImportError:
+    FreeCAD = None
 
-from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
-from PySide6.QtCore import Qt
+try:
+    import FreeCADGui
+except ImportError:
+    FreeCADGui = None
 
 try:
     from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
@@ -206,10 +210,11 @@ class CommandRunNodeGraph:
 
 def register_commands():
     global _selection_observer
-    FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
-    FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
-    FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
+    if FreeCADGui is not None and hasattr(FreeCADGui, "addCommand"):
+        FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
+        FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
+        FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
 
-    if _selection_observer is None and hasattr(FreeCADGui, "Selection"):
+    if _selection_observer is None and FreeCADGui is not None and hasattr(FreeCADGui, "Selection"):
         _selection_observer = NodeGraphSelectionObserver()
         FreeCADGui.Selection.addObserver(_selection_observer)

@@ -30,11 +30,12 @@ class DocumentOutputNode(BaseNode):
         if shape is None:
             return
 
-        doc = FreeCAD.ActiveDocument
-        obj = doc.getObject(obj_name)
-        if obj is None:
-            obj = doc.addObject("Part::Feature", obj_name)
+        if FreeCAD is not None and getattr(FreeCAD, "ActiveDocument", None) is not None:
+            doc = FreeCAD.ActiveDocument
+            obj = doc.getObject(obj_name)
+            if obj is None:
+                obj = doc.addObject("Part::Feature", obj_name)
 
-        if hasattr(obj, "Shape"):
-            obj.Shape = shape
-        doc.recompute()
+            if hasattr(obj, "Shape"):
+                obj.Shape = shape
+            doc.recompute()

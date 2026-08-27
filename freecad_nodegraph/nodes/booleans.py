@@ -26,10 +26,10 @@ class FuseNode(BaseNode):
         elif shape_b is None:
             res = shape_a
         else:
-            if Part and hasattr(shape_a, "fuse") and hasattr(shape_b, "fuse"):
+            if Part is not None and hasattr(shape_a, "fuse") and hasattr(shape_b, "fuse"):
                 res = shape_a.fuse(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Fuse", {"shape_a": shape_a, "shape_b": shape_b})
         self.set_output_value("Shape", res)
 
 
@@ -53,7 +53,7 @@ class CutNode(BaseNode):
         elif tool_shape is None:
             res = base_shape
         else:
-            if Part and hasattr(base_shape, "cut") and hasattr(tool_shape, "cut"):
+            if Part is not None and hasattr(base_shape, "cut") and hasattr(tool_shape, "cut"):
                 res = base_shape.cut(tool_shape)
             else:
                 res = MockShape("Cut", {"base": base_shape, "tool": tool_shape})
@@ -79,9 +79,9 @@ class CommonNode(BaseNode):
         if shape_a is None or shape_b is None:
             res = None
         else:
-            if Part and hasattr(shape_a, "common") and hasattr(shape_b, "common"):
+            if Part is not None and hasattr(shape_a, "common") and hasattr(shape_b, "common"):
                 res = shape_a.common(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = MockShape("Common", {"shape_a": shape_a, "shape_b": shape_b})
 
         self.set_output_value("Shape", res)
