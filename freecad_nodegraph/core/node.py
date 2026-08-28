@@ -36,6 +36,16 @@ class BaseNode:
 
         self.setup_sockets()
 
+    @classmethod
+    def get_help_summary(cls) -> str:
+        """Extract the first non-empty line from the node class docstring."""
+        doc = cls.__doc__
+        if doc:
+            lines = [line.strip() for line in doc.strip().splitlines() if line.strip()]
+            if lines:
+                return lines[0]
+        return getattr(cls, "title", "Node")
+
     def setup_sockets(self) -> None:
         """Override in subclasses to define input and output sockets."""
         pass

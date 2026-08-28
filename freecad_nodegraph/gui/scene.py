@@ -1,19 +1,9 @@
 """QGraphicsScene for rendering and interacting with the NodeGraph."""
 
 import uuid
-try:
-    from PySide6.QtWidgets import QGraphicsScene, QGraphicsPathItem
-    from PySide6.QtCore import Qt, QPointF
-    from PySide6.QtGui import QPen, QColor, QPainter, QBrush
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QGraphicsScene, QGraphicsPathItem
-        from PySide2.QtCore import Qt, QPointF
-        from PySide2.QtGui import QPen, QColor, QPainter, QBrush
-    except ImportError:
-        from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPathItem
-        from PyQt5.QtCore import Qt, QPointF
-        from PyQt5.QtGui import QPen, QColor, QPainter, QBrush
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsPathItem
+from PySide6.QtCore import Qt, QPointF, QLineF
+from PySide6.QtGui import QPen, QColor, QPainter, QBrush
 
 from typing import Dict, List, Optional
 from freecad_nodegraph.core.graph import Graph
@@ -47,17 +37,25 @@ class NodeGraphicsScene(QGraphicsScene):
         self.setBackgroundBrush(QBrush(QColor("#222222")))
         self.setSceneRect(-5000, -5000, 10000, 10000)
 
-        self.sync_from_graph()
+        self.sync_from_graph(preserve_selection=False)
 
-    def sync_from_graph(self):
-        """Rebuild scene graphics items from graph model."""
+    def sync_from_graph(self, preserve_selection: bool = True):
+        """Rebuild scene graphics items from graph model, preserving selection state."""
+        selected_node_ids = set()
+        if preserve_selection:
+            for item in self.selectedItems():
+                if isinstance(item, GraphicsNodeItem) and hasattr(item, "node") and item.node:
+                    selected_node_ids.add(item.node.id)
+
         self.clear()
         self.node_items.clear()
         self.edge_items.clear()
         self.socket_item_map.clear()
 
         for node in self.graph.nodes:
-            self.add_node_item(node)
+            item = self.add_node_item(node)
+            if preserve_selection and node.id in selected_node_ids:
+                item.setSelected(True)
 
         for edge in self.graph.edges:
             self.add_edge_item(edge)
@@ -160,6 +158,11 @@ class NodeGraphicsScene(QGraphicsScene):
     def cut_selected_nodes(self) -> dict:
         """Copy selected nodes to clipboard and remove them from graph."""
         data = self.copy_selected_nodes()
+        self.delete_selected_nodes()
+        return data
+
+    def delete_selected_nodes(self) -> List[BaseNode]:
+        """Delete selected nodes and their connected edges from the graph and scene."""
         selected_nodes = [
             item.node for item in self.selectedItems() if isinstance(item, GraphicsNodeItem)
         ]
@@ -167,7 +170,7 @@ class NodeGraphicsScene(QGraphicsScene):
             self.detach_node_links(node)
             self.remove_node_item(node)
             self.graph.remove_node(node)
-        return data
+        return selected_nodes
 
     def paste_nodes(self, offset_x: float = 30.0, offset_y: float = 30.0) -> List[BaseNode]:
         """Paste nodes from clipboard data into the graph with remapped unique IDs."""
@@ -250,21 +253,23 @@ class NodeGraphicsScene(QGraphicsScene):
         lines_thick = []
 
         for x in range(left, int(rect.right()), grid_size):
+            line = QLineF(x, rect.top(), x, rect.bottom())
             if x % (grid_size * 5) == 0:
-                lines_thick.append((x, rect.top(), x, rect.bottom()))
+                lines_thick.append(line)
             else:
-                lines_fine.append((x, rect.top(), x, rect.bottom()))
+                lines_fine.append(line)
 
         for y in range(top, int(rect.bottom()), grid_size):
+            line = QLineF(rect.left(), y, rect.right(), y)
             if y % (grid_size * 5) == 0:
-                lines_thick.append((rect.left(), y, rect.right(), y))
+                lines_thick.append(line)
             else:
-                lines_fine.append((rect.left(), y, rect.right(), y))
+                lines_fine.append(line)
 
-        painter.setPen(QPen(QColor("#2A2A2A"), 1.0))
-        for line in lines_fine:
-            painter.drawLine(line[0], line[1], line[2], line[3])
+        if lines_fine:
+            painter.setPen(QPen(QColor("#2A2A2A"), 1.0))
+            painter.drawLines(lines_fine)
 
-        painter.setPen(QPen(QColor("#1E1E1E"), 1.5))
-        for line in lines_thick:
-            painter.drawLine(line[0], line[1], line[2], line[3])
+        if lines_thick:
+            painter.setPen(QPen(QColor("#1E1E1E"), 1.5))
+            painter.drawLines(lines_thick)

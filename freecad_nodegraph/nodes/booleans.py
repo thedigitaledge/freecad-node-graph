@@ -3,11 +3,13 @@
 from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
-from freecad_nodegraph.nodes.primitives import MockShape, Part
+from freecad_nodegraph.nodes.primitives import _get_fallback_shape, Part
 
 
 @register_node
 class FuseNode(BaseNode):
+    """Performs a boolean union (fuse) operation between Shape A and Shape B."""
+
     node_type = "FuseNode"
     category = "Geometry"
     title = "Fuse (Union)"
@@ -29,12 +31,14 @@ class FuseNode(BaseNode):
             if Part and hasattr(shape_a, "fuse") and hasattr(shape_b, "fuse"):
                 res = shape_a.fuse(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = _get_fallback_shape("Fuse", {"a": shape_a, "b": shape_b})
         self.set_output_value("Shape", res)
 
 
 @register_node
 class CutNode(BaseNode):
+    """Performs a boolean difference (cut) operation subtracting Tool Shape from Base Shape."""
+
     node_type = "CutNode"
     category = "Geometry"
     title = "Cut (Difference)"
@@ -56,13 +60,15 @@ class CutNode(BaseNode):
             if Part and hasattr(base_shape, "cut") and hasattr(tool_shape, "cut"):
                 res = base_shape.cut(tool_shape)
             else:
-                res = MockShape("Cut", {"base": base_shape, "tool": tool_shape})
+                res = _get_fallback_shape("Cut", {"base": base_shape, "tool": tool_shape})
 
         self.set_output_value("Shape", res)
 
 
 @register_node
 class CommonNode(BaseNode):
+    """Performs a boolean intersection (common) operation between Shape A and Shape B."""
+
     node_type = "CommonNode"
     category = "Geometry"
     title = "Common (Intersection)"
@@ -82,6 +88,6 @@ class CommonNode(BaseNode):
             if Part and hasattr(shape_a, "common") and hasattr(shape_b, "common"):
                 res = shape_a.common(shape_b)
             else:
-                res = None  # Fallback for non-Part shapes
+                res = _get_fallback_shape("Common", {"a": shape_a, "b": shape_b})
 
         self.set_output_value("Shape", res)

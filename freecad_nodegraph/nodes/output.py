@@ -12,6 +12,8 @@ except ImportError:
 
 @register_node
 class DocumentOutputNode(BaseNode):
+    """Outputs the final computed shape into the active FreeCAD document."""
+
     node_type = "DocumentOutputNode"
     category = "Output"
     title = "Document Output"
@@ -30,11 +32,12 @@ class DocumentOutputNode(BaseNode):
         if shape is None:
             return
 
-        doc = FreeCAD.ActiveDocument
-        obj = doc.getObject(obj_name)
-        if obj is None:
-            obj = doc.addObject("Part::Feature", obj_name)
+        if FreeCAD and hasattr(FreeCAD, "ActiveDocument") and FreeCAD.ActiveDocument:
+            doc = FreeCAD.ActiveDocument
+            obj = doc.getObject(obj_name)
+            if obj is None:
+                obj = doc.addObject("Part::Feature", obj_name)
 
-        if hasattr(obj, "Shape"):
-            obj.Shape = shape
-        doc.recompute()
+            if hasattr(obj, "Shape"):
+                obj.Shape = shape
+            doc.recompute()

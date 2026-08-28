@@ -1,73 +1,35 @@
 """QGraphicsItem representations for Sockets, Edges, and Nodes."""
 
 import sys
-try:
-    from PySide6.QtWidgets import (
-        QGraphicsItem,
-        QGraphicsTextItem,
-        QGraphicsPathItem,
-        QGraphicsDropShadowEffect,
-        QStyleOptionGraphicsItem,
-        QWidget,
-        QMenu,
-    )
-    from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
-    from PySide6.QtGui import (
-        QPen,
-        QBrush,
-        QColor,
-        QPainter,
-        QPainterPath,
-        QFont,
-        QLinearGradient,
-        QAction,
-        QCursor,
-    )
-except ImportError:
-    try:
-        from PySide2.QtWidgets import (
-            QGraphicsItem,
-            QGraphicsTextItem,
-            QGraphicsPathItem,
-            QGraphicsDropShadowEffect,
-            QStyleOptionGraphicsItem,
-            QWidget,
-            QMenu,
-        )
-        from PySide2.QtCore import Qt, QPointF, QRectF, QPoint
-        from PySide2.QtGui import (
-            QPen,
-            QBrush,
-            QColor,
-            QPainter,
-            QPainterPath,
-            QFont,
-            QLinearGradient,
-            QAction,
-            QCursor,
-        )
-    except ImportError:
-        from PyQt5.QtWidgets import (
-            QGraphicsItem,
-            QGraphicsTextItem,
-            QGraphicsPathItem,
-            QGraphicsDropShadowEffect,
-            QStyleOptionGraphicsItem,
-            QWidget,
-            QMenu,
-            QAction,
-        )
-        from PyQt5.QtCore import Qt, QPointF, QRectF, QPoint
-        from PyQt5.QtGui import (
-            QPen,
-            QBrush,
-            QColor,
-            QPainter,
-            QPainterPath,
-            QFont,
-            QLinearGradient,
-            QCursor,
-        )
+from PySide6.QtWidgets import (
+    QGraphicsItem,
+    QGraphicsTextItem,
+    QGraphicsPathItem,
+    QGraphicsDropShadowEffect,
+    QStyleOptionGraphicsItem,
+    QGraphicsProxyWidget,
+    QDoubleSpinBox,
+    QSpinBox,
+    QLineEdit,
+    QCheckBox,
+    QLabel,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QMenu,
+)
+from PySide6.QtCore import Qt, QPointF, QRectF, QPoint
+from PySide6.QtGui import (
+    QPen,
+    QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QFont,
+    QLinearGradient,
+    QAction,
+    QCursor,
+)
 
 from typing import TYPE_CHECKING, Optional
 from freecad_nodegraph.core.socket import DataType
@@ -148,6 +110,7 @@ class GraphicsEdgeItem(QGraphicsPathItem):
         self.setPen(self.pen)
 
     def update_path(self, start_pos: QPointF = None, end_pos: QPointF = None):
+        self.prepareGeometryChange()
         if not start_pos or not end_pos:
             if not self.edge.start_socket or not self.edge.end_socket:
                 return
@@ -199,6 +162,9 @@ class GraphicsNodeItem(QGraphicsItem):
             | QGraphicsItem.ItemIsSelectable
             | QGraphicsItem.ItemSendsGeometryChanges
         )
+        self.setAcceptHoverEvents(True)
+        if hasattr(self.node, "get_help_summary"):
+            self.setToolTip(self.node.get_help_summary())
 
         self.init_ui()
 
@@ -214,6 +180,7 @@ class GraphicsNodeItem(QGraphicsItem):
 
         self.recalculate_size()
         self.create_sockets()
+        self.create_input_widgets()
 
     def recalculate_size(self):
         num_inputs = len(self.node.inputs)
@@ -229,6 +196,183 @@ class GraphicsNodeItem(QGraphicsItem):
 
         calculated_width = max(180.0, (max_in_len + max_out_len + 4) * 8.0, title_len * 9.0)
         self.width = calculated_width
+
+        cat = getattr(self.node, "category", "")
+        node_type = getattr(self.node, "node_type", self.node.__class__.__name__)
+        if cat == "Input":
+            if node_type in ("VectorNode", "PlacementNode"):
+                self.height = max(self.height, 135.0)
+                self.width = max(self.width, 210.0)
+            else:
+                self.height = max(self.height, 80.0)
+                self.width = max(self.width, 190.0)
+
+    def create_input_widgets(self):
+        cat = getattr(self.node, "category", "")
+        node_type = getattr(self.node, "node_type", self.node.__class__.__name__)
+
+        if cat != "Input":
+            return
+
+        # Calculate max width for input widget container to leave room for output labels
+        output_label_width = 65.0
+        if self.node.outputs:
+            label_font = QFont("Arial", 8, QFont.Bold)
+            for sock in self.node.outputs:
+                tmp = QGraphicsTextItem(sock.name)
+                tmp.setFont(label_font)
+                output_label_width = max(output_label_width, tmp.boundingRect().width() + 18.0)
+
+        container_width = max(70.0, self.width - output_label_width - 15.0)
+
+        proxy = QGraphicsProxyWidget(self)
+        proxy.setFocusPolicy(Qt.StrongFocus)
+        proxy.setZValue(10)
+
+        container = QWidget()
+        container.setFocusPolicy(Qt.StrongFocus)
+        container.setStyleSheet("background: transparent;")
+        container.setFixedWidth(int(container_width))
+
+        if node_type == "FloatNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            spin = QDoubleSpinBox()
+            spin.setFocusPolicy(Qt.StrongFocus)
+            spin.setKeyboardTracking(True)
+            spin.setRange(-999999.0, 999999.0)
+            spin.setDecimals(3)
+            spin.setValue(float(getattr(self.node, "value", 0.0)))
+
+            def on_float_changed(val):
+                try:
+                    self.node.set_value(val)
+                    spin.setStyleSheet("")
+                except ValueError:
+                    spin.setStyleSheet("border: 1px solid red;")
+
+            spin.valueChanged.connect(on_float_changed)
+            layout.addWidget(spin)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "IntegerNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            spin = QSpinBox()
+            spin.setFocusPolicy(Qt.StrongFocus)
+            spin.setKeyboardTracking(True)
+            spin.setRange(-999999, 999999)
+            spin.setValue(int(getattr(self.node, "value", 0)))
+
+            def on_int_changed(val):
+                try:
+                    self.node.set_value(val)
+                    spin.setStyleSheet("")
+                except ValueError:
+                    spin.setStyleSheet("border: 1px solid red;")
+
+            spin.valueChanged.connect(on_int_changed)
+            layout.addWidget(spin)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "StringNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            edit = QLineEdit(str(getattr(self.node, "value", "")))
+            edit.setFocusPolicy(Qt.StrongFocus)
+
+            def on_string_changed(txt):
+                self.node.set_value(txt)
+
+            edit.textChanged.connect(on_string_changed)
+            layout.addWidget(edit)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "BooleanNode":
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            chk = QCheckBox("True")
+            chk.setFocusPolicy(Qt.StrongFocus)
+            chk.setChecked(bool(getattr(self.node, "value", False)))
+            chk.setStyleSheet("color: white;")
+
+            def on_bool_changed(state):
+                self.node.set_value(bool(state))
+
+            chk.stateChanged.connect(on_bool_changed)
+            layout.addWidget(chk)
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "VectorNode":
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            layout.setSpacing(2)
+
+            for comp, label_text in [("x", "X:"), ("y", "Y:"), ("z", "Z:")]:
+                h_layout = QHBoxLayout()
+                lbl = QLabel(label_text)
+                lbl.setStyleSheet("color: white; font-weight: bold;")
+                spin = QDoubleSpinBox()
+                spin.setFocusPolicy(Qt.StrongFocus)
+                spin.setKeyboardTracking(True)
+                spin.setRange(-999999.0, 999999.0)
+                spin.setDecimals(3)
+                spin.setValue(float(getattr(self.node, comp, 0.0)))
+
+                def make_vec_handler(c_name, sp):
+                    def handler(val):
+                        try:
+                            self.node.set_components(**{c_name: val})
+                            sp.setStyleSheet("")
+                        except ValueError:
+                            sp.setStyleSheet("border: 1px solid red;")
+                    return handler
+
+                spin.valueChanged.connect(make_vec_handler(comp, spin))
+                h_layout.addWidget(lbl)
+                h_layout.addWidget(spin)
+                layout.addLayout(h_layout)
+
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
+
+        elif node_type == "PlacementNode":
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(10, 0, 10, 0)
+            layout.setSpacing(2)
+
+            for comp, label_text in [("x", "X:"), ("y", "Y:"), ("z", "Z:")]:
+                h_layout = QHBoxLayout()
+                lbl = QLabel(label_text)
+                lbl.setStyleSheet("color: white; font-weight: bold;")
+                spin = QDoubleSpinBox()
+                spin.setFocusPolicy(Qt.StrongFocus)
+                spin.setKeyboardTracking(True)
+                spin.setRange(-999999.0, 999999.0)
+                spin.setDecimals(3)
+                pos_val = getattr(self.node, f"pos_{comp}", 0.0)
+                spin.setValue(float(pos_val))
+
+                def make_pos_handler(c_name, sp):
+                    def handler(val):
+                        try:
+                            self.node.set_position(**{c_name: val})
+                            sp.setStyleSheet("")
+                        except ValueError:
+                            sp.setStyleSheet("border: 1px solid red;")
+                    return handler
+
+                spin.valueChanged.connect(make_pos_handler(comp, spin))
+                h_layout.addWidget(lbl)
+                h_layout.addWidget(spin)
+                layout.addLayout(h_layout)
+
+            proxy.setWidget(container)
+            proxy.setPos(5, 38)
 
     def create_sockets(self):
         label_font = QFont("Arial", 8, QFont.Bold)
@@ -258,6 +402,7 @@ class GraphicsNodeItem(QGraphicsItem):
             txt = QGraphicsTextItem(sock.name, self)
             txt.setDefaultTextColor(QColor("#E0E0E0"))
             txt.setFont(label_font)
+            txt.setZValue(2)
             txt.setPos(self.width - txt.boundingRect().width() - 12, y_pos - 10)
             self.label_items.append(txt)
 
@@ -269,6 +414,7 @@ class GraphicsNodeItem(QGraphicsItem):
         copy_act = menu.addAction("Copy")
         paste_act = menu.addAction("Paste")
         duplicate_act = menu.addAction("Duplicate")
+        delete_act = menu.addAction("Delete")
         menu.addSeparator()
         detach_act = menu.addAction("Detach Links")
 
@@ -299,6 +445,11 @@ class GraphicsNodeItem(QGraphicsItem):
                 if not self.isSelected():
                     self.setSelected(True)
                 scene.duplicate_selected_nodes()
+        elif selected_action == delete_act:
+            if scene and hasattr(scene, "delete_selected_nodes"):
+                if not self.isSelected():
+                    self.setSelected(True)
+                scene.delete_selected_nodes()
         elif selected_action == detach_act:
             if scene and hasattr(scene, "detach_node_links"):
                 scene.detach_node_links(self.node)

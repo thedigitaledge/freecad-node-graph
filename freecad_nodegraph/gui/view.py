@@ -1,18 +1,18 @@
 """Interactive QGraphicsView for navigating and connecting nodes."""
 
-try:
-    from PySide6.QtWidgets import QGraphicsView, QGraphicsPathItem
-    from PySide6.QtCore import Qt, QPointF
-    from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QGraphicsView, QGraphicsPathItem
-        from PySide2.QtCore import Qt, QPointF
-        from PySide2.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
-    except ImportError:
-        from PyQt5.QtWidgets import QGraphicsView, QGraphicsPathItem
-        from PyQt5.QtCore import Qt, QPointF
-        from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
+from PySide6.QtWidgets import (
+    QGraphicsView,
+    QGraphicsPathItem,
+    QGraphicsProxyWidget,
+    QLineEdit,
+    QDoubleSpinBox,
+    QSpinBox,
+    QCheckBox,
+    QAbstractSpinBox,
+    QApplication,
+)
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPainter, QPen, QColor, QPainterPath, QWheelEvent, QMouseEvent
 
 from typing import Optional
 from freecad_nodegraph.gui.items import GraphicsSocketItem, GraphicsNodeItem
@@ -20,7 +20,7 @@ from freecad_nodegraph.gui.scene import NodeGraphicsScene
 
 
 class NodeGraphicsView(QGraphicsView):
-    """View widget providing panning, zooming, and edge drag-connection interaction."""
+    """View widget providing panning, zooming, rubberband selection, and edge drag-connection interaction."""
 
     def __init__(self, scene: NodeGraphicsScene, parent=None):
         super().__init__(scene, parent)
@@ -28,17 +28,115 @@ class NodeGraphicsView(QGraphicsView):
 
         self.setRenderHint(QPainter.Antialiasing)
         self.setRenderHint(QPainter.SmoothPixmapTransform)
-        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
+        self.setOptimizationFlags(QGraphicsView.DontSavePainterState)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        self.setDragMode(QGraphicsView.RubberBandDrag)
+        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
 
         self.drag_start_socket_item: Optional[GraphicsSocketItem] = None
         self.temp_edge_item: Optional[QGraphicsPathItem] = None
         self.is_panning: bool = False
         self.pan_start = None
+
+    def keyPressEvent(self, event):
+        """Handle key press events (e.g. Del/Backspace to delete selected nodes, Ctrl+Z Undo, Ctrl+Y Redo)."""
+        app_inst = QApplication.instance()
+        focus_widget = app_inst.focusWidget() if app_inst else None
+        focus_item = self.scene().focusItem() if self.scene() else None
+
+        # Pass key events directly when an embedded input widget or proxy has focus
+        if focus_widget is not None:
+            if isinstance(focus_widget, (QLineEdit, QDoubleSpinBox, QSpinBox, QCheckBox, QAbstractSpinBox)) or (
+                hasattr(focus_widget, "metaObject") and focus_widget.metaObject().className() in (
+                    "QLineEdit", "QDoubleSpinBox", "QSpinBox", "QAbstractSpinBox", "QLineControl"
+                )
+            ):
+                super().keyPressEvent(event)
+                return
+
+        if focus_item is not None and isinstance(focus_item, QGraphicsProxyWidget):
+            super().keyPressEvent(event)
+            return
+
+        if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
+            if self.node_scene and hasattr(self.node_scene, "delete_selected_nodes"):
+                self.node_scene.delete_selected_nodes()
+                event.accept()
+                return
+
+        # Undo: Ctrl+Z
+        if event.key() == Qt.Key_Z and (event.modifiers() & Qt.ControlModifier):
+            if not (event.modifiers() & Qt.ShiftModifier):
+                self.handle_undo()
+                event.accept()
+                return
+            else:
+                self.handle_redo()
+                event.accept()
+                return
+
+        # Redo: Ctrl+Y
+        if event.key() == Qt.Key_Y and (event.modifiers() & Qt.ControlModifier):
+            self.handle_redo()
+            event.accept()
+            return
+
+        super().keyPressEvent(event)
+
+    def handle_undo(self):
+        from freecad_nodegraph.commands import get_active_editor
+        editor = get_active_editor()
+        if editor and hasattr(editor, "undo"):
+            if editor.undo():
+                return
+
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "runCommand"):
+                try:
+                    FreeCADGui.runCommand("Std_Undo")
+                except Exception:
+                    if doc and hasattr(doc, "undo"):
+                        doc.undo()
+            elif doc and hasattr(doc, "undo"):
+                doc.undo()
+        except ImportError:
+            if doc and hasattr(doc, "undo"):
+                doc.undo()
+
+        if editor and hasattr(editor, "sync_from_document_object"):
+            editor.sync_from_document_object()
+
+    def handle_redo(self):
+        from freecad_nodegraph.commands import get_active_editor
+        editor = get_active_editor()
+        if editor and hasattr(editor, "redo"):
+            if editor.redo():
+                return
+
+        doc = getattr(editor.doc_object, "Document", None) if (editor and hasattr(editor, "doc_object")) else None
+        try:
+            import FreeCADGui
+            if hasattr(FreeCADGui, "runCommand"):
+                try:
+                    FreeCADGui.runCommand("Std_Redo")
+                except Exception:
+                    if doc and hasattr(doc, "redo"):
+                        doc.redo()
+            elif doc and hasattr(doc, "redo"):
+                doc.redo()
+        except ImportError:
+            if doc and hasattr(doc, "redo"):
+                doc.redo()
+
+        if editor and hasattr(editor, "sync_from_document_object"):
+            editor.sync_from_document_object()
 
     def wheelEvent(self, event: QWheelEvent):
         """Handle zoom in/out with mouse wheel."""
@@ -64,6 +162,7 @@ class NodeGraphicsView(QGraphicsView):
                 return
 
             # Otherwise, right click drag on empty canvas background for view panning
+            self.setDragMode(QGraphicsView.NoDrag)
             self.is_panning = True
             self.pan_start = event.pos()
             self.setCursor(Qt.ClosedHandCursor)
@@ -79,6 +178,13 @@ class NodeGraphicsView(QGraphicsView):
                 self.node_scene.addItem(self.temp_edge_item)
                 event.accept()
                 return
+
+            if item is None:
+                # Activate RubberBandDrag only when clicking on empty canvas background
+                self.setDragMode(QGraphicsView.RubberBandDrag)
+            else:
+                # Disable rubberband drag mode when clicking on a node or child control to pass focus/click cleanly
+                self.setDragMode(QGraphicsView.NoDrag)
 
         super().mousePressEvent(event)
 
@@ -112,8 +218,11 @@ class NodeGraphicsView(QGraphicsView):
         if event.button() == Qt.RightButton and self.is_panning:
             self.is_panning = False
             self.setCursor(Qt.ArrowCursor)
+            self.setDragMode(QGraphicsView.RubberBandDrag)
             event.accept()
             return
+
+        res = super().mouseReleaseEvent(event)
 
         if event.button() == Qt.LeftButton and self.drag_start_socket_item:
             if self.temp_edge_item:
@@ -130,6 +239,10 @@ class NodeGraphicsView(QGraphicsView):
 
             self.drag_start_socket_item = None
             event.accept()
-            return
 
-        super().mouseReleaseEvent(event)
+        # Trigger save to document object on drag completion
+        parent_widget = self.parent()
+        if parent_widget and hasattr(parent_widget, "save_to_document_object"):
+            parent_widget.save_to_document_object()
+
+        return res

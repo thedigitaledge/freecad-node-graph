@@ -11,20 +11,15 @@ except ImportError:
     Part = None
 
 
-class MockShape:
-    """Mock Part shape representation for testing outside FreeCAD."""
-
-    def __init__(self, shape_type: str, params: dict):
-        self.shape_type = shape_type
-        self.params = params
-        self.Placement = params.get("Placement", create_placement())
-
-    def __repr__(self):
-        return f"<MockShape {self.shape_type} {self.params}>"
+def _get_fallback_shape(shape_type: str, params: dict):
+    from tests.mocks import MockShape
+    return MockShape(shape_type, params)
 
 
 @register_node
 class BoxNode(BaseNode):
+    """Creates a 3D Box primitive with Length, Width, Height, and Placement."""
+
     node_type = "BoxNode"
     category = "Geometry"
     title = "Box"
@@ -42,17 +37,22 @@ class BoxNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeBox(length, width, height)
-        if placement:
-            shape.Placement = placement
+        if Part and hasattr(Part, "makeBox"):
+            shape = Part.makeBox(length, width, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = _get_fallback_shape("Box", {"Length": length, "Width": width, "Height": height, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)
 
 
 @register_node
 class CylinderNode(BaseNode):
+    """Creates a 3D Cylinder primitive with Radius, Height, and Placement."""
+
     node_type = "CylinderNode"
     category = "Geometry"
     title = "Cylinder"
@@ -68,16 +68,21 @@ class CylinderNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeCylinder(radius, height)
-        if placement:
-            shape.Placement = placement
+        if Part and hasattr(Part, "makeCylinder"):
+            shape = Part.makeCylinder(radius, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = _get_fallback_shape("Cylinder", {"Radius": radius, "Height": height, "Placement": placement or create_placement()})
         self.set_output_value("Shape", shape)
 
 
 @register_node
 class SphereNode(BaseNode):
+    """Creates a 3D Sphere primitive with Radius and Placement."""
+
     node_type = "SphereNode"
     category = "Geometry"
     title = "Sphere"
@@ -91,17 +96,22 @@ class SphereNode(BaseNode):
         radius = float(self.get_input_value("Radius") or 5.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeSphere(radius)
-        if placement:
-            shape.Placement = placement
+        if Part and hasattr(Part, "makeSphere"):
+            shape = Part.makeSphere(radius)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = _get_fallback_shape("Sphere", {"Radius": radius, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)
 
 
 @register_node
 class ConeNode(BaseNode):
+    """Creates a 3D Cone primitive with Radius1, Radius2, Height, and Placement."""
+
     node_type = "ConeNode"
     category = "Geometry"
     title = "Cone"
@@ -119,10 +129,13 @@ class ConeNode(BaseNode):
         height = float(self.get_input_value("Height") or 10.0)
         placement = self.get_input_value("Placement")
 
-        shape = Part.makeCone(r1, r2, height)
-        if placement:
-            shape.Placement = placement
+        if Part and hasattr(Part, "makeCone"):
+            shape = Part.makeCone(r1, r2, height)
+            if placement:
+                shape.Placement = placement
+            else:
+                shape.Placement = create_placement()
         else:
-            shape.Placement = create_placement()
+            shape = _get_fallback_shape("Cone", {"Radius1": r1, "Radius2": r2, "Height": height, "Placement": placement or create_placement()})
 
         self.set_output_value("Shape", shape)

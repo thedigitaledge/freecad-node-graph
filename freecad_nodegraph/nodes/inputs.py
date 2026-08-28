@@ -4,50 +4,33 @@ from freecad_nodegraph.core.node import BaseNode
 from freecad_nodegraph.core.socket import DataType
 from freecad_nodegraph.core.registry import register_node
 
-import FreeCAD
-
-
-class MockVector:
-    """Fallback Vector class when FreeCAD is not available."""
-
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.x = float(x)
-        self.y = float(y)
-        self.z = float(z)
-
-    def __repr__(self):
-        return f"Vector ({self.x}, {self.y}, {self.z})"
-
-    def __eq__(self, other):
-        if hasattr(other, "x") and hasattr(other, "y") and hasattr(other, "z"):
-            return (self.x, self.y, self.z) == (other.x, other.y, other.z)
-        return False
-
-
-class MockPlacement:
-    """Fallback Placement class when FreeCAD is not available."""
-
-    def __init__(self, Base=None, Rotation=None):
-        self.Base = Base or MockVector(0, 0, 0)
-        self.Rotation = Rotation or (0, 0, 0, 1)
-
-    def __repr__(self):
-        return f"Placement [Base: {self.Base}]"
+try:
+    import FreeCAD
+except ImportError:
+    FreeCAD = None
 
 
 def create_vector(x: float, y: float, z: float):
-    return FreeCAD.Vector(x, y, z)
+    if FreeCAD and hasattr(FreeCAD, "Vector"):
+        return FreeCAD.Vector(x, y, z)
+    from tests.mocks import MockVector
+    return MockVector(x, y, z)
 
 
 def create_placement(pos=None):
-    p = FreeCAD.Placement()
-    if pos:
-        p.Base = pos
-    return p
+    if FreeCAD and hasattr(FreeCAD, "Placement"):
+        p = FreeCAD.Placement()
+        if pos:
+            p.Base = pos
+        return p
+    from tests.mocks import MockPlacement
+    return MockPlacement(Base=pos)
 
 
 @register_node
 class FloatNode(BaseNode):
+    """Provides a floating-point numeric value."""
+
     node_type = "FloatNode"
     category = "Input"
     title = "Float Value"
@@ -81,6 +64,8 @@ class FloatNode(BaseNode):
 
 @register_node
 class IntegerNode(BaseNode):
+    """Provides an integer numeric value."""
+
     node_type = "IntegerNode"
     category = "Input"
     title = "Integer Value"
@@ -114,6 +99,8 @@ class IntegerNode(BaseNode):
 
 @register_node
 class StringNode(BaseNode):
+    """Provides a text string value."""
+
     node_type = "StringNode"
     category = "Input"
     title = "String Value"
@@ -143,6 +130,8 @@ class StringNode(BaseNode):
 
 @register_node
 class BooleanNode(BaseNode):
+    """Provides a boolean True/False value."""
+
     node_type = "BooleanNode"
     category = "Input"
     title = "Boolean Value"
@@ -185,6 +174,8 @@ class BooleanNode(BaseNode):
 
 @register_node
 class VectorNode(BaseNode):
+    """Creates a 3D Vector from X, Y, and Z components."""
+
     node_type = "VectorNode"
     category = "Input"
     title = "Vector"
@@ -234,6 +225,8 @@ class VectorNode(BaseNode):
 
 @register_node
 class PlacementNode(BaseNode):
+    """Creates a FreeCAD Placement from position coordinates."""
+
     node_type = "PlacementNode"
     category = "Input"
     title = "Placement"

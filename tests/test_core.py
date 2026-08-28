@@ -149,6 +149,33 @@ def test_serialization():
     assert restored_n1.get_output_value("Sum") == 40.0
 
 
+def test_graph_history_stack():
+    from freecad_nodegraph.core.history import GraphHistory
+
+    history = GraphHistory(max_depth=5)
+    assert not history.can_undo()
+    assert not history.can_redo()
+
+    history.push_state('{"state": 1}', "State 1")
+    history.push_state('{"state": 2}', "State 2")
+    history.push_state('{"state": 3}', "State 3")
+
+    assert history.can_undo()
+    assert not history.can_redo()
+    assert len(history.get_history_records()) == 3
+
+    # Undo to State 2
+    rec2 = history.undo()
+    assert rec2 is not None
+    assert rec2.json_data == '{"state": 2}'
+    assert history.can_redo()
+
+    # Redo to State 3
+    rec3 = history.redo()
+    assert rec3 is not None
+    assert rec3.json_data == '{"state": 3}'
+
+
 def test_file_save_load():
     NodeRegistry.register(AddNode)
 

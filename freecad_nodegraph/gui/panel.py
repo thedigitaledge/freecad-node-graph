@@ -1,52 +1,21 @@
 """Side Panel widget containing Node Library with Search feature and Properties Inspector."""
 
 import os
-try:
-    from PySide6.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-        QHBoxLayout,
-        QLineEdit,
-        QTreeWidget,
-        QTreeWidgetItem,
-        QGroupBox,
-        QFormLayout,
-        QLabel,
-        QDoubleSpinBox,
-        QPushButton,
-    )
-    from PySide6.QtCore import Qt
-except ImportError:
-    try:
-        from PySide2.QtWidgets import (
-            QWidget,
-            QVBoxLayout,
-            QHBoxLayout,
-            QLineEdit,
-            QTreeWidget,
-            QTreeWidgetItem,
-            QGroupBox,
-            QFormLayout,
-            QLabel,
-            QDoubleSpinBox,
-            QPushButton,
-        )
-        from PySide2.QtCore import Qt
-    except ImportError:
-        from PyQt5.QtWidgets import (
-            QWidget,
-            QVBoxLayout,
-            QHBoxLayout,
-            QLineEdit,
-            QTreeWidget,
-            QTreeWidgetItem,
-            QGroupBox,
-            QFormLayout,
-            QLabel,
-            QDoubleSpinBox,
-            QPushButton,
-        )
-        from PyQt5.QtCore import Qt
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QGroupBox,
+    QFormLayout,
+    QLabel,
+    QDoubleSpinBox,
+    QCheckBox,
+    QPushButton,
+)
+from PySide6.QtCore import Qt
 
 from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.registry import NodeRegistry
@@ -94,6 +63,10 @@ class NodeGraphSidePanelWidget(QWidget):
         self.node_tree.itemDoubleClicked.connect(self.on_node_library_double_clicked)
         layout.addWidget(self.node_tree)
 
+        self.add_node_btn = QPushButton("Add Node to Active Graph")
+        self.add_node_btn.clicked.connect(self.on_add_node_button_clicked)
+        layout.addWidget(self.add_node_btn)
+
         self.populate_node_library()
 
         # 3. Properties Inspector
@@ -114,6 +87,8 @@ class NodeGraphSidePanelWidget(QWidget):
             for node_cls in node_classes:
                 node_item = QTreeWidgetItem(cat_item, [node_cls.title])
                 node_item.setData(0, Qt.UserRole, node_cls.node_type)
+                if hasattr(node_cls, "get_help_summary"):
+                    node_item.setToolTip(0, node_cls.get_help_summary())
 
     def filter_node_library(self, text: str):
         """Filter node tree items in real-time based on search input query."""
@@ -139,12 +114,38 @@ class NodeGraphSidePanelWidget(QWidget):
             if search_text and category_has_match:
                 category_item.setExpanded(True)
 
-    def on_node_library_double_clicked(self, item: QTreeWidgetItem, column: int):
+    def add_node_from_item(self, item: QTreeWidgetItem):
+        if not item:
+            return
         node_type = item.data(0, Qt.UserRole)
-        if node_type:
-            node = NodeRegistry.create_node(node_type, graph=self.graph)
-            if node:
-                self.graph.add_node(node)
+        if not node_type:
+            return
+
+        from freecad_nodegraph.commands import get_active_editor
+
+        editor = get_active_editor()
+        if editor is not None and hasattr(editor, "graph") and hasattr(editor, "scene"):
+            target_graph = editor.graph
+            target_scene = editor.scene
+        else:
+            target_graph = self.graph
+            target_scene = getattr(self, "scene", None)
+
+        node = NodeRegistry.create_node(node_type, graph=target_graph)
+        if node:
+            target_graph.add_node(node)
+            if target_scene is not None and hasattr(target_scene, "add_node_item"):
+                target_scene.add_node_item(node)
+            if editor is not None and hasattr(editor, "save_to_document_object"):
+                editor.save_to_document_object()
+
+    def on_node_library_double_clicked(self, item: QTreeWidgetItem, column: int = 0):
+        self.add_node_from_item(item)
+
+    def on_add_node_button_clicked(self):
+        curr_item = self.node_tree.currentItem()
+        if curr_item:
+            self.add_node_from_item(curr_item)
 
     def update_properties_inspector(self, selected_items):
         """Update property inspector form fields for selected scene items."""
@@ -161,6 +162,99 @@ class NodeGraphSidePanelWidget(QWidget):
         if hasattr(item, "node"):
             node = item.node
             self.prop_group.setTitle(f"Node: {node.title}")
+
+            cat = getattr(node, "category", "")
+            node_type = getattr(node, "node_type", node.__class__.__name__)
+
+            if cat == "Input":
+                if node_type == "FloatNode":
+                    spin = QDoubleSpinBox()
+                    spin.setRange(-999999.0, 999999.0)
+                    spin.setDecimals(3)
+                    spin.setValue(float(getattr(node, "value", 0.0)))
+
+                    def on_val_changed(val):
+                        try:
+                            node.set_value(val)
+                            spin.setStyleSheet("")
+                        except ValueError:
+                            spin.setStyleSheet("border: 1px solid red;")
+
+                    spin.valueChanged.connect(on_val_changed)
+                    self.prop_form_layout.addRow("Value:", spin)
+
+                elif node_type == "IntegerNode":
+                    spin = QDoubleSpinBox()
+                    spin.setRange(-999999.0, 999999.0)
+                    spin.setDecimals(0)
+                    spin.setValue(float(getattr(node, "value", 0)))
+
+                    def on_int_changed(val):
+                        try:
+                            node.set_value(int(val))
+                            spin.setStyleSheet("")
+                        except ValueError:
+                            spin.setStyleSheet("border: 1px solid red;")
+
+                    spin.valueChanged.connect(on_int_changed)
+                    self.prop_form_layout.addRow("Value:", spin)
+
+                elif node_type == "StringNode":
+                    edit = QLineEdit(str(getattr(node, "value", "")))
+
+                    def on_str_changed(txt):
+                        node.set_value(txt)
+
+                    edit.textChanged.connect(on_str_changed)
+                    self.prop_form_layout.addRow("Value:", edit)
+
+                elif node_type == "BooleanNode":
+                    chk = QCheckBox("True")
+                    chk.setChecked(bool(getattr(node, "value", False)))
+
+                    def on_chk_changed(state):
+                        node.set_value(bool(state))
+
+                    chk.stateChanged.connect(on_chk_changed)
+                    self.prop_form_layout.addRow("Value:", chk)
+
+                elif node_type == "VectorNode":
+                    for comp in ("x", "y", "z"):
+                        spin = QDoubleSpinBox()
+                        spin.setRange(-999999.0, 999999.0)
+                        spin.setDecimals(3)
+                        spin.setValue(float(getattr(node, comp, 0.0)))
+
+                        def make_vec_handler(c_name, sp):
+                            def handler(val):
+                                try:
+                                    node.set_components(**{c_name: val})
+                                    sp.setStyleSheet("")
+                                except ValueError:
+                                    sp.setStyleSheet("border: 1px solid red;")
+                            return handler
+
+                        spin.valueChanged.connect(make_vec_handler(comp, spin))
+                        self.prop_form_layout.addRow(f"Component {comp.upper()}:", spin)
+
+                elif node_type == "PlacementNode":
+                    for comp in ("x", "y", "z"):
+                        spin = QDoubleSpinBox()
+                        spin.setRange(-999999.0, 999999.0)
+                        spin.setDecimals(3)
+                        spin.setValue(float(getattr(node, f"pos_{comp}", 0.0)))
+
+                        def make_pos_handler(c_name, sp):
+                            def handler(val):
+                                try:
+                                    node.set_position(**{c_name: val})
+                                    sp.setStyleSheet("")
+                                except ValueError:
+                                    sp.setStyleSheet("border: 1px solid red;")
+                            return handler
+
+                        spin.valueChanged.connect(make_pos_handler(comp, spin))
+                        self.prop_form_layout.addRow(f"Position {comp.upper()}:", spin)
 
             for sock in node.inputs:
                 if sock.is_connected:

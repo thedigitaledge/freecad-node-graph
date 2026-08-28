@@ -6,8 +6,15 @@ from freecad_nodegraph.core.graph import Graph
 from freecad_nodegraph.core.evaluator import GraphEvaluator
 from freecad_nodegraph.core.serializer import GraphSerializer
 
-import FreeCAD
-import Part
+try:
+    import FreeCAD
+except ImportError:
+    FreeCAD = None
+
+try:
+    import Part
+except ImportError:
+    Part = None
 
 
 class NodeGraphObject:
@@ -29,6 +36,19 @@ class NodeGraphObject:
             # Default empty graph JSON
             empty_graph = Graph()
             obj.GraphData = json.dumps(GraphSerializer.to_dict(empty_graph))
+
+    def onChanged(self, obj: Any, prop: str) -> None:
+        """Called by FreeCAD when object property is changed (e.g. via Undo/Redo)."""
+        if prop == "GraphData":
+            try:
+                from freecad_nodegraph.commands import _active_editors
+                subwin_info = _active_editors.get(obj)
+                if subwin_info:
+                    editor = subwin_info[1]
+                    if hasattr(editor, "sync_from_document_object"):
+                        editor.sync_from_document_object()
+            except Exception:
+                pass
 
     def execute(self, obj: Any) -> None:
         """Recompute node graph evaluation and update obj.Shape."""
@@ -104,31 +124,6 @@ class ViewProviderNodeGraph:
         return None
 
 
-class MockDocumentObject:
-    """Mock FreeCAD document object for standalone testing outside FreeCAD."""
-
-    def __init__(self, name: str = "NodeGraph:1"):
-        self.Name = name
-        self.Label = name
-        self.GraphData = ""
-        self.Shape = None
-        self.Proxy = None
-        self.InList = []
-        self.OutList = []
-        self.Group = []
-
-    def addProperty(
-        self, prop_type: str, prop_name: str, group: str = "", doc: str = ""
-    ):
-        if not hasattr(self, prop_name):
-            setattr(self, prop_name, "")
-
-    def addObject(self, child_obj):
-        if child_obj not in self.Group:
-            self.Group.append(child_obj)
-            child_obj.InList.append(self)
-
-
 def get_next_nodegraph_name(doc: Any = None) -> str:
     """Count existing NodeGraph objects in active document and return 'NodeGraph:X'."""
     count = 1
@@ -173,7 +168,8 @@ def make_nodegraph_object(
         doc.recompute()
         return obj
     else:
-        # Fallback mock creation
+        # Fallback mock creation for testing outside FreeCAD
+        from tests.mocks import MockDocumentObject
         obj = MockDocumentObject(name=name)
         NodeGraphObject(obj)
         if parent_obj is not None:
