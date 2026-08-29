@@ -151,11 +151,11 @@ class CommandOpenNodeGraphEditor:
                         _active_editors[doc_object] = (subwin, editor_widget)
                     else:
                         editor_widget.setWindowTitle(f"{obj_title}")
-                        editor_widget.show()
+                        editor_widget.showMaximized()
                         _active_editors[doc_object] = (editor_widget, editor_widget)
                 else:
                     subwin, editor_widget = subwin_info
-                    subwin.show()
+                    subwin.showMaximized()
                     subwin.raise_()
 
             else:
@@ -165,10 +165,10 @@ class CommandOpenNodeGraphEditor:
                     editor_widget = NodeGraphEditorWidget(doc_object=doc_object)
                     editor_widget.setWindowTitle(f"{obj_title}")
                     _active_editors[doc_object] = (editor_widget, editor_widget)
-                    editor_widget.show()
+                    editor_widget.showMaximized()
                 else:
                     editor_widget = subwin_info[1]
-                    editor_widget.show()
+                    editor_widget.showMaximized()
 
         except Exception as e:
             if hasattr(FreeCAD, "Console"):
