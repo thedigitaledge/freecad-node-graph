@@ -37,7 +37,10 @@ class NodeGraphSelectionObserver:
         self.check_selection(doc_name, obj_name)
 
     def setSelection(self, doc_name):
-        pass
+        if FreeCADGui is not None and hasattr(FreeCADGui, "Selection"):
+            sel = FreeCADGui.Selection.getSelection(doc_name)
+            for obj in sel:
+                self.check_selection(doc_name, obj.Name)
 
     def clearSelection(self, doc_name):
         pass
