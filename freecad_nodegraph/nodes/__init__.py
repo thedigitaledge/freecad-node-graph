@@ -1,13 +1,6 @@
 """Node definitions for FreeCAD NodeGraph."""
 
-from freecad_nodegraph.nodes.inputs import (
-    FloatNode,
-    IntegerNode,
-    StringNode,
-    BooleanNode,
-    VectorNode,
-    PlacementNode,
-)
+from freecad_nodegraph.nodes.inputs import FloatNode, VectorNode, PlacementNode
 from freecad_nodegraph.nodes.primitives import (
     BoxNode,
     CylinderNode,
@@ -24,9 +17,6 @@ from freecad_nodegraph.nodes.output import DocumentOutputNode
 
 __all__ = [
     "FloatNode",
-    "IntegerNode",
-    "StringNode",
-    "BooleanNode",
     "VectorNode",
     "PlacementNode",
     "BoxNode",
