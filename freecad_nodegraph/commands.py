@@ -1,10 +1,14 @@
 """FreeCAD GUI Commands and Selection Observer for NodeGraph Workbench."""
 
-import FreeCAD
-import FreeCADGui
+try:
+    import FreeCAD
+except ImportError:
+    FreeCAD = None
 
-from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
-from PySide6.QtCore import Qt
+try:
+    import FreeCADGui
+except ImportError:
+    FreeCADGui = None
 
 try:
     from PySide6.QtWidgets import QMdiSubWindow, QMdiArea, QDockWidget, QTabWidget
@@ -33,7 +37,10 @@ class NodeGraphSelectionObserver:
         self.check_selection(doc_name, obj_name)
 
     def setSelection(self, doc_name):
-        pass
+        if FreeCADGui is not None and hasattr(FreeCADGui, "Selection"):
+            sel = FreeCADGui.Selection.getSelection(doc_name)
+            for obj in sel:
+                self.check_selection(doc_name, obj.Name)
 
     def clearSelection(self, doc_name):
         pass
@@ -147,11 +154,11 @@ class CommandOpenNodeGraphEditor:
                         _active_editors[doc_object] = (subwin, editor_widget)
                     else:
                         editor_widget.setWindowTitle(f"{obj_title}")
-                        editor_widget.show()
+                        editor_widget.showMaximized()
                         _active_editors[doc_object] = (editor_widget, editor_widget)
                 else:
                     subwin, editor_widget = subwin_info
-                    subwin.show()
+                    subwin.showMaximized()
                     subwin.raise_()
 
             else:
@@ -161,10 +168,10 @@ class CommandOpenNodeGraphEditor:
                     editor_widget = NodeGraphEditorWidget(doc_object=doc_object)
                     editor_widget.setWindowTitle(f"{obj_title}")
                     _active_editors[doc_object] = (editor_widget, editor_widget)
-                    editor_widget.show()
+                    editor_widget.showMaximized()
                 else:
                     editor_widget = subwin_info[1]
-                    editor_widget.show()
+                    editor_widget.showMaximized()
 
         except Exception as e:
             if hasattr(FreeCAD, "Console"):
@@ -206,10 +213,11 @@ class CommandRunNodeGraph:
 
 def register_commands():
     global _selection_observer
-    FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
-    FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
-    FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
+    if FreeCADGui is not None and hasattr(FreeCADGui, "addCommand"):
+        FreeCADGui.addCommand("NodeGraph_CreateObject", CommandCreateNodeGraphObject())
+        FreeCADGui.addCommand("NodeGraph_OpenEditor", CommandOpenNodeGraphEditor())
+        FreeCADGui.addCommand("NodeGraph_RunGraph", CommandRunNodeGraph())
 
-    if _selection_observer is None and hasattr(FreeCADGui, "Selection"):
+    if _selection_observer is None and FreeCADGui is not None and hasattr(FreeCADGui, "Selection"):
         _selection_observer = NodeGraphSelectionObserver()
         FreeCADGui.Selection.addObserver(_selection_observer)
